@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IUser } from './interfaces/IUser';
+import { IUser } from '../../interfaces/IUser';
 
 @Injectable()
 export class UserService {
@@ -21,18 +21,17 @@ export class UserService {
     };
   }
 
-  async getUser({ access_token, refresh_token }: IUser) {
+  async getUser({ id }: IUser) {
     // Logica para devolver dados do usuario do banco
     return {
-      id: 'Id usuário',
-      email: 'Email usuário'
+      id: id,
+      produtos: [],
     };
   }
 
   async editUser({ access_token, refresh_token, email, password }: IUser) {
     // Logica de modificar usuario no banco de dados
     // Retornar usuario modificado
-    console.log(access_token)
     return {
       message: 'Usuario editado com sucesso!',
     };

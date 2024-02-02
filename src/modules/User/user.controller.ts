@@ -21,7 +21,7 @@ import { GetUserInfoDTO } from './dto/get-userInfo.dto';
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @Post()
+  @Post('/create')
   create(@Body() { email, password }: CreateUserDTO) {
     return this.userService.loginUser({ email, password });
   }
@@ -32,8 +32,8 @@ export class UserController {
   }
 
   @Get()
-  getInfo(@Query() { access_token, refresh_token }: GetUserInfoDTO) {
-    return this.userService.getUser({ access_token, refresh_token });
+  getInfo(@Query() { id }: GetUserInfoDTO) {
+    return this.userService.getUser({ id });
   }
 
   @Put()
