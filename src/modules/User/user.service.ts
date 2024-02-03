@@ -1,8 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { IUser } from '../../interfaces/IUser';
+import { Repository } from 'typeorm';
+import { User } from './entity/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserService {
+  constructor(@InjectRepository(User) private userRepository: Repository<User>) { }
+
   async createUser({ email, password }: IUser) {
     // Logica para criacao de usuario
     return {
