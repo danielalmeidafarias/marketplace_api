@@ -6,7 +6,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(User) private userRepository: Repository<User>) { }
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+  ) {}
 
   async createUser({ email, password }: IUser) {
     // Logica para criacao de usuario
