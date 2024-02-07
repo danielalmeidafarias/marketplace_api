@@ -1,38 +1,68 @@
-import { Injectable } from '@nestjs/common';
+import { UserRepository } from './repository/user.repository';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { IUser } from '../../interfaces/IUser';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { User } from './entity/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-
+import * as bcrypt from 'bcrypt';
+import { AuthService } from '../auth/auth.service';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User) private userRepository: Repository<User>,
+    private userRepository: UserRepository,
+    private authService: AuthService,
   ) {}
 
   async createUser({ email, password }: IUser) {
-    // Logica para criacao de usuario
-    return {
-      message: 'Usuario criado com sucesso!',
-      access_token: 'access_token',
-      refresh_token: 'refresh_token',
-    };
+    const alreadyUser = await this.userRepository.findUserByEmail(email);
+
+    if (alreadyUser) {
+      throw new HttpException(
+        `O email ${email} já possui uma conta registrada`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    const user = new User(email, hashedPassword);
+
+    try {
+      await this.userRepository.createUser(user);
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    return this.authService.signIn(user);
   }
 
   async loginUser({ email, password }: IUser) {
-    // Logica de login
-    return {
-      message: 'Login realizado com sucesso!',
-      access_token: 'access_token',
-      refresh_token: 'refresh_token',
-    };
+    const alreadyUser = await this.userRepository.findUserByEmail(email);
+
+    if (!alreadyUser) {
+      throw new HttpException(
+        `Não há nenhuma conta registrada com o email ${email}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const passwordIsCorrect = await bcrypt.compare(
+      password,
+      alreadyUser.password,
+    );
+
+    if (!passwordIsCorrect) {
+      throw new HttpException(
+        'A senha digitada está incorreta',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    return this.authService.signIn(alreadyUser);
   }
 
   async getUser({ id }: IUser) {
-    // Logica para devolver dados do usuario do banco
     return {
       id: id,
-      produtos: [],
     };
   }
 

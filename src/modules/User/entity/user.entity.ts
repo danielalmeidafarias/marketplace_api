@@ -1,4 +1,5 @@
 import { IProduct } from 'src/interfaces/IProduct';
+import { IUser } from 'src/interfaces/IUser';
 import { Product } from 'src/modules/Product/entity/product.entity';
 import {
   Column,
@@ -14,9 +15,15 @@ import {
 } from 'typeorm';
 
 @Entity()
+@Unique(['email'])
 export class User {
+  constructor(email: string, password: string) {
+    this.email = email;
+    this.password = password;
+  }
+
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id?: string;
 
   @PrimaryColumn()
   email: string;
@@ -25,14 +32,14 @@ export class User {
   password: string;
 
   @CreateDateColumn()
-  created_at: Date;
+  created_at?: Date;
 
   @UpdateDateColumn()
-  updated_at: Date;
+  updated_at?: Date;
 
   @DeleteDateColumn()
-  deleted_at: Date;
+  deleted_at?: Date;
 
-  @OneToMany(() => Product, (product) => product.id)
+  @OneToMany(() => Product, (product) => product.id, { nullable: true })
   products: IProduct[];
 }

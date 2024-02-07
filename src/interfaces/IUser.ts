@@ -1,5 +1,5 @@
 import { UUID } from 'crypto';
-import { IProduct } from './IProduct';
+import { IProduct } from '../interfaces/IProduct';
 
 export interface IUser {
   email?: string;

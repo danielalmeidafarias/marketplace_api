@@ -1,4 +1,3 @@
-import { IUser } from 'src/interfaces/IUser';
 import { User } from 'src/modules/User/entity/user.entity';
 import {
   Column,
@@ -25,7 +24,7 @@ export class Product {
   quantity: number;
 
   @ManyToOne(() => User, (user) => user.id)
-  user: IUser;
+  user: User;
 
   @CreateDateColumn()
   created_at: Date;

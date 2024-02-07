@@ -23,7 +23,7 @@ export class UserController {
 
   @Post('/create')
   create(@Body() { email, password }: CreateUserDTO) {
-    return this.userService.loginUser({ email, password });
+    return this.userService.createUser({ email, password });
   }
 
   @Post('/login')
