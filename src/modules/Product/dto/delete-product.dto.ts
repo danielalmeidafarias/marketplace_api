@@ -6,8 +6,8 @@ export class DeleteProductDTO {
   id: UUID;
 
   @IsJWT()
-  access_token: JsonWebKey;
+  access_token: string;
 
   @IsJWT()
-  refresh_token: JsonWebKey;
+  refresh_token: string;
 }

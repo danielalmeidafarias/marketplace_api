@@ -6,8 +6,8 @@ export interface IUser {
   password?: string;
   id?: UUID;
   products?: IProduct[];
-  access_token?: JsonWebKey;
-  refresh_token?: JsonWebKey;
+  access_token?: string;
+  refresh_token?: string;
   created_at?: Date;
   updated_at?: Date;
   deleted_at?: Date;

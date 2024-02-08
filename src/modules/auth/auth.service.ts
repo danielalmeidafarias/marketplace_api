@@ -12,11 +12,22 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(payload, {
         expiresIn: '1d',
-        algorithm: 'HS256',
       }),
       refresh_token: this.jwtService.sign(payload, {
         expiresIn: '7d',
-        algorithm: 'HS384',
+      }),
+    };
+  }
+
+  async getNewTokens(refresh_token: string) {
+    const { sub, email } = this.jwtService.decode(refresh_token);
+
+    return {
+      access_token: this.jwtService.sign({ sub, email }, {
+        expiresIn: '1h',
+      }),
+      refresh_token: this.jwtService.sign({ sub, email }, {
+        expiresIn: '1d',
       }),
     };
   }

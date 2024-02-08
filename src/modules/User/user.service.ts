@@ -67,9 +67,8 @@ export class UserService {
   async editUser({ access_token, refresh_token, email, password }: IUser) {
     // Logica de modificar usuario no banco de dados
     // Retornar usuario modificado
-    return {
-      message: 'Usuario editado com sucesso!',
-    };
+    return 'Usuario editado com sucesso!'
+
   }
 
   async deleteUser({ access_token, refresh_token }: IUser) {
