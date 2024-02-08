@@ -1,11 +1,6 @@
-import { JwtSignOptions } from '@nestjs/jwt';
+require('dotenv').config();
+import { JwtModuleOptions } from '@nestjs/jwt';
 
-export const accessTokenConfig: JwtSignOptions = {
-  privateKey: process.env.ACCESS_TOKEN_SECRET,
-  expiresIn: '1d',
-};
-
-export const refreshTokenConfig: JwtSignOptions = {
-  privateKey: process.env.REFRESH_TOKEN_SECRET,
-  expiresIn: '7d',
+export const JwtModuleConfig: JwtModuleOptions = {
+  secret: process.env.JWT_SECRET_KEY,
 };

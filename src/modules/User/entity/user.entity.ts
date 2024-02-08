@@ -1,12 +1,10 @@
 import { IProduct } from 'src/interfaces/IProduct';
-import { IUser } from 'src/interfaces/IUser';
 import { Product } from 'src/modules/Product/entity/product.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  Index,
   OneToMany,
   PrimaryColumn,
   PrimaryGeneratedColumn,

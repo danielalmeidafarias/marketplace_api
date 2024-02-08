@@ -1,10 +1,8 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { User } from '../entity/user.entity';
-import { IUser } from 'src/interfaces/IUser';
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UUID } from 'crypto';
-import { Product } from 'src/modules/Product/entity/product.entity';
 
 @Injectable()
 export class UserRepository {

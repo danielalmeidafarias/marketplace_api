@@ -4,8 +4,6 @@ import { APP_PIPE } from '@nestjs/core';
 import { ProductModule } from './modules/Product/product.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import 'dotenv/config';
-import { User } from './modules/User/entity/user.entity';
-import { Product } from './modules/Product/entity/product.entity';
 import { AuthModule } from './modules/auth/auth.module';
 import { databaseConfig } from './config/database.config';
 

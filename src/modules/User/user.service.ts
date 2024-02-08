@@ -1,9 +1,7 @@
 import { UserRepository } from './repository/user.repository';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { IUser } from '../../interfaces/IUser';
-import { DataSource, Repository } from 'typeorm';
 import { User } from './entity/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from '../auth/auth.service';
 @Injectable()
