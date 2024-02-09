@@ -14,20 +14,19 @@ import { authConfig } from 'src/config/ auth.config';
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
-  private getRequestTokens(request: Request) {  
-    
-    if(request.method === "POST" || request.method === "PUT") {
+  private getRequestTokens(request: Request) {
+    if (request.method === 'POST' || request.method === 'PUT') {
       const { access_token, refresh_token } = request.body;
-      return { access_token, refresh_token }
+      return { access_token, refresh_token };
     }
 
     const { access_token, refresh_token } = request.query;
-    return { access_token, refresh_token }
+    return { access_token, refresh_token };
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
-    const { access_token, refresh_token } = this.getRequestTokens(request)
+    const { access_token, refresh_token } = this.getRequestTokens(request);
 
     if (!access_token) {
       throw new HttpException(

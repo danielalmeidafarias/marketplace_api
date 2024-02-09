@@ -1,5 +1,4 @@
 import { AuthService } from './../auth/auth.service';
-import { JwtService } from '@nestjs/jwt/dist/jwt.service';
 import { AuthGuard } from './../auth/auth.guard';
 import {
   Body,
@@ -48,7 +47,15 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Put()
   async edit(
-    @Body() { access_token, refresh_token, email, password, newEmail, newPassword }: EditUserDTO,
+    @Body()
+    {
+      access_token,
+      refresh_token,
+      email,
+      password,
+      newEmail,
+      newPassword,
+    }: EditUserDTO,
   ) {
     return await this.userService.editUser({
       access_token,
@@ -56,7 +63,7 @@ export class UserController {
       email,
       password,
       newEmail,
-      newPassword
+      newPassword,
     });
   }
 

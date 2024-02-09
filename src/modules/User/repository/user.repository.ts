@@ -2,8 +2,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { User } from '../entity/user.entity';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UUID, verify } from 'crypto';
-import { EditUserDTO } from '../dto/edit-user.dto';
+import { UUID } from 'crypto';
 
 @Injectable()
 export class UserRepository {

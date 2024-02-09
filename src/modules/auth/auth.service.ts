@@ -34,7 +34,7 @@ export class AuthService {
     }
   }
 
-  async getNewTokens(acces_token: string, refresh_token: string) {
+  async getNewTokens(acces_token: string) {
     const { sub, email } = await this.decodeToken(acces_token);
 
     try {

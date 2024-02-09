@@ -6,8 +6,8 @@ export class GetUserInfoDTO {
   id: UUID;
 
   @IsJWT()
-  access_token: string
+  access_token: string;
 
   @IsJWT()
-  refresh_token: string
+  refresh_token: string;
 }

@@ -1,5 +1,10 @@
-import { IsEmail, IsJWT, IsOptional, IsString, IsStrongPassword, IsUUID } from 'class-validator';
-import { UUID } from 'crypto';
+import {
+  IsEmail,
+  IsJWT,
+  IsOptional,
+  IsString,
+  IsStrongPassword,
+} from 'class-validator';
 
 export class EditUserDTO {
   @IsJWT()
