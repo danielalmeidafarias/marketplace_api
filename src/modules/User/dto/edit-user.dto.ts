@@ -1,4 +1,5 @@
-import { IsEmail, IsJWT, IsOptional, IsStrongPassword } from 'class-validator';
+import { IsEmail, IsJWT, IsOptional, IsString, IsStrongPassword, IsUUID } from 'class-validator';
+import { UUID } from 'crypto';
 
 export class EditUserDTO {
   @IsJWT()
@@ -7,11 +8,18 @@ export class EditUserDTO {
   @IsJWT()
   refresh_token: string;
 
-  @IsOptional()
+  @IsString()
   @IsEmail()
   email: string;
 
+  @IsString()
+  password: string;
+
+  @IsOptional()
+  @IsEmail()
+  newEmail?: string;
+
   @IsOptional()
   @IsStrongPassword()
-  password: string;
+  newPassword?: string;
 }

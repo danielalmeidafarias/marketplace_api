@@ -35,32 +35,34 @@ export class UserController {
     return await this.userService.loginUser({ email, password });
   }
 
+  @UseGuards(AuthGuard)
   @Get()
-  async getInfo(@Query() { id }: GetUserInfoDTO) {
-    return await this.userService.getUser({ id });
+  async getInfo(@Query() { id, access_token, refresh_token }: GetUserInfoDTO) {
+    return await this.userService.getUser({
+      id,
+      access_token,
+      refresh_token,
+    });
   }
 
   @UseGuards(AuthGuard)
   @Put()
   async edit(
-    @Body() { access_token, refresh_token, email, password }: EditUserDTO,
+    @Body() { access_token, refresh_token, email, password, newEmail, newPassword }: EditUserDTO,
   ) {
-    
-    return {
-      response: await this.userService.editUser({
-        access_token,
-        refresh_token,
-        email,
-        password,
-      }),
-      access_token: (await this.authService.getNewTokens(refresh_token)).access_token,
-      refresh_token: (await this.authService.getNewTokens(refresh_token)).refresh_token
-    };
+    return await this.userService.editUser({
+      access_token,
+      refresh_token,
+      email,
+      password,
+      newEmail,
+      newPassword
+    });
   }
 
+  @UseGuards(AuthGuard)
   @Delete()
-  delete(@Query() { access_token, refresh_token }: DeleteUserDTO) {
-    // return this.userService.deleteUser({ access_token, refresh_token });
-    return 'Pera ai daniel';
+  delete(@Query() { access_token, refresh_token, id }: DeleteUserDTO) {
+    return this.userService.deleteUser({ access_token, refresh_token, id });
   }
 }

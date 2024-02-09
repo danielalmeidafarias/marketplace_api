@@ -1,8 +1,9 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { User } from '../entity/user.entity';
-import { Injectable } from '@nestjs/common';
-import { UUID } from 'crypto';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { UUID, verify } from 'crypto';
+import { EditUserDTO } from '../dto/edit-user.dto';
 
 @Injectable()
 export class UserRepository {
@@ -11,15 +12,13 @@ export class UserRepository {
     private dataSource: DataSource,
   ) {}
 
-  async findUserById(id: UUID): Promise<boolean> {
+  async findUserById(id: UUID): Promise<User | undefined> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
     const user = await queryRunner.manager.findOneBy(User, { id });
-    if (user) {
-      return true;
-    }
-    return false;
+
+    return user;
   }
 
   async findUserByEmail(email: string) {
@@ -42,25 +41,92 @@ export class UserRepository {
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      throw new Error(err.message);
+      throw new HttpException(
+        'Ocorreu um erro ao criar o usuário, tente novamente mais tarde',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     } finally {
       queryRunner.release();
     }
   }
 
-  async editUser() {
+  async editUser(id: UUID, newEmail?: string, newPassword?: string) {
+    const queryBuilder = this.dataSource.createQueryBuilder();
+
     try {
+      queryBuilder
+        .update(User)
+        .set({ email: newEmail, password: newPassword })
+        .where('id = :id', { id: id })
+        .execute();
     } catch (err) {
-    } finally {
+      throw new HttpException(
+        'Ocorreu um erro ao tentar atualizar usuário, tente novamente mais tarde',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
-  async deleteUser() {
+  async deleteUser(id: UUID, email: string) {
+    const queryBuilder = this.dataSource.createQueryBuilder();
+
     try {
+      await queryBuilder
+        .delete()
+        .from(User)
+        .where('id = :id', { id: id })
+        .andWhere('email = :email', { email: email })
+        .execute();
     } catch (err) {
-    } finally {
+      console.log(err);
+      throw new HttpException(
+        'Ocorreu um erro ao tentar deletar o usuário, tente novamente mais tarde',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
-  async getUserProducts() {}
+  async verifyExistingUserById(id: UUID) {
+    const user = await this.findUserById(id);
+
+    if (!user) {
+      throw new HttpException(
+        `O id ${id} não corresponde a nenhum usuário`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return user;
+  }
+
+  async verifyExistingUserByEmail(email: string) {
+    const user = await this.findUserByEmail(email);
+
+    if (!user) {
+      throw new HttpException(
+        `O email ${email} não corresponde a nenhum usuário`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return user;
+  }
+
+  async getUserInfo(id: UUID) {
+    const queryBuilder = this.dataSource.createQueryBuilder();
+
+    try {
+      const user = await queryBuilder
+        .select('user')
+        .from(User, 'user')
+        .where('id = :id', { id: id })
+        .getOne();
+      return user;
+    } catch {
+      throw new HttpException(
+        'Ocorreu um erro ao tentar encontrar o usuário, tente novamente mais tarde',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

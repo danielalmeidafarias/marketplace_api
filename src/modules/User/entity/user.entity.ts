@@ -1,3 +1,4 @@
+import { UUID } from 'crypto';
 import { IProduct } from 'src/interfaces/IProduct';
 import { Product } from 'src/modules/Product/entity/product.entity';
 import {
@@ -21,7 +22,7 @@ export class User {
   }
 
   @PrimaryGeneratedColumn('uuid')
-  id?: string;
+  id?: UUID;
 
   @PrimaryColumn()
   email: string;
