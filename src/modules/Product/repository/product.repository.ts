@@ -128,4 +128,32 @@ export class ProductRepository {
       );
     }
   }
+
+  async searchProduct(name: string) {
+    name = name.toUpperCase()
+
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const queryBuilder = this.dataSource.getRepository(Product).createQueryBuilder();
+      await queryRunner.connect();
+
+      const products = await this.dataSource.getRepository(Product)
+      .createQueryBuilder("product")
+      .where("product.name like :name", { name:`%${name}%` })
+      .getMany();
+
+      if (!products[0]) {
+        return {
+          message: 'Não foi encontrado nenhum produto',
+        };
+      }
+
+      return products;
+    } catch {
+      throw new HttpException(
+        'Ocorreu um erro, por favor tente novamente',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

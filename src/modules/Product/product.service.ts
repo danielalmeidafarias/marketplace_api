@@ -12,6 +12,7 @@ import { UserRepository } from '../User/repository/user.repository';
 import { UUID } from 'crypto';
 import { EditProductDto } from './dto/edit-product.dto';
 import { DeleteProductDTO } from './dto/delete-product.dto';
+import { SearchProductDTO } from './dto/search-product.dto';
 
 @Injectable()
 @UseGuards(AuthGuard)
@@ -181,5 +182,9 @@ export class ProductService {
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
     };
+  }
+
+  async searchProduct({ name }: SearchProductDTO) {
+    return this.productRepository.searchProduct(name);
   }
 }

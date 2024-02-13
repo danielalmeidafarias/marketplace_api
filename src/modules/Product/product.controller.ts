@@ -14,6 +14,7 @@ import { CreateProductDTO } from './dto/create-product.dto';
 import { GetProductDTO } from './dto/get-product.dto';
 import { EditProductDto } from './dto/edit-product.dto';
 import { DeleteProductDTO } from './dto/delete-product.dto';
+import { SearchProductDTO } from './dto/search-product.dto';
 
 @Controller('product')
 export class ProductController {
@@ -34,7 +35,7 @@ export class ProductController {
   ) {
     return this.productService.createProduct({
       userId,
-      name,
+      name: name.toUpperCase(),
       price,
       quantity,
       access_token,
@@ -83,5 +84,10 @@ export class ProductController {
   @Get()
   async get(@Query() { id }: GetProductDTO) {
     return this.productService.getProduct(id);
+  }
+
+  @Get('/search')
+  async searchProducts(@Query() name: SearchProductDTO) {
+    return this.productService.searchProduct(name);
   }
 }
