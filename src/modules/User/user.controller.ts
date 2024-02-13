@@ -1,4 +1,4 @@
-import { AuthService } from './../auth/auth.service';
+import { ProductService } from './../Product/product.service';
 import { AuthGuard } from './../auth/auth.guard';
 import {
   Body,
@@ -16,12 +16,13 @@ import { LoginUserDTO } from './dto/login-user.dto';
 import { EditUserDTO } from './dto/edit-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
 import { GetUserInfoDTO } from './dto/get-userInfo.dto';
+import { FindProductsByIdDTO } from './dto/find-products-by-id';
 
 @Controller('user')
 export class UserController {
   constructor(
     private userService: UserService,
-    private authService: AuthService,
+    private productService: ProductService,
   ) {}
 
   @Post('/create')
@@ -32,6 +33,11 @@ export class UserController {
   @Post('/login')
   async login(@Body() { email, password }: LoginUserDTO) {
     return await this.userService.loginUser({ email, password });
+  }
+
+  @Get('/products')
+  async getUserProducts(@Query() { id }: FindProductsByIdDTO) {
+    return await this.productService.findByUserId(id);
   }
 
   @UseGuards(AuthGuard)

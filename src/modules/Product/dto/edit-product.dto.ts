@@ -13,6 +13,9 @@ export class EditProductDto {
   @IsUUID()
   id: UUID;
 
+  @IsUUID()
+  userId: UUID;
+
   @IsJWT()
   access_token: string;
 
@@ -21,17 +24,17 @@ export class EditProductDto {
 
   @IsOptional()
   @IsString()
-  name: string;
+  newName?: string;
 
   @IsOptional()
   @IsNumber({
     maxDecimalPlaces: 2,
   })
   @IsPositive()
-  price: number;
+  newPrice?: number;
 
   @IsOptional()
   @IsInt()
   @IsPositive()
-  quantity: number;
+  newQuantity?: number;
 }

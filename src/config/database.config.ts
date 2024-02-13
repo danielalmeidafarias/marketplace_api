@@ -1,4 +1,4 @@
-require('dotenv').config();
+import 'dotenv/config.js';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Product } from 'src/modules/Product/entity/product.entity';
 import { User } from 'src/modules/User/entity/user.entity';

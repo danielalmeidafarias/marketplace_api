@@ -5,9 +5,14 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  IsUUID,
 } from 'class-validator';
+import { UUID } from 'crypto';
 
 export class CreateProductDTO {
+  @IsUUID()
+  userId: UUID;
+
   @IsString()
   name: string;
 

@@ -31,7 +31,13 @@ export class UserService {
 
     await this.userRepository.createUser(user);
 
-    return this.authService.signIn(user);
+    const { access_token, refresh_token } = await this.authService.signIn(user);
+
+    return {
+      access_token,
+      refresh_token,
+      id: user.id,
+    };
   }
 
   async loginUser({ email, password }: LoginUserDTO) {
@@ -46,12 +52,17 @@ export class UserService {
       );
     }
 
-    return this.authService.signIn(user);
+    const { access_token, refresh_token } = await this.authService.signIn(user);
+    return {
+      access_token,
+      refresh_token,
+      id: user.id,
+    };
   }
 
-  async getUser({ id, access_token, refresh_token }: GetUserInfoDTO) {
+  async getUser({ id, access_token }: GetUserInfoDTO) {
     const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token, refresh_token);
+      await this.authService.getNewTokens(access_token);
 
     const user = await this.userRepository.verifyExistingUserById(id);
 
@@ -68,14 +79,13 @@ export class UserService {
 
   async editUser({
     access_token,
-    refresh_token,
     email,
     password,
     newPassword,
     newEmail,
   }: EditUserDTO) {
     const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token, refresh_token);
+      await this.authService.getNewTokens(access_token);
 
     const user = await this.userRepository.verifyExistingUserByEmail(email);
 
@@ -90,40 +100,20 @@ export class UserService {
       );
     }
 
+    const editedUser: { id: UUID; email: string; password: string } = {
+      id: user.id,
+      email: newEmail ? newEmail : user.email,
+      password: newPassword ? bcrypt.hashSync(newPassword, 10) : password,
+    };
+
     if (
-      (newEmail === email && newPassword === password) ||
-      (!newEmail && !newPassword) ||
-      (newEmail === email && !newPassword) ||
-      (newPassword === password && !newEmail)
+      editedUser.email === user.email &&
+      editedUser.password === user.password
     ) {
       throw new HttpException(
         'Nenhuma mudança foi requerida',
         HttpStatus.BAD_REQUEST,
       );
-    }
-
-    let editedUser: { id: UUID; email: string; password: string };
-
-    if (!newEmail && newPassword) {
-      const hashedNewPassword = bcrypt.hashSync(newPassword, 10);
-      editedUser = {
-        id: user.id,
-        email: user.email,
-        password: hashedNewPassword,
-      };
-    } else if (!newPassword && newEmail) {
-      editedUser = {
-        id: user.id,
-        email: newEmail,
-        password: user.password,
-      };
-    } else {
-      const hashedNewPassword = bcrypt.hashSync(newPassword, 10);
-      editedUser = {
-        id: user.id,
-        email: newEmail,
-        password: hashedNewPassword,
-      };
     }
 
     await this.userRepository.editUser(
@@ -140,11 +130,9 @@ export class UserService {
     };
   }
 
-  async deleteUser({ access_token, refresh_token, id }: DeleteUserDTO) {
-    const { newAccess_token } = await this.authService.getNewTokens(
-      access_token,
-      refresh_token,
-    );
+  async deleteUser({ access_token, id }: DeleteUserDTO) {
+    const { newAccess_token } =
+      await this.authService.getNewTokens(access_token);
 
     const user = await this.userRepository.verifyExistingUserById(id);
 

@@ -39,6 +39,6 @@ export class User {
   @DeleteDateColumn()
   deleted_at?: Date;
 
-  @OneToMany(() => Product, (product) => product.id, { nullable: false })
+  @OneToMany(() => Product, (product) => product.userId)
   products: IProduct[];
 }

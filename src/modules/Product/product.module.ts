@@ -1,12 +1,21 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ProductController } from './product.controller';
 import { ProductService } from './product.service';
-import { DataSource } from 'typeorm';
+import { ProductRepository } from './repository/product.repository';
+import { AuthModule } from '../auth/auth.module';
+import { Product } from './entity/product.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtService } from '@nestjs/jwt';
+import { UserModule } from '../User/user.module';
 
 @Module({
+  imports: [
+    TypeOrmModule.forFeature([Product]),
+    AuthModule,
+    forwardRef(() => UserModule),
+  ],
   controllers: [ProductController],
-  providers: [ProductService],
+  providers: [ProductService, ProductRepository, JwtService],
+  exports: [ProductService],
 })
-export class ProductModule {
-  constructor(dataSource: DataSource) {}
-}
+export class ProductModule {}
