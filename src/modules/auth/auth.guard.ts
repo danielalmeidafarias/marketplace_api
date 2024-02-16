@@ -47,8 +47,8 @@ export class AuthGuard implements CanActivate {
     } catch {
       try {
         await this.jwtService.verify(refresh_token, authConfig);
-      } catch {
-        throw new UnauthorizedException();
+      } catch (err){
+        throw new HttpException(err, HttpStatus.UNAUTHORIZED);
       }
     }
 

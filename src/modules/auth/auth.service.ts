@@ -77,8 +77,8 @@ export class AuthService {
           HttpStatus.UNAUTHORIZED,
         );
       }
-    } catch {
-      throw new UnauthorizedException();
+    } catch (err){
+      throw new HttpException(err, HttpStatus.UNAUTHORIZED);
     }
   }
 }

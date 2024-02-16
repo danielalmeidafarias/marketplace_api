@@ -17,9 +17,12 @@ export class ProductRepository {
       await queryRunner.connect();
       const product = await queryRunner.manager.findOneBy(Product, { id });
       return product;
-    } catch {
+    } catch (err) {
       throw new HttpException(
-        'Ocorreu um erro, por favor tente novamente',
+        {
+          message: 'Ocorreu um erro, por favor tente novamente',
+          err,
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -31,9 +34,9 @@ export class ProductRepository {
     try {
       const product = await entityManager.findBy(Product, { userId });
       return product;
-    } catch {
+    } catch (err) {
       throw new HttpException(
-        'Ocorreu um erro, por favor tente novamente',
+        { message: 'Ocorreu um erro, por favor tente novamente', err },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -67,9 +70,13 @@ export class ProductRepository {
         .execute();
 
       return product;
-    } catch {
+    } catch (err) {
       throw new HttpException(
-        'Algum erro ocorreu ao tentar criar o produto, tente novamente mais tarde',
+        {
+          message:
+            'Algum erro ocorreu ao tentar criar o produto, tente novamente mais tarde',
+          err,
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -93,7 +100,11 @@ export class ProductRepository {
         .execute();
     } catch (err) {
       throw new HttpException(
-        'Ocorreu um erro ao tentar atualizar o produto, tente novamente',
+        {
+          message:
+            'Ocorreu um erro ao tentar atualizar o produto, tente novamente',
+          err,
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -110,9 +121,8 @@ export class ProductRepository {
         // .andWhere('userId = :userId', { userId: userId })
         .execute();
     } catch (err) {
-      console.log(err);
       throw new HttpException(
-        'Ocorreu um erro ao tentar excluir o produto, tente novamente',
+        {messaged: 'Ocorreu um erro ao tentar excluir o produto, tente novamente', err},
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -130,17 +140,20 @@ export class ProductRepository {
   }
 
   async searchProduct(name: string) {
-    name = name.toUpperCase()
+    name = name.toUpperCase();
 
     try {
       const queryRunner = this.dataSource.createQueryRunner();
-      const queryBuilder = this.dataSource.getRepository(Product).createQueryBuilder();
+      const queryBuilder = this.dataSource
+        .getRepository(Product)
+        .createQueryBuilder();
       await queryRunner.connect();
 
-      const products = await this.dataSource.getRepository(Product)
-      .createQueryBuilder("product")
-      .where("product.name like :name", { name:`%${name}%` })
-      .getMany();
+      const products = await this.dataSource
+        .getRepository(Product)
+        .createQueryBuilder('product')
+        .where('product.name like :name', { name: `%${name}%` })
+        .getMany();
 
       if (!products[0]) {
         return {
@@ -149,9 +162,9 @@ export class ProductRepository {
       }
 
       return products;
-    } catch {
+    } catch (err){
       throw new HttpException(
-        'Ocorreu um erro, por favor tente novamente',
+        {message: 'Ocorreu um erro, por favor tente novamente', err},
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

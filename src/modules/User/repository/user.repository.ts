@@ -41,7 +41,11 @@ export class UserRepository {
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw new HttpException(
-        'Ocorreu um erro ao criar o usuário, tente novamente mais tarde',
+        {
+          message:
+            'Ocorreu um erro ao criar o usuário, tente novamente mais tarde',
+          err,
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     } finally {
@@ -60,7 +64,11 @@ export class UserRepository {
         .execute();
     } catch (err) {
       throw new HttpException(
-        'Ocorreu um erro ao tentar atualizar usuário, tente novamente mais tarde',
+        {
+          message:
+            'Ocorreu um erro ao tentar atualizar usuário, tente novamente mais tarde',
+          err,
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -79,7 +87,11 @@ export class UserRepository {
     } catch (err) {
       console.log(err);
       throw new HttpException(
-        'Ocorreu um erro ao tentar deletar o usuário, tente novamente mais tarde',
+        {
+          message:
+            'Ocorreu um erro ao tentar deletar o usuário, tente novamente mais tarde',
+          err,
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -121,9 +133,13 @@ export class UserRepository {
         .where('id = :id', { id: id })
         .getOne();
       return user;
-    } catch {
+    } catch (err){
       throw new HttpException(
-        'Ocorreu um erro ao tentar encontrar o usuário, tente novamente mais tarde',
+        {
+          messaage:
+            'Ocorreu um erro ao tentar encontrar o usuário, tente novamente mais tarde',
+          err,
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

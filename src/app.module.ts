@@ -1,5 +1,5 @@
 import { Module, ValidationPipe } from '@nestjs/common';
-import { UserModule } from './modules/User/user.module';
+import { StoreModule } from './modules/Store/store.module';
 import { APP_PIPE } from '@nestjs/core';
 import { ProductModule } from './modules/Product/product.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,7 +9,7 @@ import { databaseConfig } from './config/database.config';
 
 @Module({
   imports: [
-    UserModule,
+    StoreModule,
     ProductModule,
     AuthModule,
     TypeOrmModule.forRoot(databaseConfig),

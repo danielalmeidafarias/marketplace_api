@@ -25,7 +25,7 @@ export class UserController {
     private productService: ProductService,
   ) {}
 
-  @Post('/create')
+  @Post('/create') 
   async create(@Body() { email, password }: CreateUserDTO) {
     return await this.userService.createUser({ email, password });
   }
@@ -35,13 +35,13 @@ export class UserController {
     return await this.userService.loginUser({ email, password });
   }
 
-  @Get('/products')
-  async getUserProducts(@Query() { id }: FindProductsByIdDTO) {
-    return await this.productService.findByUserId(id);
-  }
+  // @Get('/products')
+  // async getUserProducts(@Query() { id }: FindProductsByIdDTO) {
+  //   return await this.productService.findByUserId(id);
+  // }
 
   @UseGuards(AuthGuard)
-  @Get()
+  @Get('/info')
   async getInfo(@Query() { id, access_token, refresh_token }: GetUserInfoDTO) {
     return await this.userService.getUser({
       id,
@@ -51,7 +51,7 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard)
-  @Put()
+  @Put('/edit')
   async edit(
     @Body()
     {
@@ -74,7 +74,7 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard)
-  @Delete()
+  @Delete('/delete')
   delete(@Query() { access_token, refresh_token, id }: DeleteUserDTO) {
     return this.userService.deleteUser({ access_token, refresh_token, id });
   }
