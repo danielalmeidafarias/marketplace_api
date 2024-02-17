@@ -42,9 +42,8 @@ export class UserController {
 
   @UseGuards(AuthGuard)
   @Get('/info')
-  async getInfo(@Query() { id, access_token, refresh_token }: GetUserInfoDTO) {
+  async getInfo(@Body() { access_token, refresh_token }: GetUserInfoDTO) {
     return await this.userService.getUser({
-      id,
       access_token,
       refresh_token,
     });
@@ -85,7 +84,7 @@ export class UserController {
 
   @UseGuards(AuthGuard)
   @Delete('/delete')
-  delete(@Query() { access_token, refresh_token, id }: DeleteUserDTO) {
-    return this.userService.deleteUser({ access_token, refresh_token, id });
+  delete(@Body() { access_token, refresh_token, email, password }: DeleteUserDTO) {
+    return this.userService.deleteUser({ access_token, refresh_token, email, password });
   }
 }

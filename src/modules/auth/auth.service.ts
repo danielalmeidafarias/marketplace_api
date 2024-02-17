@@ -3,14 +3,13 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt/dist/jwt.service';
 import { UUID } from 'crypto';
 
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService) {}
+  constructor(private jwtService: JwtService) { }
 
   async signIn(user: User) {
     const payload = { sub: user.id, email: user.email };
@@ -28,27 +27,27 @@ export class AuthService {
   private async decodeToken(token: string) {
     try {
       const { sub, email } = await this.jwtService.decode(token);
-      return { sub, email };
+      return { id: sub, email };
     } catch {
       throw new HttpException('Token invalido', HttpStatus.UNAUTHORIZED);
     }
   }
 
   async getNewTokens(acces_token: string) {
-    const { sub, email } = await this.decodeToken(acces_token);
+    const { id, email } = await this.decodeToken(acces_token);
 
     try {
       await this.jwtService.verify(acces_token);
     } catch {
       return {
         newAccess_token: this.jwtService.sign(
-          { sub, email },
+          { id, email },
           {
             expiresIn: '1h',
           },
         ),
         newRefresh_token: this.jwtService.sign(
-          { sub, email },
+          { id, email },
           {
             expiresIn: '1d',
           },
@@ -58,7 +57,7 @@ export class AuthService {
       return {
         newAccess_token: acces_token,
         newRefresh_token: this.jwtService.sign(
-          { sub, email },
+          { id, email },
           {
             expiresIn: '1d',
           },
@@ -67,17 +66,25 @@ export class AuthService {
     }
   }
 
-  async verifyTokenId(access_token: string, id: UUID) {
+  async getTokenId(access_token: string) {
     try {
-      const { sub } = await this.decodeToken(access_token);
+      const { id } = await this.decodeToken(access_token);
+      return id
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.UNAUTHORIZED);
+    }
+  }
 
-      if (id !== sub) {
+  async verifyTokenId(access_token: string, userId: string) {
+    try {
+      const { id } = await this.decodeToken(access_token);
+      if (id !== userId) {
         throw new HttpException(
-          'Access_token and Id must match',
+          'Access_token and userId must match',
           HttpStatus.UNAUTHORIZED,
         );
       }
-    } catch (err){
+    } catch (err) {
       throw new HttpException(err, HttpStatus.UNAUTHORIZED);
     }
   }

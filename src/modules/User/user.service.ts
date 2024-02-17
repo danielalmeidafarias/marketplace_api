@@ -79,19 +79,20 @@ export class UserService {
     return {
       access_token,
       refresh_token,
-      id: user.id,
     };
   }
 
-  async getUser({ id, access_token }: GetUserInfoDTO) {
+  async getUser({ access_token }: GetUserInfoDTO) {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
+    await this
+
+    const id = await this.authService.getTokenId(newAccess_token)
+
     const user = await this.userRepository.verifyExistingUserById(id);
 
-    await this.authService.verifyTokenId(newAccess_token, id);
-
-    await this.authService.verifyTokenId(newAccess_token, user.id);
+    await this.authService.verifyTokenId(access_token, user.id)
 
     return {
       user: await this.userRepository.getUserInfo(id),
@@ -112,14 +113,14 @@ export class UserService {
     newLastName,
     newPhone,
   }: EditUserDTO) {
+    const user = await this.userRepository.verifyExistingUserByEmail(email);
+
+    await this.utilsService.passwordIsCorrect(user.password, password);
+
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
-    const user = await this.userRepository.verifyExistingUserByEmail(email);
-
     await this.authService.verifyTokenId(newAccess_token, user.id);
-
-    await this.utilsService.passwordIsCorrect(user.password, password);
 
     const { transformedCep, logradouro, bairro, cidade, uf } = newCEP
       ? await this.utilsService.verifyCEP(newCEP)
@@ -199,15 +200,17 @@ export class UserService {
     };
   }
 
-  async deleteUser({ access_token, id }: DeleteUserDTO) {
+  async deleteUser({ access_token, email, password }: DeleteUserDTO) {
+    const user = await this.userRepository.verifyExistingUserByEmail(email);
+
+    await this.utilsService.passwordIsCorrect(user.password, password);
+
     const { newAccess_token } =
       await this.authService.getNewTokens(access_token);
 
-    const user = await this.userRepository.verifyExistingUserById(id);
+    await this.authService.verifyTokenId(newAccess_token, user.id);
 
-    await this.authService.verifyTokenId(newAccess_token, id);
-
-    await this.userRepository.deleteUser(id, user?.email);
+    await this.userRepository.deleteUser(user.id, user?.email);
 
     return {
       message: 'Usuario deletado com sucesso!',

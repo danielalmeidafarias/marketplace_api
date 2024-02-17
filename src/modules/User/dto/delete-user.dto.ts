@@ -1,4 +1,4 @@
-import { IsJWT, IsUUID } from 'class-validator';
+import { IsEmail, IsJWT, IsString, IsUUID } from 'class-validator';
 import { UUID } from 'crypto';
 
 export class DeleteUserDTO {
@@ -8,6 +8,10 @@ export class DeleteUserDTO {
   @IsJWT()
   refresh_token: string;
 
-  @IsUUID()
-  id: UUID;
+  @IsString()
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  password: string;
 }

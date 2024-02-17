@@ -8,14 +8,14 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { authConfig } from 'src/config/ auth.config';
+import { authConfig } from 'src/config/auth.config';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
   private getRequestTokens(request: Request) {
-    if (request.method === 'POST' || request.method === 'PUT') {
+    if (request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE' || request.method === 'GET') {
       const { access_token, refresh_token } = request.body;
       return { access_token, refresh_token };
     }

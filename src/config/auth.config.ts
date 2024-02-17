@@ -1,4 +1,4 @@
-import 'dotenv/config.js';
+import 'dotenv/config'
 import { JwtModuleOptions } from '@nestjs/jwt';
 
 export const authConfig: JwtModuleOptions = {
