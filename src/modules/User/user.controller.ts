@@ -26,8 +26,8 @@ export class UserController {
   ) {}
 
   @Post('/create') 
-  async create(@Body() { email, password }: CreateUserDTO) {
-    return await this.userService.createUser({ email, password });
+  async create(@Body() { email, password, name, lastName,cep,cpf, dataNascimento, phone }: CreateUserDTO) {
+    return await this.userService.createUser({ email, password, name, lastName,cep, cpf, dataNascimento, phone });
   }
 
   @Post('/login')
@@ -61,6 +61,11 @@ export class UserController {
       password,
       newEmail,
       newPassword,
+      newCEP,
+      newCPF,
+      newName,
+      newLastName,
+      newPhone
     }: EditUserDTO,
   ) {
     return await this.userService.editUser({
@@ -70,6 +75,11 @@ export class UserController {
       password,
       newEmail,
       newPassword,
+      newCEP,
+      newCPF,
+      newName,
+      newLastName,
+      newPhone,
     });
   }
 

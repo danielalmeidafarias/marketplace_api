@@ -2,6 +2,14 @@
   - Para login é preciso retornar a senha do banco de dados
   - Para pesquisar retornar apenas nome e id
 
+# Auth  
+  - Pensar em alguma forma de separar a autenticacao de lojas e usuarios
+  - Adicionar a verificacao de compatibilidade com o Id ja no Auth
+
+# Criar validacao de cpf
+  - Biblioteca de validacao br
+  - Api para validar cpf e cnpj
+
 # Adicionar rotas de search
 
 # Modificar tabela de user para store

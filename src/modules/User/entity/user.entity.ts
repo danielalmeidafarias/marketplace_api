@@ -16,9 +16,32 @@ import {
 @Entity()
 @Unique(['email'])
 export class User {
-  constructor(email: string, password: string) {
+  constructor(
+    email: string,
+    password: string,
+    name: string,
+    lastName: string,
+    dataNascimento: Date,
+    cpf: string,
+    cep: string,
+    logradouro: string, 
+    bairro: string,
+    cidade: string, 
+    uf: string, 
+    phone: string
+  ) {
     this.email = email;
     this.password = password;
+    this.name = name
+    this.bairro = bairro
+    this.cep = cep
+    this.cidade = cidade
+    this.cpf = cpf
+    this.logradouro = logradouro
+    this.phone =phone
+    this.uf = uf
+    this.lastName = lastName
+    this.dataNascimento = dataNascimento
   }
 
   @PrimaryGeneratedColumn('uuid')
@@ -28,7 +51,38 @@ export class User {
   email: string;
 
   @Column()
+  name: string;
+
+  @Column()
+  lastName: string
+
+  @Column()
+  dataNascimento: Date;
+
+  @PrimaryColumn()
+  cpf: string;
+
+  @Column()
+  cep: string;
+
+  @Column()
+  logradouro: string;
+
+  @Column()
+  bairro: string;
+
+  @Column()
+  cidade: string;
+
+  @Column()
+  uf: string;
+
+  @Column()
   password: string;
+
+  @Column()
+  @PrimaryColumn()
+  phone: string;
 
   @CreateDateColumn()
   created_at?: Date;
@@ -39,6 +93,4 @@ export class User {
   @DeleteDateColumn()
   deleted_at?: Date;
 
-  @OneToMany(() => Product, (product) => product.userId)
-  products: IProduct[];
 }

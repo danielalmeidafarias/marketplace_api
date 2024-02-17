@@ -12,6 +12,7 @@ import { databaseConfig } from './config/database.config';
     StoreModule,
     ProductModule,
     AuthModule,
+    StoreModule,
     TypeOrmModule.forRoot(databaseConfig),
   ],
   providers: [

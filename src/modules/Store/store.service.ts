@@ -1,9 +1,26 @@
 import { Injectable } from '@nestjs/common';
+import { CreateStoreDTO } from './dto/create-store.dto';
+import { StoreRepository } from './repository/store.repository';
 
 @Injectable()
 export class StoreService {
+  constructor(private storeRepository: StoreRepository) {}
   // criacao de loja
-  async createStore() {}
+  async createStore({ name, cpf,cpnj, cep, phone, userId }: CreateStoreDTO) {
+    // Verificacao cnpj
+    // Se nao tiver cnpj utilizar o cpf do usuário
+
+    // Verificacao email
+    // Se nao tiver utilizar o email do usuario
+
+    // Verificacao conta realmente existe
+    // Verificacao se o access_token  e o id condizem
+
+    await this.storeRepository.verifyExistingStore(name)
+
+    return this.storeRepository.create(name, cpf,cpnj, cep, phone, userId)
+
+  }
 
   // editar loja
   async editStore() {}

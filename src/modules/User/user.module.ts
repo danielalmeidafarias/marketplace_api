@@ -7,6 +7,7 @@ import { UserRepository } from './repository/user.repository';
 import { AuthModule } from '../auth/auth.module';
 import { JwtService } from '@nestjs/jwt';
 import { ProductModule } from '../Product/product.module';
+import { UtilsService } from 'src/utils/utils.service';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { ProductModule } from '../Product/product.module';
     forwardRef(() => ProductModule),
   ],
   controllers: [UserController],
-  providers: [UserService, UserRepository, JwtService],
+  providers: [UserService, UserRepository, JwtService, UtilsService],
   exports: [UserRepository],
 })
 export class UserModule {}

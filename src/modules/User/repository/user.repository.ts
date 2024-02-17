@@ -11,20 +11,42 @@ export class UserRepository {
     private dataSource: DataSource,
   ) {}
 
-  async findUserById(id: UUID): Promise<User | undefined> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-
-    const user = await queryRunner.manager.findOneBy(User, { id });
+  async findUserById(id: UUID): Promise<User> {
+    const user = await this.dataSource
+      .getRepository(User)
+      .createQueryBuilder('user')
+      .where('user.id = :id', { id })
+      .getOne();
 
     return user;
   }
 
-  async findUserByEmail(email: string) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
+  async findUserByEmail(email: string): Promise<User> {
+    const user = await this.dataSource
+      .getRepository(User)
+      .createQueryBuilder('user')
+      .where('user.email = :email', { email })
+      .getOne();
 
-    const user = await queryRunner.manager.findOneBy(User, { email });
+    return user;
+  }
+
+  async findUserByCPF(cpf: string): Promise<User> {
+    const user = await this.dataSource
+      .getRepository(User)
+      .createQueryBuilder('user')
+      .where('user.cpf = :cpf', { cpf })
+      .getOne();
+
+    return user;
+  }
+
+  async findUserByPhone(phone: string): Promise<User> {
+    const user = await this.dataSource
+      .getRepository(User)
+      .createQueryBuilder('user')
+      .where('user.phone = :phone', { phone })
+      .getOne();
 
     return user;
   }
@@ -40,12 +62,9 @@ export class UserRepository {
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
+      console.log(err);
       throw new HttpException(
-        {
-          message:
-            'Ocorreu um erro ao criar o usuário, tente novamente mais tarde',
-          err,
-        },
+        'Ocorreu um erro ao criar o usuário, tente novamente mais tarde',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     } finally {
@@ -53,13 +72,38 @@ export class UserRepository {
     }
   }
 
-  async editUser(id: UUID, newEmail?: string, newPassword?: string) {
+  async editUser(
+    id: UUID,
+    newEmail?: string,
+    newPassword?: string,
+    newName?: string,
+    newLastName?: string,
+    newCEP?: string,
+    newLogradouro?: string,
+    newBairro?: string,
+    newCidade?: string,
+    newUf?: string,
+    newPhone?: string,
+    newCPF?: string,
+  ) {
     const queryBuilder = this.dataSource.createQueryBuilder();
 
     try {
       queryBuilder
         .update(User)
-        .set({ email: newEmail, password: newPassword })
+        .set({
+          email: newEmail,
+          password: newPassword,
+          name: newName,
+          lastName: newLastName,
+          cep: newCEP,
+          logradouro: newLogradouro,
+          bairro: newBairro,
+          cidade: newCidade,
+          uf: newUf,
+          phone: newPhone,
+          cpf: newCPF
+        })
         .where('id = :id', { id: id })
         .execute();
     } catch (err) {
@@ -123,6 +167,50 @@ export class UserRepository {
     return user;
   }
 
+  async verifyExistingUserByCPF(cpf: string) {
+    const user = await this.findUserByCPF(cpf);
+
+    if (!user) {
+      throw new HttpException(
+        `O cpf ${cpf} não corresponde a nenhum usuário`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async verifyThereIsNotUserByEmail(email: string) {
+    const user = await this.findUserByEmail(email);
+
+    if (user) {
+      throw new HttpException(
+        `Já existe um usuário registrado com o email ${email}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async verifyThereIsNotUserByCPF(cpf: string) {
+    const user = await this.findUserByCPF(cpf);
+
+    if (user) {
+      throw new HttpException(
+        `Já existe um usuário registrado com o cpf ${cpf}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async verifyThereIsNotUserByPhone(phone: string) {
+    const user = await this.findUserByPhone(phone);
+
+    if (user) {
+      throw new HttpException(
+        `Já existe um usuário registrado com o phone ${phone}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   async getUserInfo(id: UUID) {
     const queryBuilder = this.dataSource.createQueryBuilder();
 
@@ -133,7 +221,7 @@ export class UserRepository {
         .where('id = :id', { id: id })
         .getOne();
       return user;
-    } catch (err){
+    } catch (err) {
       throw new HttpException(
         {
           messaage:

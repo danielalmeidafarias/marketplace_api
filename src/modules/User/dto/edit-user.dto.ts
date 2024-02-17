@@ -17,14 +17,34 @@ export class EditUserDTO {
   @IsEmail()
   email: string;
 
-  @IsString()
-  password: string;
-
   @IsOptional()
   @IsEmail()
   newEmail?: string;
 
+  @IsString()
+  password: string;
+
   @IsOptional()
   @IsStrongPassword()
   newPassword?: string;
+
+  @IsOptional()
+  @IsString()
+  newName?: string;
+
+  @IsOptional()
+  @IsString()
+  newLastName?: string;
+
+  @IsOptional()
+  @IsString()
+  newCPF?: string;
+
+  @IsOptional()
+  @IsString()
+  newPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  newCEP?: number;
 }

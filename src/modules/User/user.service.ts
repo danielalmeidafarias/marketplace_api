@@ -9,25 +9,54 @@ import { LoginUserDTO } from './dto/login-user.dto';
 import { EditUserDTO } from './dto/edit-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
 import { UUID } from 'crypto';
+import { UtilsService } from 'src/utils/utils.service';
 @Injectable()
 export class UserService {
   constructor(
     private userRepository: UserRepository,
     private authService: AuthService,
+    private utilsService: UtilsService,
   ) {}
 
-  async createUser({ email, password }: CreateUserDTO) {
-    const alreadyUser = await this.userRepository.findUserByEmail(email);
+  async createUser({
+    email,
+    password,
+    cep,
+    cpf,
+    dataNascimento,
+    name,
+    lastName,
+    phone,
+  }: CreateUserDTO) {
+    await this.userRepository.verifyThereIsNotUserByEmail(email);
 
-    if (alreadyUser) {
-      throw new HttpException(
-        `O email ${email} já possui uma conta registrada`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const transformedCpf = await this.utilsService.verifyCPF(cpf);
 
-    const hashedPassword = bcrypt.hashSync(password, 10);
-    const user = new User(email, hashedPassword);
+    await this.userRepository.verifyThereIsNotUserByCPF(transformedCpf);
+
+    const transformedPhone = await this.utilsService.verifyPhoneNumber(phone);
+
+    await this.userRepository.verifyThereIsNotUserByPhone(transformedPhone);
+
+    const { transformedCep, logradouro, bairro, cidade, uf } =
+      await this.utilsService.verifyCEP(cep);
+
+    const hashedPassword = await this.utilsService.hashPassword(password);
+
+    const user = new User(
+      email,
+      hashedPassword,
+      name,
+      lastName,
+      dataNascimento,
+      transformedCpf,
+      transformedCep,
+      logradouro,
+      bairro,
+      cidade,
+      uf,
+      transformedPhone,
+    );
 
     await this.userRepository.createUser(user);
 
@@ -36,23 +65,17 @@ export class UserService {
     return {
       access_token,
       refresh_token,
-      id: user.id,
+      user,
     };
   }
 
   async loginUser({ email, password }: LoginUserDTO) {
     const user = await this.userRepository.verifyExistingUserByEmail(email);
 
-    const passwordIsCorrect = await bcrypt.compare(password, user.password);
-
-    if (!passwordIsCorrect) {
-      throw new HttpException(
-        'A senha digitada está incorreta',
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
+    await this.utilsService.passwordIsCorrect(user.password, password);
 
     const { access_token, refresh_token } = await this.authService.signIn(user);
+
     return {
       access_token,
       refresh_token,
@@ -71,7 +94,7 @@ export class UserService {
     await this.authService.verifyTokenId(newAccess_token, user.id);
 
     return {
-      response: await this.userRepository.getUserInfo(id),
+      user: await this.userRepository.getUserInfo(id),
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
     };
@@ -83,6 +106,11 @@ export class UserService {
     password,
     newPassword,
     newEmail,
+    newCEP,
+    newCPF,
+    newName,
+    newLastName,
+    newPhone,
   }: EditUserDTO) {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
@@ -91,24 +119,56 @@ export class UserService {
 
     await this.authService.verifyTokenId(newAccess_token, user.id);
 
-    const passwordIsCorrect = await bcrypt.compare(password, user.password);
+    await this.utilsService.passwordIsCorrect(user.password, password);
 
-    if (!passwordIsCorrect) {
-      throw new HttpException(
-        'A senha digitada está incorreta',
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
+    const { transformedCep, logradouro, bairro, cidade, uf } = newCEP
+      ? await this.utilsService.verifyCEP(newCEP)
+      : {
+          transformedCep: null,
+          logradouro: null,
+          bairro: null,
+          cidade: null,
+          uf: null,
+        };
 
-    const editedUser: { id: UUID; email: string; password: string } = {
+    const editedUser: {
+      id: UUID;
+      email: string;
+      password: string;
+      cep: string;
+      logradouro: string;
+      bairro: string;
+      cidade: string;
+      uf: string;
+      cpf: string;
+      name: string;
+      lastName: string;
+      phone: string;
+    } = {
       id: user.id,
       email: newEmail ? newEmail : user.email,
       password: newPassword ? bcrypt.hashSync(newPassword, 10) : password,
+      cep: transformedCep ? transformedCep : user.cep,
+      logradouro: logradouro ? logradouro : user.logradouro,
+      bairro: bairro ? bairro : user.bairro,
+      cidade: cidade ? cidade : user.cidade,
+      uf: uf ? uf : user.uf,
+      cpf: newCPF ? await this.utilsService.verifyCPF(newCPF) : user.cpf,
+      name: newName ? newName : user.name,
+      lastName: newLastName ? newLastName : user.lastName,
+      phone: newPhone
+        ? await this.utilsService.verifyPhoneNumber(newPhone)
+        : user.phone,
     };
 
     if (
       editedUser.email === user.email &&
-      editedUser.password === user.password
+      editedUser.password === user.password &&
+      editedUser.cep === user.cep &&
+      editedUser.cpf === user.cpf &&
+      editedUser.name === user.name &&
+      editedUser.lastName === user.lastName &&
+      editedUser.phone === user.phone
     ) {
       throw new HttpException(
         'Nenhuma mudança foi requerida',
@@ -120,6 +180,15 @@ export class UserService {
       editedUser.id,
       editedUser.email,
       editedUser.password,
+      editedUser.name,
+      editedUser.lastName,
+      editedUser.cep,
+      editedUser.logradouro,
+      editedUser.bairro,
+      editedUser.cidade,
+      editedUser.uf,
+      editedUser.phone,
+      editedUser.cpf,
     );
 
     return {
