@@ -10,9 +10,6 @@ import {
 import { UUID } from 'crypto';
 
 export class CreateProductDTO {
-  @IsUUID()
-  userId: UUID;
-
   @IsString()
   name: string;
 

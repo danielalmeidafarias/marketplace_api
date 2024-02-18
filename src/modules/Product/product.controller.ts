@@ -21,11 +21,10 @@ export class ProductController {
   constructor(private productService: ProductService) {}
 
   @UseGuards(AuthGuard)
-  @Post()
+  @Post('/create')
   async create(
     @Body()
     {
-      userId,
       name,
       price,
       quantity,
@@ -34,7 +33,6 @@ export class ProductController {
     }: CreateProductDTO,
   ) {
     return this.productService.createProduct({
-      userId,
       name: name.toUpperCase(),
       price,
       quantity,
@@ -44,7 +42,7 @@ export class ProductController {
   }
 
   @UseGuards(AuthGuard)
-  @Put()
+  @Put('/edit')
   async edit(
     @Body()
     {
@@ -69,7 +67,7 @@ export class ProductController {
   }
 
   @UseGuards(AuthGuard)
-  @Delete()
+  @Delete('/delete')
   async delete(
     @Query() { id, userId, access_token, refresh_token }: DeleteProductDTO,
   ) {

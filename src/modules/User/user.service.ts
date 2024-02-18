@@ -9,7 +9,7 @@ import { LoginUserDTO } from './dto/login-user.dto';
 import { EditUserDTO } from './dto/edit-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
 import { UUID } from 'crypto';
-import { UtilsService } from 'src/utils/utils.service';
+import { UtilsService, VerifyCepResponse } from 'src/utils/utils.service';
 @Injectable()
 export class UserService {
   constructor(
@@ -21,25 +21,25 @@ export class UserService {
   async createUser({
     email,
     password,
-    cep,
-    cpf,
+    cep: incomingCep,
+    cpf: incomingCpf,
     dataNascimento,
     name,
     lastName,
-    phone,
+    phone: incomingPhone,
   }: CreateUserDTO) {
     await this.userRepository.verifyThereIsNotUserByEmail(email);
 
-    const transformedCpf = await this.utilsService.verifyCPF(cpf);
+    const cpf = await this.utilsService.verifyCPF(incomingCpf);
 
-    await this.userRepository.verifyThereIsNotUserByCPF(transformedCpf);
+    await this.userRepository.verifyThereIsNotUserByCPF(cpf);
 
-    const transformedPhone = await this.utilsService.verifyPhoneNumber(phone);
+    const phone = await this.utilsService.verifyPhoneNumber(incomingPhone);
 
-    await this.userRepository.verifyThereIsNotUserByPhone(transformedPhone);
+    await this.userRepository.verifyThereIsNotUserByPhone(phone);
 
-    const { transformedCep, logradouro, bairro, cidade, uf } =
-      await this.utilsService.verifyCEP(cep);
+    const { transformedCep: cep, logradouro, bairro, cidade, uf } =
+      await this.utilsService.verifyCEP(incomingCep);
 
     const hashedPassword = await this.utilsService.hashPassword(password);
 
@@ -49,13 +49,13 @@ export class UserService {
       name,
       lastName,
       dataNascimento,
-      transformedCpf,
-      transformedCep,
+      cpf,
+      cep,
       logradouro,
       bairro,
       cidade,
       uf,
-      transformedPhone,
+      phone,
     );
 
     await this.userRepository.createUser(user);
@@ -85,8 +85,6 @@ export class UserService {
   async getUser({ access_token }: GetUserInfoDTO) {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
-
-    await this
 
     const id = await this.authService.getTokenId(newAccess_token)
 

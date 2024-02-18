@@ -93,4 +93,7 @@ export class User {
   @DeleteDateColumn()
   deleted_at?: Date;
 
+  // cart
+  // orders
+
 }

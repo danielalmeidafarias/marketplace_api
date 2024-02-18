@@ -2,6 +2,7 @@ import 'dotenv/config.js';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Product } from 'src/modules/Product/entity/product.entity';
 import { User } from 'src/modules/User/entity/user.entity';
+import { Store } from 'src/modules/Store/entity/store.entity';
 
 export const databaseConfig: TypeOrmModuleOptions = {
   type: 'postgres',
@@ -10,7 +11,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
   username: process.env.DATABASE_USERNAME,
   password: process.env.DATABASE_PASSWORD,
   database: 'cadastro_produtos_api',
-  entities: [User, Product],
+  entities: [User, Store, Product],
   synchronize: true,
   autoLoadEntities: true,
 };

@@ -1,10 +1,12 @@
-import { IsEmail, IsIdentityCard, IsJWT, IsNumber, IsOptional, IsPhoneNumber, IsPostalCode, IsString, IsUUID } from "class-validator";
+import { IsEmail, IsIdentityCard, IsJWT, IsNumber, IsOptional, IsPhoneNumber, IsPostalCode, IsString, IsStrongPassword, IsUUID } from "class-validator";
 import { UUID } from "crypto";
 
 export class CreateStoreDTO {
   @IsJWT()
+  @IsOptional()
   access_token: string
   
+  @IsOptional()
   @IsJWT()
   refresh_token: string
 
@@ -16,20 +18,23 @@ export class CreateStoreDTO {
   @IsOptional()
   email: string
 
-  @IsUUID()
-  userId: UUID
+  @IsStrongPassword()
+  @IsOptional()
+  password: string
 
   @IsNumber()
   @IsOptional()
-  cpnj?: number
+  cpnj?: string
 
   @IsNumber()
   @IsOptional()
   cpf?: number
 
   @IsPhoneNumber('BR')
-  phone: number
+  @IsOptional()
+  phone: string
 
   @IsPostalCode('BR')
-  cep: number
+  @IsOptional()
+  cep: string
 }

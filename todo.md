@@ -6,9 +6,9 @@
   - Pensar em alguma forma de separar a autenticacao de lojas e usuarios
   - Adicionar a verificacao de compatibilidade com o Id ja no Auth
 
-# Criar validacao de cpf
+<!-- # Criar validacao de cpf
   - Biblioteca de validacao br
-  - Api para validar cpf e cnpj
+  - Api para validar cpf e cnpj -->
 
 # Adicionar rotas de search
 
@@ -28,7 +28,7 @@
     - quantidade provisoria (para gerenciar pedidos)
     - quantidade
 
-# Criar tabela de user
+<!-- # Criar tabela de user
   - id
   - nome
   - email
@@ -46,7 +46,7 @@
     - total
   - Carrinho
     - produtos
-    - total
+    - total -->
 
 # Rotas Main
   - pesquisa lojas

@@ -5,12 +5,13 @@ import { UUID } from 'crypto';
 @Injectable()
 export class StoreRepository {
   async create(
+    email: string,
+    password: string,
     name: string,
-    cpnj: number | undefined,
-    cpf: number | undefined,
     cep: number,
     phone: number,
-    userId: UUID,
+    cpnj?: number,
+    cpf?: number,
   ) {}
 
   async verifyExistingStore(name: string) {}

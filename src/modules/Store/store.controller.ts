@@ -4,54 +4,52 @@ import { StoreService } from './store.service';
 
 @Controller('store')
 export class StoreController {
-  constructor(private storeService: StoreService) {}
+  constructor(private storeService: StoreService) { }
   // Protegida
-  @Post()
+  @Post('/create')
   async createStore(
     @Body()
     {
       access_token,
       refresh_token,
-      name,
-      email,
-      cpnj,
-      cpf,
       cep,
+      email,
+      name,
+      password,
       phone,
-      userId,
+      cpnj
     }: CreateStoreDTO,
   ) {
     return this.storeService.createStore({
       access_token,
-      refresh_token,
-      name,
-      email,
-      cpnj,
-      cpf,
       cep,
+      email,
+      name,
+      password,
       phone,
-      userId,
+      refresh_token,
+      cpnj
     });
   }
 
   // Protegida
   @Get()
-  async getStoreInfo({ access_token, refresh_token, id }) {}
+  async getStoreInfo({ access_token, refresh_token, id }) { }
 
   // Protegida
   @Put()
-  async updateStore() {}
+  async updateStore() { }
 
   // Protegida
   @Delete()
-  async deleteStore() {}
+  async deleteStore() { }
 
   @Get()
-  async getStore() {}
+  async getStore() { }
 
   @Get()
-  async searchProduct() {}
+  async searchProduct() { }
 
   @Get()
-  async getOrders() {}
+  async getOrders() { }
 }
