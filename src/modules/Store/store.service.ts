@@ -5,6 +5,7 @@ import { AuthService } from '../auth/auth.service';
 import { UserRepository } from '../User/repository/user.repository';
 import { UtilsService, VerifyCepResponse } from 'src/utils/utils.service';
 import { CreateStoreByUserDTO } from './dto/create-store-by-user.dto';
+import { LoginStoreDTO } from './dto/login-store.dto';
 
 @Injectable()
 export class StoreService {
@@ -128,7 +129,18 @@ export class StoreService {
   // Login da loja
   // Se a loja for ligada a algum usuario toda parte de autenticacao sera realizada com o mesmo login
   // access_token e refresh_token do usuário
-  async storeLogin() {}
+  async login({ email, password }: LoginStoreDTO) {
+    const store = await this.storeRepository.verifyExistingStoreByEmail(email)
+
+    await this.utilsService.passwordIsCorrect(store.password, password);
+
+    const { access_token, refresh_token } = await this.authService.signIn(store);
+
+    return {
+      access_token,
+      refresh_token,
+    };
+  }
 
   // editar loja
   async editStore() {}

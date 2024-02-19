@@ -6,12 +6,13 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt/dist/jwt.service';
 import { UUID } from 'crypto';
+import { Store } from '../Store/entity/store.entity';
 
 @Injectable()
 export class AuthService {
   constructor(private jwtService: JwtService) { }
 
-  async signIn(user: User) {
+  async signIn(user: User | Store) {
     const payload = { sub: user.id, email: user.email };
 
     return {
