@@ -4,7 +4,7 @@ import { phone } from 'phone';
 import * as bcrypt from 'bcrypt';
 
 export interface VerifyCepResponse {
-  transformedCep: any;
+  cep: any;
   logradouro: any;
   bairro: any;
   cidade: any;
@@ -13,12 +13,12 @@ export interface VerifyCepResponse {
 
 @Injectable()
 export class UtilsService {
-  async verifyCEP(cep: number): Promise<VerifyCepResponse> {
+  async verifyCEP(cep: string): Promise<VerifyCepResponse> {
     try {
       const data = (await axios.get(`https://viacep.com.br/ws/${cep}/json/`))
         .data;
       return {
-        transformedCep: data.cep,
+        cep: data.cep,
         logradouro: data.logradouro,
         bairro: data.bairro,
         cidade: data.localidade,
@@ -32,7 +32,7 @@ export class UtilsService {
     }
   }
 
-  async verifyCNPJ(cnpj: number): Promise<string> {
+  async verifyCNPJ(cnpj: string): Promise<string> {
     try {
       const data = (
         await axios.get(

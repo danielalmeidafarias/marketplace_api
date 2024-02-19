@@ -1,7 +1,9 @@
 import {
   IsEmail,
   IsJWT,
+  IsNumberString,
   IsOptional,
+  IsPhoneNumber,
   IsString,
   IsStrongPassword,
 } from 'class-validator';
@@ -37,14 +39,10 @@ export class EditUserDTO {
   newLastName?: string;
 
   @IsOptional()
-  @IsString()
-  newCPF?: string;
-
-  @IsOptional()
-  @IsString()
+  @IsPhoneNumber('BR')
   newPhone?: string;
 
   @IsOptional()
-  @IsString()
-  newCEP?: number;
+  @IsNumberString()
+  newCEP?: string;
 }

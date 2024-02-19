@@ -1,78 +1,87 @@
-import { UUID } from "crypto";
-import { User } from "src/modules/User/entity/user.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { UUID } from 'crypto';
+import { User } from 'src/modules/User/entity/user.entity';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryColumn,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 @Entity()
 export class Store {
-    constructor(
-        email: string,
-        name: string,
-        password: string,
-        cep: string,
-        phone: string,
-        cnpj?: string,
-        cpf?: string
-    ) {
-        this.email = email
-        this.cep = cep
-        this.name = name
-        this.password = password
-        this.phone = phone
-        
-        cpf ? this.cpf = cpf : null
-        cnpj ? this.cnpj = cpf : null
-    }
+  constructor(
+    email: string,
+    name: string,
+    password: string,
+    cep: string,
+    phone: string,
+    cnpj?: string,
+    cpf?: string,
+  ) {
+    this.email = email;
+    this.cep = cep;
+    this.name = name;
+    this.password = password;
+    this.phone = phone;
 
-    @PrimaryGeneratedColumn('uuid')
-    id: UUID
+    cpf ? (this.cpf = cpf) : null;
+    cnpj ? (this.cnpj = cpf) : null;
+  }
 
-    @PrimaryColumn()
-    email: string
+  @PrimaryGeneratedColumn('uuid')
+  id: UUID;
 
-    @Column()
-    name: string
-    
-    @Column({nullable: true})
-    cnpj: string
+  @PrimaryColumn()
+  email: string;
 
-    @Column({nullable: true})
-    cpf: string
+  @PrimaryColumn()
+  name: string;
 
-    @Column()
-    password: string
+  @Column({ nullable: true })
+  cnpj: string;
 
-    @ManyToOne(() => User, (user) => user.id)
-    user:User
+  @Column({ nullable: true })
+  cpf: string;
 
-    @Column({nullable: true})
-    userId:UUID
+  @Column()
+  password: string;
 
-    @Column()
-    cep: string
+  @ManyToOne(() => User, (user) => user.id)
+  user: User;
 
-    @Column()
-    logradouro: string
+  @Column({ nullable: true })
+  userId: UUID;
 
-    @Column()
-    bairro: string
+  @Column()
+  cep: string;
 
-    @Column()
-    cidade: string
+  @Column()
+  logradouro: string;
 
-    @Column()
-    uf: string
+  @Column()
+  bairro: string;
 
-    @Column()
-    phone: string
+  @Column()
+  cidade: string;
 
-    @CreateDateColumn()
-    created_at: Date
+  @Column()
+  uf: string;
 
-    @UpdateDateColumn()
-    updated_at: Date
+  @PrimaryColumn()
+  phone: string;
 
-    @DeleteDateColumn()
-    deleted_at: Date
+  @CreateDateColumn()
+  created_at: Date;
 
-    // products
-    // orders
+  @UpdateDateColumn()
+  updated_at: Date;
+
+  @DeleteDateColumn()
+  deleted_at: Date;
+
+  // products
+  // orders
 }

@@ -28,17 +28,17 @@ export class UserService {
     lastName,
     phone: incomingPhone,
   }: CreateUserDTO) {
-    await this.userRepository.verifyThereIsNotUserByEmail(email);
+    await this.userRepository.verifyThereIsNoUserWithEmail(email);
 
     const cpf = await this.utilsService.verifyCPF(incomingCpf);
 
-    await this.userRepository.verifyThereIsNotUserByCPF(cpf);
+    await this.userRepository.verifyThereIsNoUserWithCPF(cpf);
 
     const phone = await this.utilsService.verifyPhoneNumber(incomingPhone);
 
-    await this.userRepository.verifyThereIsNotUserByPhone(phone);
+    await this.userRepository.verifyThereIsNoUserWithPhone(phone);
 
-    const { transformedCep: cep, logradouro, bairro, cidade, uf } =
+    const { cep, logradouro, bairro, cidade, uf } =
       await this.utilsService.verifyCEP(incomingCep);
 
     const hashedPassword = await this.utilsService.hashPassword(password);
@@ -46,7 +46,7 @@ export class UserService {
     const user = new User(
       email,
       hashedPassword,
-      name,
+      name.toUpperCase(),
       lastName,
       dataNascimento,
       cpf,
@@ -106,7 +106,6 @@ export class UserService {
     newPassword,
     newEmail,
     newCEP,
-    newCPF,
     newName,
     newLastName,
     newPhone,
@@ -120,15 +119,9 @@ export class UserService {
 
     await this.authService.verifyTokenId(newAccess_token, user.id);
 
-    const { transformedCep, logradouro, bairro, cidade, uf } = newCEP
-      ? await this.utilsService.verifyCEP(newCEP)
-      : {
-          transformedCep: null,
-          logradouro: null,
-          bairro: null,
-          cidade: null,
-          uf: null,
-        };
+    const address: VerifyCepResponse | undefined = newCEP && (await this.utilsService.verifyCEP(newCEP))
+
+    const phone: string | undefined = newPhone && await this.utilsService.verifyPhoneNumber(newPhone)
 
     const editedUser: {
       id: UUID;
@@ -139,7 +132,6 @@ export class UserService {
       bairro: string;
       cidade: string;
       uf: string;
-      cpf: string;
       name: string;
       lastName: string;
       phone: string;
@@ -147,24 +139,20 @@ export class UserService {
       id: user.id,
       email: newEmail ? newEmail : user.email,
       password: newPassword ? bcrypt.hashSync(newPassword, 10) : password,
-      cep: transformedCep ? transformedCep : user.cep,
-      logradouro: logradouro ? logradouro : user.logradouro,
-      bairro: bairro ? bairro : user.bairro,
-      cidade: cidade ? cidade : user.cidade,
-      uf: uf ? uf : user.uf,
-      cpf: newCPF ? await this.utilsService.verifyCPF(newCPF) : user.cpf,
-      name: newName ? newName : user.name,
+      cep: newCEP ? address.cep : user.cep,
+      logradouro: newCEP ? address.logradouro : user.logradouro,
+      bairro: newCEP ? address.bairro : user.bairro,
+      cidade: newCEP ? address.cidade : user.cidade,
+      uf: newCEP ? address.uf : user.uf,
+      name: newName ? newName.toUpperCase() : user.name,
       lastName: newLastName ? newLastName : user.lastName,
-      phone: newPhone
-        ? await this.utilsService.verifyPhoneNumber(newPhone)
-        : user.phone,
+      phone: newPhone ? phone : user.phone,
     };
 
     if (
       editedUser.email === user.email &&
       editedUser.password === user.password &&
       editedUser.cep === user.cep &&
-      editedUser.cpf === user.cpf &&
       editedUser.name === user.name &&
       editedUser.lastName === user.lastName &&
       editedUser.phone === user.phone
@@ -187,7 +175,6 @@ export class UserService {
       editedUser.cidade,
       editedUser.uf,
       editedUser.phone,
-      editedUser.cpf,
     );
 
     return {

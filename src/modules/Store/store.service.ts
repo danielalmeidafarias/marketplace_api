@@ -3,111 +3,147 @@ import { CreateStoreDTO } from './dto/create-store.dto';
 import { StoreRepository } from './repository/store.repository';
 import { AuthService } from '../auth/auth.service';
 import { UserRepository } from '../User/repository/user.repository';
-import { DataSource } from 'typeorm';
-import { Store } from './entity/store.entity';
 import { UtilsService, VerifyCepResponse } from 'src/utils/utils.service';
+import { CreateStoreByUserDTO } from './dto/create-store-by-user.dto';
 
 @Injectable()
 export class StoreService {
-  constructor(private storeRepository: StoreRepository
-    , private authService: AuthService
-    , private userRepository: UserRepository
-    , private dataSource: DataSource
-    , private utilsService: UtilsService) { }
+  constructor(
+    private storeRepository: StoreRepository,
+    private authService: AuthService,
+    private userRepository: UserRepository,
+    private utilsService: UtilsService,
+  ) {}
   // criacao de loja
-  async createStore({
+
+  async createStoreByUser({
     access_token,
-    cep,
+    cep: incomingCep,
+    email,
+    name,
+    phone: incomingPhone,
+    cnpj: incomingCnpj,
+  }: CreateStoreByUserDTO) {
+    const { newAccess_token, newRefresh_token } =
+      await this.authService.getNewTokens(access_token);
+
+    const id = await this.authService.getTokenId(newAccess_token);
+
+    const user = await this.userRepository.verifyExistingUserById(id);
+
+    // verificacao se o usuario ja possui loja com esse nome
+
+    await this.authService.verifyTokenId(access_token, user.id);
+
+    const address: VerifyCepResponse | undefined =
+      incomingCep && (await this.utilsService.verifyCEP(incomingCep));
+
+    const cnpj: string | undefined =
+      incomingCnpj && (await this.utilsService.verifyCNPJ(incomingCnpj));
+
+    const phone: string | undefined =
+      incomingPhone &&
+      (await this.utilsService.verifyPhoneNumber(incomingPhone));
+
+    const store = {
+      email: email ? email : user.email,
+      password: user.password,
+      name: name ? name.toUpperCase() : user.name,
+      phone: incomingPhone ? phone : user.phone,
+      cnpj: incomingCnpj ? cnpj : null,
+      cpf: user.cpf,
+      cep: incomingCep ? address.cep : user.cep,
+      logradouro: incomingCep ? address.logradouro : user.logradouro,
+      bairro: incomingCep ? address.bairro : user.bairro,
+      cidade: incomingCep ? address.cidade : user.cidade,
+      uf: incomingCep ? address.uf : user.uf,
+      userId: user.id,
+    };
+    await this.storeRepository.verifyThereIsNoStoreWithName(name.toUpperCase());
+
+    if (incomingCnpj) {
+      await this.storeRepository.verifyThereIsNoStoreWithCnpj(store.cnpj);
+    }
+
+    await this.storeRepository.verifyThereIsNoStoreWithPhone(store.phone);
+
+    await this.storeRepository.verifyThereIsNotStoreWithEmail(store.email);
+
+    await this.storeRepository.create(store);
+
+    return {
+      store,
+      access_token: newAccess_token,
+      refresh_token: newRefresh_token,
+    };
+  }
+
+  async createStore({
+    cep: incomingCep,
     email,
     name,
     password,
-    phone,
-    cpnj
+    phone: incomingPhone,
+    cnpj: incomingCnpj,
   }: CreateStoreDTO) {
+    await this.storeRepository.verifyThereIsNoStoreWithName(name.toUpperCase());
 
-    await this.storeRepository.verifyExistingStore(name)
+    await this.storeRepository.verifyThereIsNotStoreWithEmail(email);
 
-    if (access_token) {
+    const phone: string | undefined =
+      incomingPhone &&
+      (await this.utilsService.verifyPhoneNumber(incomingPhone));
 
-      const { newAccess_token, newRefresh_token } =
-        await this.authService.getNewTokens(access_token);
+    await this.storeRepository.verifyThereIsNoStoreWithPhone(phone);
 
-      const id = await this.authService.getTokenId(newAccess_token)
+    const cnpj = await this.utilsService.verifyCNPJ(incomingCnpj);
 
-      const user = await this.userRepository.verifyExistingUserById(id);
+    await this.storeRepository.verifyThereIsNoStoreWithCnpj(cnpj);
 
-      await this.authService.verifyTokenId(access_token, user.id)
+    const { cep, logradouro, bairro, cidade, uf }: VerifyCepResponse =
+      await this.utilsService.verifyCEP(incomingCep);
 
-      const address: VerifyCepResponse | undefined = cep && await this.utilsService.verifyCEP(Number(cep))
+    const hashedPassword = await this.utilsService.hashPassword(password);
 
-      const newStore = await this.dataSource.getRepository(Store).createQueryBuilder().insert().values({
-        email: user.email,
-        password: user.password,
-        name: name ? name : user.name,
-        phone: phone ? phone : user.phone,
-        cnpj: cpnj ? cpnj : null,
-        cpf: user.cpf,
-        cep: cep ? address.transformedCep : user.cep,
-        logradouro: cep ? address.logradouro : user.logradouro,
-        bairro: cep ? address.bairro : user.bairro,
-        cidade: cep ? address.cidade : user.cidade,
-        uf: cep ? address.uf : user.uf,
-        userId: user.id
-      }).execute()
+    const store = {
+      email,
+      password: hashedPassword,
+      name: name.toUpperCase(),
+      phone,
+      cep,
+      logradouro,
+      bairro,
+      cidade,
+      uf,
+      cnpj,
+    };
 
-      console.log(newStore)
+    await this.storeRepository.create(store);
 
-      // email: string,
-      // password: string,
-      // name: string,
-      // cep: number,
-      // phone: number,
-      // cpnj?: number,
-      // cpf?: number,
-
-    } else {
-
-      // Verificacao cnpj
-      // Se nao tiver cnpj utilizar o cpf do usuário
-
-      // Verificacao email
-
-
-      const store = {
-        email,
-        password,
-        name,
-        phone,
-        cep,
-        cpnj
-      }
-
-    }
-
-
-
-
+    return {
+      store,
+    };
   }
 
   // Login da loja
   // Se a loja for ligada a algum usuario toda parte de autenticacao sera realizada com o mesmo login
   // access_token e refresh_token do usuário
-  async storeLogin() { }
+  async storeLogin() {}
 
   // editar loja
-  async editStore() { }
+  async editStore() {}
 
   // deletar loja
-  async deleteStore() { }
+  async deleteStore() {}
 
   // encontrar lojas pelo nome
-  async findStoreByName() { }
+  async findStoreByName() {}
 
   // encontrar lojas pelo id da loja
-  async findStoreById() { }
+  async findStoreById() {}
 
   // encontrar lojas pelo id do usuario
-  async findStoreByUserId() { }
+  async findStoreByUserId() {}
 
   // encontrar produtos da loja
   async searchStoreProducts() {

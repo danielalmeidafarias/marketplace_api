@@ -1,4 +1,4 @@
-import { IsDateString, IsEmail, IsNumber, IsPhoneNumber, IsPostalCode, IsString, IsStrongPassword } from 'class-validator';
+import { IsDateString, IsEmail, IsNumber, IsNumberString, IsPhoneNumber, IsPostalCode, IsString, IsStrongPassword } from 'class-validator';
 
 export class CreateUserDTO {
   @IsEmail()
@@ -13,14 +13,15 @@ export class CreateUserDTO {
   @IsString()
   lastName: string
 
-  @IsString()
+  @IsNumberString()
   cpf: string
 
   @IsDateString()
   dataNascimento: Date
 
   // @IsPostalCode('BR')
-  cep: number
+  @IsNumberString()
+  cep: string
 
   @IsPhoneNumber('BR')
   phone: string

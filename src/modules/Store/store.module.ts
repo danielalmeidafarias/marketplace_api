@@ -10,7 +10,8 @@ import { UtilsService } from "src/utils/utils.service";
   {
     controllers: [StoreController],
     providers: [StoreService, StoreRepository, UtilsService],
-    imports: [AuthModule, UserModule]
+    imports: [AuthModule, UserModule],
+    exports: [StoreService]
   }
 )
 export class StoreModule {}

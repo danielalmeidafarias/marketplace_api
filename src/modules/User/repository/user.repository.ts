@@ -84,7 +84,6 @@ export class UserRepository {
     newCidade?: string,
     newUf?: string,
     newPhone?: string,
-    newCPF?: string,
   ) {
     const queryBuilder = this.dataSource.createQueryBuilder();
 
@@ -102,7 +101,6 @@ export class UserRepository {
           cidade: newCidade,
           uf: newUf,
           phone: newPhone,
-          cpf: newCPF
         })
         .where('id = :id', { id: id })
         .execute();
@@ -178,7 +176,7 @@ export class UserRepository {
     }
   }
 
-  async verifyThereIsNotUserByEmail(email: string) {
+  async verifyThereIsNoUserWithEmail(email: string) {
     const user = await this.findUserByEmail(email);
 
     if (user) {
@@ -189,7 +187,7 @@ export class UserRepository {
     }
   }
 
-  async verifyThereIsNotUserByCPF(cpf: string) {
+  async verifyThereIsNoUserWithCPF(cpf: string) {
     const user = await this.findUserByCPF(cpf);
 
     if (user) {
@@ -200,7 +198,7 @@ export class UserRepository {
     }
   }
 
-  async verifyThereIsNotUserByPhone(phone: string) {
+  async verifyThereIsNoUserWithPhone(phone: string) {
     const user = await this.findUserByPhone(phone);
 
     if (user) {

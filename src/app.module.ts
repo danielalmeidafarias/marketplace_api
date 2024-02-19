@@ -15,11 +15,17 @@ import { databaseConfig } from './config/database.config';
     StoreModule,
     TypeOrmModule.forRoot(databaseConfig),
   ],
-  providers: [
-    {
-      provide: APP_PIPE,
-      useClass: ValidationPipe,
-    },
-  ],
+  // providers: [
+  //   {
+  //     provide: APP_PIPE,
+  //     useClass: ValidationPipe,
+  //     useFactory(...args) {
+  //       new ValidationPipe({
+  //         whitelist: true,
+  //         forbidNonWhitelisted: true
+  //       })
+  //     },
+  //   },
+  // ],
 })
 export class AppModule {}
