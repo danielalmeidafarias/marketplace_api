@@ -5,11 +5,12 @@ import { StoreRepository } from "./repository/store.repository";
 import { AuthModule } from "../auth/auth.module";
 import { UserModule } from "../User/user.module";
 import { UtilsService } from "src/utils/utils.service";
+import { JwtService } from "@nestjs/jwt";
 
 @Module(
   {
     controllers: [StoreController],
-    providers: [StoreService, StoreRepository, UtilsService],
+    providers: [StoreService, StoreRepository, UtilsService, JwtService],
     imports: [AuthModule, UserModule],
     exports: [StoreService]
   }

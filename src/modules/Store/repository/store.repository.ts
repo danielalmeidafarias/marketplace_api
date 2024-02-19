@@ -65,6 +65,28 @@ export class StoreRepository {
     }
   }
 
+  async getStoreInfo(id: UUID) {
+    const queryBuilder = this.dataSource.createQueryBuilder();
+
+    try {
+      const store = await queryBuilder
+        .select('store')
+        .from(Store, 'store')
+        .where('store.id = :id', { id })
+        .getOne();
+      return store;
+    } catch (err) {
+      throw new HttpException(
+        {
+          messaage:
+            'Ocorreu um erro ao tentar encontrar a loja, tente novamente mais tarde',
+          err,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   private async findStoreByEmail(email: string) {
     const store = await this.dataSource
       .getRepository(Store)
@@ -140,6 +162,16 @@ export class StoreRepository {
         `O endereço de email ${email} é vinculado a uma conta de usuário, por favor faça o login em /user/login`,
         HttpStatus.BAD_REQUEST,
       );
+    }
+
+    return store
+  }
+  
+  async verifyExistingStoreById(id: UUID) {
+    const store = this.findStoreById(id)
+
+    if(!store) {
+      throw new HttpException(`Não há nenhuma loja registrada com o id ${id}`, HttpStatus.BAD_REQUEST)
     }
 
     return store

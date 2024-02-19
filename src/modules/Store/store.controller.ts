@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Put, UseGuards } from '@nestjs/common';
 import { CreateStoreDTO } from './dto/create-store.dto';
 import { StoreService } from './store.service';
 import { LoginStoreDTO } from './dto/login-store.dto';
+import { AuthGuard } from '../auth/auth.guard';
+import { GetStoreInfoDTO } from './dto/get-store-info.dto';
 
 @Controller('store')
 export class StoreController {
@@ -27,9 +29,11 @@ export class StoreController {
     return this.storeService.login({ email, password });
   }
 
-  // Protegida
-  @Get()
-  async getStoreInfo({ access_token, refresh_token }) {}
+  @UseGuards(AuthGuard)
+  @Get('/info')
+  async getStoreInfo(@Body() { access_token, refresh_token }:  GetStoreInfoDTO) {
+    return this.storeService.getStoreInfo({ access_token, refresh_token })
+  }
 
   // Protegida
   @Put()

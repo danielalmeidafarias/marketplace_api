@@ -6,6 +6,8 @@ import { UserRepository } from '../User/repository/user.repository';
 import { UtilsService, VerifyCepResponse } from 'src/utils/utils.service';
 import { CreateStoreByUserDTO } from './dto/create-store-by-user.dto';
 import { LoginStoreDTO } from './dto/login-store.dto';
+import { GetStoreInfoDTO } from './dto/get-store-info.dto';
+import { UUID } from 'crypto';
 
 @Injectable()
 export class StoreService {
@@ -126,9 +128,6 @@ export class StoreService {
     };
   }
 
-  // Login da loja
-  // Se a loja for ligada a algum usuario toda parte de autenticacao sera realizada com o mesmo login
-  // access_token e refresh_token do usuário
   async login({ email, password }: LoginStoreDTO) {
     const store = await this.storeRepository.verifyExistingStoreByEmail(email)
 
@@ -140,6 +139,23 @@ export class StoreService {
       access_token,
       refresh_token,
     };
+  }
+
+  async getStoreInfo({ access_token }: GetStoreInfoDTO) {
+    const { newAccess_token, newRefresh_token } =
+    await this.authService.getNewTokens(access_token);
+
+  const id: UUID = await this.authService.getTokenId(newAccess_token)
+
+  const store = await this.storeRepository.verifyExistingStoreById(id);
+
+  await this.authService.verifyTokenId(access_token, store.id)
+
+  return {
+    store: await this.storeRepository.getStoreInfo(id),
+    access_token: newAccess_token,
+    refresh_token: newRefresh_token,
+  };
   }
 
   // editar loja
