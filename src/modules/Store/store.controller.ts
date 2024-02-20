@@ -1,9 +1,19 @@
-import { Body, Controller, Delete, Get, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { CreateStoreDTO } from './dto/create-store.dto';
 import { StoreService } from './store.service';
 import { LoginStoreDTO } from './dto/login-store.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { GetStoreInfoDTO } from './dto/get-store-info.dto';
+import { DeleteStoreDTO } from './dto/delete-store.dto';
+import { UUID } from 'crypto';
 
 @Controller('store')
 export class StoreController {
@@ -31,24 +41,24 @@ export class StoreController {
 
   @UseGuards(AuthGuard)
   @Get('/info')
-  async getStoreInfo(@Body() { access_token, refresh_token }:  GetStoreInfoDTO) {
-    return this.storeService.getStoreInfo({ access_token, refresh_token })
+  async getStoreInfo(@Body() { access_token, refresh_token }: GetStoreInfoDTO) {
+    return this.storeService.getStoreInfo({ access_token, refresh_token });
   }
 
   // Protegida
-  @Put()
+  @Put('/update')
   async updateStore() {}
 
   // Protegida
-  @Delete()
-  async deleteStore() {}
+  @Delete('/delete')
+  async deleteStore(@Body() { access_token, refresh_token }: DeleteStoreDTO) {}
 
   @Get()
-  async getStore() {}
+  async getStore(id: UUID) {}
 
-  @Get()
+  @Get('/products')
   async searchProduct() {}
 
-  @Get()
+  @Get('/orders')
   async getOrders() {}
 }

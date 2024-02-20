@@ -87,7 +87,29 @@ export class StoreRepository {
     }
   }
 
-  private async findStoreByEmail(email: string) {
+  async getStoresInfoByUserId(userId: UUID) {
+    const queryBuilder = this.dataSource.createQueryBuilder();
+
+    try {
+      const stores = await queryBuilder
+        .select('store')
+        .from(Store, 'store')
+        .where('store.userId = :userId', { userId })
+        .getMany();
+      return stores;
+    } catch (err) {
+      throw new HttpException(
+        {
+          messaage:
+            'Ocorreu um erro ao tentar encontrar a loja, tente novamente mais tarde',
+          err,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async findStoreByEmail(email: string) {
     const store = await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')
@@ -97,7 +119,7 @@ export class StoreRepository {
     return store;
   }
 
-  private async findStoreByCnpj(cnpj: string) {
+  async findStoreByCnpj(cnpj: string) {
     const store = await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')
@@ -107,7 +129,7 @@ export class StoreRepository {
     return store;
   }
 
-  private async findStoreByCpf(cpf: string) {
+  async findStoreByCpf(cpf: string) {
     const store = await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')
@@ -117,7 +139,7 @@ export class StoreRepository {
     return store;
   }
 
-  private async findStoreByPhone(phone: string) {
+  async findStoreByPhone(phone: string) {
     const store = await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')
@@ -127,7 +149,7 @@ export class StoreRepository {
     return store;
   }
 
-  private async findStoreById(id: UUID) {
+  async findStoreById(id: UUID) {
     const store = await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')
@@ -137,7 +159,7 @@ export class StoreRepository {
     return store;
   }
 
-  private async findStoreByName(name: string) {
+  async findStoreByName(name: string) {
     const store = await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')

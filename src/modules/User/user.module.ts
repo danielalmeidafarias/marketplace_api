@@ -9,16 +9,19 @@ import { JwtService } from '@nestjs/jwt';
 import { ProductModule } from '../Product/product.module';
 import { UtilsService } from 'src/utils/utils.service';
 import { StoreModule } from '../Store/store.module';
+import { UtilsModule } from 'src/utils/utils.module';
+import { UserStoreController } from './user-store.controller';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     AuthModule,
     forwardRef(() => ProductModule),
-    forwardRef(() => StoreModule)
+    forwardRef(() => StoreModule),
+    UtilsModule
   ],
-  controllers: [UserController],
-  providers: [UserService, UserRepository, JwtService, UtilsService],
+  controllers: [UserController, UserStoreController],
+  providers: [UserService, UserRepository, JwtService],
   exports: [UserRepository],
 })
 export class UserModule {}

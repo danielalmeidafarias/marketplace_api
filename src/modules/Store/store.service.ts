@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateStoreDTO } from './dto/create-store.dto';
 import { StoreRepository } from './repository/store.repository';
 import { AuthService } from '../auth/auth.service';
@@ -8,6 +8,8 @@ import { CreateStoreByUserDTO } from './dto/create-store-by-user.dto';
 import { LoginStoreDTO } from './dto/login-store.dto';
 import { GetStoreInfoDTO } from './dto/get-store-info.dto';
 import { UUID } from 'crypto';
+import { User } from '../User/entity/user.entity';
+import { Store } from './entity/store.entity';
 
 @Injectable()
 export class StoreService {
@@ -129,11 +131,12 @@ export class StoreService {
   }
 
   async login({ email, password }: LoginStoreDTO) {
-    const store = await this.storeRepository.verifyExistingStoreByEmail(email)
+    const store = await this.storeRepository.verifyExistingStoreByEmail(email);
 
     await this.utilsService.passwordIsCorrect(store.password, password);
 
-    const { access_token, refresh_token } = await this.authService.signIn(store);
+    const { access_token, refresh_token } =
+      await this.authService.signIn(store);
 
     return {
       access_token,
@@ -143,26 +146,60 @@ export class StoreService {
 
   async getStoreInfo({ access_token }: GetStoreInfoDTO) {
     const { newAccess_token, newRefresh_token } =
-    await this.authService.getNewTokens(access_token);
+      await this.authService.getNewTokens(access_token);
+    const id: UUID = await this.authService.getTokenId(newAccess_token);
 
-  const id: UUID = await this.authService.getTokenId(newAccess_token)
+    await this.utilsService.verifyIsNotAnUserAccount(id)
 
-  const store = await this.storeRepository.verifyExistingStoreById(id);
+    const store = await this.storeRepository.verifyExistingStoreById(id)
 
-  await this.authService.verifyTokenId(access_token, store.id)
+    await this.authService.verifyTokenId(access_token, store.id);
 
-  return {
-    store: await this.storeRepository.getStoreInfo(id),
-    access_token: newAccess_token,
-    refresh_token: newRefresh_token,
-  };
+    return {
+      store: await this.storeRepository.getStoreInfo(store.id),
+      access_token: newAccess_token,
+      refresh_token: newRefresh_token,
+    };
   }
 
+  async getUserStoreInfo(access_token: string, storeId: UUID) {
+    const { newAccess_token, newRefresh_token } =
+      await this.authService.getNewTokens(access_token);
+
+    const id: UUID = await this.authService.getTokenId(newAccess_token);
+
+    await this.utilsService.verifyIsNotAnStoreAccount(id)
+
+    const user = await this.userRepository.verifyExistingUserById(id);
+
+    await this.authService.verifyTokenId(access_token, user.id);
+
+    if(storeId) {
+      return {
+        store: await this.storeRepository.getStoreInfo(storeId),
+        access_token: newAccess_token,
+        refresh_token: newRefresh_token,
+      }
+    }
+
+    return {
+      stores: await this.storeRepository.getStoresInfoByUserId(user.id),
+      access_token: newAccess_token,
+      refresh_token: newRefresh_token,
+    };
+  }
+
+  async editStore({ access_token }) {}
+
+  async editUserStore({ access_token, id }) {}
+
+  async deleteStore({ access_token }) {}
+
+  async deleteUserStore({ access_token, id }) {}
+
   // editar loja
-  async editStore() {}
 
   // deletar loja
-  async deleteStore() {}
 
   // encontrar lojas pelo nome
   async findStoreByName() {}

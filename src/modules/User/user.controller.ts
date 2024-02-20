@@ -58,31 +58,6 @@ export class UserController {
     });
   }
 
-  @UseGuards(AuthGuard)
-  @Post('createStore')
-  async createStore(
-    @Body()
-    {
-      access_token,
-      refresh_token,
-      cep,
-      email,
-      name,
-      phone,
-      cnpj,
-    }: CreateStoreByUserDTO,
-  ) {
-    return await this.storeService.createStoreByUser({
-      access_token,
-      refresh_token,
-      cep,
-      email,
-      name,
-      phone,
-      cnpj,
-    });
-  }
-
   @Post('/login')
   async login(@Body() { email, password }: LoginUserDTO) {
     return await this.userService.loginUser({ email, password });
@@ -140,4 +115,5 @@ export class UserController {
       password,
     });
   }
+
 }
