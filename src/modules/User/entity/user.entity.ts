@@ -1,12 +1,9 @@
 import { UUID } from 'crypto';
-import { IProduct } from 'src/interfaces/IProduct';
-import { Product } from 'src/modules/Product/entity/product.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  OneToMany,
   PrimaryColumn,
   PrimaryGeneratedColumn,
   Unique,
@@ -24,24 +21,24 @@ export class User {
     dataNascimento: Date,
     cpf: string,
     cep: string,
-    logradouro: string, 
+    logradouro: string,
     bairro: string,
-    cidade: string, 
-    uf: string, 
-    phone: string
+    cidade: string,
+    uf: string,
+    phone: string,
   ) {
     this.email = email;
     this.password = password;
-    this.name = name
-    this.bairro = bairro
-    this.cep = cep
-    this.cidade = cidade
-    this.cpf = cpf
-    this.logradouro = logradouro
-    this.phone =phone
-    this.uf = uf
-    this.lastName = lastName
-    this.dataNascimento = dataNascimento
+    this.name = name;
+    this.bairro = bairro;
+    this.cep = cep;
+    this.cidade = cidade;
+    this.cpf = cpf;
+    this.logradouro = logradouro;
+    this.phone = phone;
+    this.uf = uf;
+    this.lastName = lastName;
+    this.dataNascimento = dataNascimento;
   }
 
   @PrimaryGeneratedColumn('uuid')
@@ -54,7 +51,7 @@ export class User {
   name: string;
 
   @Column()
-  lastName: string
+  lastName: string;
 
   @Column()
   dataNascimento: Date;
@@ -95,5 +92,4 @@ export class User {
 
   // cart
   // orders
-
 }

@@ -1,5 +1,4 @@
-import { IsJWT, IsUUID } from 'class-validator';
-import { UUID } from 'crypto';
+import { IsJWT } from 'class-validator';
 
 export class GetUserInfoDTO {
   @IsJWT()

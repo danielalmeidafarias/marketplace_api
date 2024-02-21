@@ -62,7 +62,7 @@ export class UserRepository {
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      console.log(err);
+      console.error(err);
       throw new HttpException(
         'Ocorreu um erro ao criar o usuário, tente novamente mais tarde',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -105,35 +105,26 @@ export class UserRepository {
         .where('id = :id', { id: id })
         .execute();
     } catch (err) {
+      console.error(err);
       throw new HttpException(
-        {
-          message:
-            'Ocorreu um erro ao tentar atualizar usuário, tente novamente mais tarde',
-          err,
-        },
+        'Ocorreu um erro ao tentar atualizar usuário, tente novamente mais tarde',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
-  async deleteUser(id: UUID, email: string) {
-    const queryBuilder = this.dataSource.createQueryBuilder();
-
+  async deleteUser(id: UUID) {
     try {
-      await queryBuilder
+      await this.dataSource
+        .getRepository(User)
+        .createQueryBuilder()
         .delete()
-        .from(User)
         .where('id = :id', { id: id })
-        .andWhere('email = :email', { email: email })
         .execute();
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw new HttpException(
-        {
-          message:
-            'Ocorreu um erro ao tentar deletar o usuário, tente novamente mais tarde',
-          err,
-        },
+        'Ocorreu um erro ao tentar deletar o usuário, tente novamente mais tarde',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -220,12 +211,9 @@ export class UserRepository {
         .getOne();
       return user;
     } catch (err) {
+      console.error(err);
       throw new HttpException(
-        {
-          messaage:
-            'Ocorreu um erro ao tentar encontrar o usuário, tente novamente mais tarde',
-          err,
-        },
+        'Ocorreu um erro ao tentar encontrar o usuário, tente novamente mais tarde',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -1,7 +1,3 @@
-# Modificar funcao de encontrar usuário
-  - Para login é preciso retornar a senha do banco de dados
-  - Para pesquisar retornar apenas nome e id
-
 <!-- # Auth   -->
   <!-- - Pensar em alguma forma de separar a autenticacao de lojas e usuarios -->
   <!-- - Adicionar a verificacao de compatibilidade com o Id ja no Auth -->
@@ -54,11 +50,9 @@
   - destaques
   - recomendacoes
 
-# Pesquisar uma maneira de melhorar o sistema de buscas
-
 # Integraçao API Pix
 
-# Integração API Stripe
+# Integração API Page.me
   - A ideia aqui seria que cada loja criasse uma conta na Stripe e cadastrasse esses dados na api
   - Dessa forma toda a lógica de gerenciamento dos produtos ficaria automatizada pela api
   - Verificar o controle de estoque da Api do Stripe

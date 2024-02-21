@@ -21,7 +21,7 @@ export class ProductService {
     private productRepository: ProductRepository,
     private authService: AuthService,
     private userRepository: UserRepository,
-  ) { }
+  ) {}
 
   async createProduct({
     name,
@@ -29,11 +29,12 @@ export class ProductService {
     quantity,
     access_token,
   }: CreateProductDTO) {
-    const { id: userId } = await this.authService.getTokenId(access_token)
+    const { id: userId } = await this.authService.getTokenId(access_token);
 
     await this.userRepository.verifyExistingUserById(userId);
 
-    const { newAccess_token, newRefresh_token } = await this.authService.getNewTokens(access_token);
+    const { newAccess_token, newRefresh_token } =
+      await this.authService.getNewTokens(access_token);
 
     await this.authService.verifyTokenId(newAccess_token, userId);
 

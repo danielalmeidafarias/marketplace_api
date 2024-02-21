@@ -7,7 +7,6 @@ import {
   Get,
   Post,
   Put,
-  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -16,9 +15,7 @@ import { UserService } from './user.service';
 import { LoginUserDTO } from './dto/login-user.dto';
 import { EditUserDTO } from './dto/edit-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
-import { GetUserInfoDTO } from './dto/get-userInfo.dto';
-import { FindProductsByIdDTO } from './dto/find-products-by-id';
-import { CreateStoreByUserDTO } from '../Store/dto/create-store-by-user.dto';
+import { GetUserInfoDTO } from './dto/get-user-Info.dto';
 import { StoreService } from '../Store/store.service';
 import { Request } from 'express';
 
@@ -43,9 +40,7 @@ export class UserController {
       dataNascimento,
       phone,
     }: CreateUserDTO,
-    @Req() req: Request
   ) {
-    console.log(req.body)
     return await this.userService.createUser({
       email,
       password,
@@ -115,5 +110,4 @@ export class UserController {
       password,
     });
   }
-
 }

@@ -12,12 +12,11 @@ import { authConfig } from 'src/config/auth.config';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService) { }
+  constructor(private jwtService: JwtService) {}
 
   private getRequestTokens(request: Request) {
     const { access_token, refresh_token } = request.body;
     return { access_token, refresh_token };
-
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -44,7 +43,8 @@ export class AuthGuard implements CanActivate {
       try {
         await this.jwtService.verify(refresh_token, authConfig);
       } catch (err) {
-        throw new HttpException(err, HttpStatus.UNAUTHORIZED);
+        console.error(err);
+        throw new UnauthorizedException();
       }
     }
 

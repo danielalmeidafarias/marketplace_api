@@ -7,9 +7,8 @@ import { UserRepository } from './repository/user.repository';
 import { AuthModule } from '../auth/auth.module';
 import { JwtService } from '@nestjs/jwt';
 import { ProductModule } from '../Product/product.module';
-import { UtilsService } from 'src/utils/utils.service';
 import { StoreModule } from '../Store/store.module';
-import { UtilsModule } from 'src/utils/utils.module';
+import { UtilsModule } from 'src/modules/utils/utils.module';
 import { UserStoreController } from './user-store.controller';
 
 @Module({
@@ -18,7 +17,7 @@ import { UserStoreController } from './user-store.controller';
     AuthModule,
     forwardRef(() => ProductModule),
     forwardRef(() => StoreModule),
-    UtilsModule
+    UtilsModule,
   ],
   controllers: [UserController, UserStoreController],
   providers: [UserService, UserRepository, JwtService],

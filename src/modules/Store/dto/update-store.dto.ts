@@ -1,15 +1,13 @@
 export class UpdateStoreDto {
-  access_token: string
+  access_token: string;
 
-  refresh_token: string
+  refresh_token: string;
 
-  newName?: string
+  newName?: string;
 
-  newCep?: string
+  newCep?: string;
 
-  newPhone: string
+  newPhone: string;
 
-  newEmail: string
-
-  
+  newEmail: string;
 }

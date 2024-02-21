@@ -5,10 +5,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
-  IsUUID,
 } from 'class-validator';
-import { UUID } from 'crypto';
-
 export class CreateProductDTO {
   @IsString()
   name: string;

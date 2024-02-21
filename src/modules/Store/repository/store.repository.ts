@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateStoreDTO } from '../dto/create-store.dto';
 import { UUID } from 'crypto';
 import { Store } from '../entity/store.entity';
 import { DataSource } from 'typeorm';
@@ -76,12 +75,9 @@ export class StoreRepository {
         .getOne();
       return store;
     } catch (err) {
+      console.error(err);
       throw new HttpException(
-        {
-          messaage:
-            'Ocorreu um erro ao tentar encontrar a loja, tente novamente mais tarde',
-          err,
-        },
+        'Ocorreu um erro ao tentar encontrar a loja, tente novamente mais tarde',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -98,12 +94,9 @@ export class StoreRepository {
         .getMany();
       return stores;
     } catch (err) {
+      console.error(err);
       throw new HttpException(
-        {
-          messaage:
-            'Ocorreu um erro ao tentar encontrar a loja, tente novamente mais tarde',
-          err,
-        },
+        'Ocorreu um erro ao tentar encontrar a loja, tente novamente mais tarde',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -186,17 +179,20 @@ export class StoreRepository {
       );
     }
 
-    return store
+    return store;
   }
-  
-  async verifyExistingStoreById(id: UUID) {
-    const store = this.findStoreById(id)
 
-    if(!store) {
-      throw new HttpException(`Não há nenhuma loja registrada com o id ${id}`, HttpStatus.BAD_REQUEST)
+  async verifyExistingStoreById(id: UUID) {
+    const store = this.findStoreById(id);
+
+    if (!store) {
+      throw new HttpException(
+        `Não há nenhuma loja registrada com o id ${id}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
-    return store
+    return store;
   }
 
   async verifyThereIsNoStoreWithCnpj(cnpj: string) {
@@ -235,6 +231,23 @@ export class StoreRepository {
       throw new HttpException(
         'Já existe uma loja registrada com esse nome',
         HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async deleteStore(id: UUID) {
+    try {
+      await this.dataSource
+        .getRepository(Store)
+        .createQueryBuilder()
+        .delete()
+        .where('id = :id', { id })
+        .execute();
+    } catch (err) {
+      console.error(err);
+      throw new HttpException(
+        'Ocorreu um erro ao tentar deletar a loja, por favor tente novamente mais tarde',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

@@ -3,14 +3,14 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt/dist/jwt.service';
-import { UUID } from 'crypto';
 import { Store } from '../Store/entity/store.entity';
 
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService) { }
+  constructor(private jwtService: JwtService) {}
 
   async signIn(user: User | Store) {
     const payload = { sub: user.id, email: user.email };
@@ -29,7 +29,8 @@ export class AuthService {
     try {
       const { sub, email } = await this.jwtService.decode(token);
       return { id: sub, email };
-    } catch {
+    } catch (err) {
+      console.error(err);
       throw new HttpException('Token invalido', HttpStatus.UNAUTHORIZED);
     }
   }
@@ -70,9 +71,10 @@ export class AuthService {
   async getTokenId(access_token: string) {
     try {
       const { id } = await this.decodeToken(access_token);
-      return id
+      return id;
     } catch (err) {
-      throw new HttpException(err, HttpStatus.UNAUTHORIZED);
+      console.error(err);
+      throw new UnauthorizedException();
     }
   }
 
@@ -86,7 +88,7 @@ export class AuthService {
         );
       }
     } catch (err) {
-      throw new HttpException(err, HttpStatus.UNAUTHORIZED);
+      throw new UnauthorizedException();
     }
   }
 }

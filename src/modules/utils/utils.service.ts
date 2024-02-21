@@ -1,13 +1,10 @@
-import { StoreRepository } from './../modules/Store/repository/store.repository';
+import { StoreRepository } from '../Store/repository/store.repository';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { phone } from 'phone';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from 'src/modules/User/repository/user.repository';
 import { UUID } from 'crypto';
-import { User } from 'src/modules/User/entity/user.entity';
-import { Store } from 'src/modules/Store/entity/store.entity';
-
 export interface VerifyCepResponse {
   cep: any;
   logradouro: any;
@@ -96,10 +93,10 @@ export class UtilsService {
       );
     }
   }
-  
+
   async verifyIsNotAnUserAccount(id: UUID) {
     const user = await this.userRepository.findUserById(id);
-    if(user) {
+    if (user) {
       throw new HttpException(
         'O id to token fornecido é de uma conta de Usuário, por favor va para user/store/info',
         HttpStatus.BAD_REQUEST,
@@ -108,8 +105,8 @@ export class UtilsService {
   }
 
   async verifyIsNotAnStoreAccount(id: UUID) {
-    const store =  await this.storeRepository.findStoreById(id);
-    if(store) {
+    const store = await this.storeRepository.findStoreById(id);
+    if (store) {
       throw new HttpException(
         'O id to token fornecido é de uma conta de Loja, por favor va para /store/info',
         HttpStatus.BAD_REQUEST,

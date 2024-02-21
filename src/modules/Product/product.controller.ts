@@ -24,13 +24,7 @@ export class ProductController {
   @Post('/create')
   async create(
     @Body()
-    {
-      name,
-      price,
-      quantity,
-      access_token,
-      refresh_token,
-    }: CreateProductDTO,
+    { name, price, quantity, access_token, refresh_token }: CreateProductDTO,
   ) {
     return this.productService.createProduct({
       name: name.toUpperCase(),

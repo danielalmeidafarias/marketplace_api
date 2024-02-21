@@ -1,4 +1,3 @@
-import { UserService } from './user.service';
 import {
   Body,
   Controller,
@@ -13,10 +12,13 @@ import { AuthGuard } from '../auth/auth.guard';
 import { CreateStoreByUserDTO } from '../Store/dto/create-store-by-user.dto';
 import { StoreService } from '../Store/store.service';
 import {
-  GetStoreInfoByUserTokensDTO,
-  GetStoreInfoByUserIdDTO,
-} from './dto/get-store-info.dto';
-import { DeleteStoreByUserIdDTO, DeleteStoreByUserTokensDTO } from './dto/delete-store.dto';
+  GetUserStoreInfoIdDTO,
+  GetUserStoreInfoTokensDTO,
+} from './dto/get-user-store-info.dto';
+import {
+  DeleteUserStoreIdDTO,
+  DeleteUserStoreTokensDTO,
+} from './dto/delete-user-store.dto';
 
 @Controller('/user/store')
 export class UserStoreController {
@@ -50,10 +52,14 @@ export class UserStoreController {
   @UseGuards(AuthGuard)
   @Get('/info')
   async getStoreInfo(
-    @Query() { storeId }: GetStoreInfoByUserIdDTO,
-    @Body() { access_token, refresh_token }: GetStoreInfoByUserTokensDTO,
+    @Query() { storeId }: GetUserStoreInfoIdDTO,
+    @Body() { access_token, refresh_token }: GetUserStoreInfoTokensDTO,
   ) {
-    return this.storeService.getUserStoreInfo(access_token, storeId);
+    return this.storeService.getUserStoreInfo({
+      access_token,
+      refresh_token,
+      storeId,
+    });
   }
 
   @UseGuards(AuthGuard)
@@ -63,7 +69,13 @@ export class UserStoreController {
   @UseGuards(AuthGuard)
   @Delete('/delete')
   async deleteStore(
-    @Query() { storeId }: DeleteStoreByUserIdDTO,
-    @Body() { access_token, refresh_token }: DeleteStoreByUserTokensDTO,
-  ) {}
+    @Query() { storeId }: DeleteUserStoreIdDTO,
+    @Body() { access_token, refresh_token }: DeleteUserStoreTokensDTO,
+  ) {
+    return this.storeService.deleteUserStore({
+      access_token,
+      refresh_token,
+      storeId,
+    });
+  }
 }

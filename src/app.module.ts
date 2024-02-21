@@ -1,6 +1,5 @@
-import { Module, ValidationPipe } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { StoreModule } from './modules/Store/store.module';
-import { APP_PIPE } from '@nestjs/core';
 import { ProductModule } from './modules/Product/product.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import 'dotenv/config';

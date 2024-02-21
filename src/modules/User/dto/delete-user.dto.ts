@@ -1,5 +1,4 @@
-import { IsEmail, IsJWT, IsString, IsUUID } from 'class-validator';
-import { UUID } from 'crypto';
+import { IsEmail, IsJWT, IsString } from 'class-validator';
 
 export class DeleteUserDTO {
   @IsJWT()

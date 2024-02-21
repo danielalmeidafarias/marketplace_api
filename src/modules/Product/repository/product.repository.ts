@@ -18,11 +18,9 @@ export class ProductRepository {
       const product = await queryRunner.manager.findOneBy(Product, { id });
       return product;
     } catch (err) {
+      console.error(err);
       throw new HttpException(
-        {
-          message: 'Ocorreu um erro, por favor tente novamente',
-          err,
-        },
+        'Ocorreu um erro, por favor tente novamente',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -35,8 +33,9 @@ export class ProductRepository {
       const product = await entityManager.findBy(Product, { userId });
       return product;
     } catch (err) {
+      console.error(err);
       throw new HttpException(
-        { message: 'Ocorreu um erro, por favor tente novamente', err },
+        'Ocorreu um erro, por favor tente novamente',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -71,12 +70,9 @@ export class ProductRepository {
 
       return product;
     } catch (err) {
+      console.error(err);
       throw new HttpException(
-        {
-          message:
-            'Algum erro ocorreu ao tentar criar o produto, tente novamente mais tarde',
-          err,
-        },
+        'Algum erro ocorreu ao tentar criar o produto, tente novamente mais tarde',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -99,12 +95,9 @@ export class ProductRepository {
         .andWhere('userId = :userId', { userId })
         .execute();
     } catch (err) {
+      console.error(err);
       throw new HttpException(
-        {
-          message:
-            'Ocorreu um erro ao tentar atualizar o produto, tente novamente',
-          err,
-        },
+        'Ocorreu um erro ao tentar atualizar o produto, tente novamente',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -121,8 +114,9 @@ export class ProductRepository {
         // .andWhere('userId = :userId', { userId: userId })
         .execute();
     } catch (err) {
+      console.error(err);
       throw new HttpException(
-        {messaged: 'Ocorreu um erro ao tentar excluir o produto, tente novamente', err},
+        'Ocorreu um erro ao tentar excluir o produto, tente novamente',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -143,12 +137,6 @@ export class ProductRepository {
     name = name.toUpperCase();
 
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
-      const queryBuilder = this.dataSource
-        .getRepository(Product)
-        .createQueryBuilder();
-      await queryRunner.connect();
-
       const products = await this.dataSource
         .getRepository(Product)
         .createQueryBuilder('product')
@@ -162,9 +150,10 @@ export class ProductRepository {
       }
 
       return products;
-    } catch (err){
+    } catch (err) {
+      console.error(err);
       throw new HttpException(
-        {message: 'Ocorreu um erro, por favor tente novamente', err},
+        'Ocorreu um erro, por favor tente novamente',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -1,4 +1,11 @@
-import { IsDateString, IsEmail, IsNumber, IsNumberString, IsPhoneNumber, IsPostalCode, IsString, IsStrongPassword } from 'class-validator';
+import {
+  IsDateString,
+  IsEmail,
+  IsNumberString,
+  IsPhoneNumber,
+  IsString,
+  IsStrongPassword,
+} from 'class-validator';
 
 export class CreateUserDTO {
   @IsEmail()
@@ -8,21 +15,21 @@ export class CreateUserDTO {
   password: string;
 
   @IsString()
-  name: string
+  name: string;
 
   @IsString()
-  lastName: string
+  lastName: string;
 
   @IsNumberString()
-  cpf: string
+  cpf: string;
 
   @IsDateString()
-  dataNascimento: Date
+  dataNascimento: Date;
 
   // @IsPostalCode('BR')
   @IsNumberString()
-  cep: string
+  cep: string;
 
   @IsPhoneNumber('BR')
-  phone: string
+  phone: string;
 }

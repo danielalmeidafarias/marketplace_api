@@ -1,23 +1,26 @@
-import { IsEmail, IsIdentityCard, IsJWT, IsNumber, IsNumberString, IsOptional, IsPhoneNumber, IsPostalCode, IsString, IsStrongPassword, IsUUID } from "class-validator";
-import { UUID } from "crypto";
-
+import {
+  IsEmail,
+  IsNumberString,
+  IsPhoneNumber,
+  IsString,
+  IsStrongPassword,
+} from 'class-validator';
 export class CreateStoreDTO {
   @IsString()
-  name: string
-  
+  name: string;
+
   @IsEmail()
-  email: string
+  email: string;
 
   @IsStrongPassword()
-  password: string
+  password: string;
 
   @IsNumberString()
-  cnpj: string
+  cnpj: string;
 
   @IsPhoneNumber('BR')
-  phone: string
+  phone: string;
 
-  // @IsPostalCode('BR')
   @IsNumberString()
-  cep: string
+  cep: string;
 }

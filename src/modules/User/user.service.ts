@@ -3,13 +3,16 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './entity/user.entity';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from '../auth/auth.service';
-import { GetUserInfoDTO } from './dto/get-userInfo.dto';
+import { GetUserInfoDTO } from './dto/get-user-Info.dto';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { LoginUserDTO } from './dto/login-user.dto';
 import { EditUserDTO } from './dto/edit-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
 import { UUID } from 'crypto';
-import { UtilsService, VerifyCepResponse } from 'src/utils/utils.service';
+import {
+  UtilsService,
+  VerifyCepResponse,
+} from 'src/modules/utils/utils.service';
 @Injectable()
 export class UserService {
   constructor(
@@ -86,11 +89,11 @@ export class UserService {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
-    const id = await this.authService.getTokenId(newAccess_token)
+    const id = await this.authService.getTokenId(newAccess_token);
 
     const user = await this.userRepository.verifyExistingUserById(id);
 
-    await this.authService.verifyTokenId(access_token, user.id)
+    await this.authService.verifyTokenId(access_token, user.id);
 
     return {
       user: await this.userRepository.getUserInfo(id),
@@ -119,9 +122,11 @@ export class UserService {
 
     await this.authService.verifyTokenId(newAccess_token, user.id);
 
-    const address: VerifyCepResponse | undefined = newCEP && (await this.utilsService.verifyCEP(newCEP))
+    const address: VerifyCepResponse | undefined =
+      newCEP && (await this.utilsService.verifyCEP(newCEP));
 
-    const phone: string | undefined = newPhone && await this.utilsService.verifyPhoneNumber(newPhone)
+    const phone: string | undefined =
+      newPhone && (await this.utilsService.verifyPhoneNumber(newPhone));
 
     const editedUser: {
       id: UUID;
@@ -195,7 +200,7 @@ export class UserService {
 
     await this.authService.verifyTokenId(newAccess_token, user.id);
 
-    await this.userRepository.deleteUser(user.id, user?.email);
+    await this.userRepository.deleteUser(user.id);
 
     return {
       message: 'Usuario deletado com sucesso!',

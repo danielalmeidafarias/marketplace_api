@@ -1,9 +1,9 @@
-import { IsJWT } from "class-validator";
+import { IsJWT } from 'class-validator';
 
 export class DeleteStoreDTO {
   @IsJWT()
-  access_token: string
+  access_token: string;
 
   @IsJWT()
-  refresh_token: string
+  refresh_token: string;
 }
