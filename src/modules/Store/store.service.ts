@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateStoreDTO } from './dto/create-store.dto';
 import { StoreRepository } from './repository/store.repository';
 import { AuthService } from '../auth/auth.service';
@@ -12,9 +12,10 @@ import { LoginStoreDTO } from './dto/login-store.dto';
 import { GetStoreInfoDTO } from './dto/get-store-info.dto';
 import { UUID } from 'crypto';
 import { IGetUserStoreInfoDTO } from '../User/dto/get-user-store-info.dto';
-import { EditProductDto } from '../Product/dto/edit-product.dto';
 import { DeleteStoreDTO } from './dto/delete-store.dto';
 import { IDeleteUserStoreDTO } from '../User/dto/delete-user-store.dto';
+import { EditStoreDTO } from './dto/edit-store.dto';
+import { EditUserStoreDTO } from '../User/dto/edit-user-store.dto';
 
 @Injectable()
 export class StoreService {
@@ -24,69 +25,6 @@ export class StoreService {
     private userRepository: UserRepository,
     private utilsService: UtilsService,
   ) {}
-  // criacao de loja
-
-  async createStoreByUser({
-    access_token,
-    cep: incomingCep,
-    email,
-    name,
-    phone: incomingPhone,
-    cnpj: incomingCnpj,
-  }: CreateStoreByUserDTO) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const id = await this.authService.getTokenId(newAccess_token);
-
-    const user = await this.userRepository.verifyExistingUserById(id);
-
-    // verificacao se o usuario ja possui loja com esse nome
-
-    await this.authService.verifyTokenId(access_token, user.id);
-
-    const address: VerifyCepResponse | undefined =
-      incomingCep && (await this.utilsService.verifyCEP(incomingCep));
-
-    const cnpj: string | undefined =
-      incomingCnpj && (await this.utilsService.verifyCNPJ(incomingCnpj));
-
-    const phone: string | undefined =
-      incomingPhone &&
-      (await this.utilsService.verifyPhoneNumber(incomingPhone));
-
-    const store = {
-      email: email ? email : user.email,
-      password: user.password,
-      name: name ? name.toUpperCase() : user.name,
-      phone: incomingPhone ? phone : user.phone,
-      cnpj: incomingCnpj ? cnpj : null,
-      cpf: user.cpf,
-      cep: incomingCep ? address.cep : user.cep,
-      logradouro: incomingCep ? address.logradouro : user.logradouro,
-      bairro: incomingCep ? address.bairro : user.bairro,
-      cidade: incomingCep ? address.cidade : user.cidade,
-      uf: incomingCep ? address.uf : user.uf,
-      userId: user.id,
-    };
-    await this.storeRepository.verifyThereIsNoStoreWithName(name.toUpperCase());
-
-    if (incomingCnpj) {
-      await this.storeRepository.verifyThereIsNoStoreWithCnpj(store.cnpj);
-    }
-
-    await this.storeRepository.verifyThereIsNoStoreWithPhone(store.phone);
-
-    await this.storeRepository.verifyThereIsNotStoreWithEmail(store.email);
-
-    await this.storeRepository.create(store);
-
-    return {
-      store,
-      access_token: newAccess_token,
-      refresh_token: newRefresh_token,
-    };
-  }
 
   async createStore({
     cep: incomingCep,
@@ -96,24 +34,27 @@ export class StoreService {
     phone: incomingPhone,
     cnpj: incomingCnpj,
   }: CreateStoreDTO) {
-    await this.storeRepository.verifyThereIsNoStoreWithName(name.toUpperCase());
-
-    await this.storeRepository.verifyThereIsNotStoreWithEmail(email);
-
     const phone: string | undefined =
-      incomingPhone &&
-      (await this.utilsService.verifyPhoneNumber(incomingPhone));
-
-    await this.storeRepository.verifyThereIsNoStoreWithPhone(phone);
+      await this.utilsService.verifyPhoneNumber(incomingPhone);
 
     const cnpj = await this.utilsService.verifyCNPJ(incomingCnpj);
-
-    await this.storeRepository.verifyThereIsNoStoreWithCnpj(cnpj);
 
     const { cep, logradouro, bairro, cidade, uf }: VerifyCepResponse =
       await this.utilsService.verifyCEP(incomingCep);
 
     const hashedPassword = await this.utilsService.hashPassword(password);
+
+    await this.storeRepository.verifyThereIsNoStoreWithName(name.toUpperCase());
+
+    await this.storeRepository.verifyThereIsNoStoreWithEmail(email);
+
+    await this.userRepository.verifyThereIsNoUserWithEmail(email);
+
+    await this.storeRepository.verifyThereIsNoStoreWithPhone(phone);
+
+    await this.userRepository.verifyThereIsNoUserWithPhone(phone);
+
+    await this.storeRepository.verifyThereIsNoStoreWithCnpj(cnpj);
 
     const store = {
       email,
@@ -135,7 +76,81 @@ export class StoreService {
     };
   }
 
+  async createStoreByUser({
+    access_token,
+    cep: incomingCep,
+    email,
+    name,
+    phone: incomingPhone,
+    cnpj: incomingCnpj,
+  }: CreateStoreByUserDTO) {
+    const { newAccess_token, newRefresh_token } =
+      await this.authService.getNewTokens(access_token);
+
+    const id = await this.authService.getTokenId(newAccess_token);
+
+    const user = await this.userRepository.verifyExistingUserById(id);
+
+    const address: VerifyCepResponse | undefined =
+      incomingCep && (await this.utilsService.verifyCEP(incomingCep));
+
+    const cnpj: string | undefined =
+      incomingCnpj && (await this.utilsService.verifyCNPJ(incomingCnpj));
+
+    const phone: string | undefined =
+      incomingPhone &&
+      (await this.utilsService.verifyPhoneNumber(incomingPhone));
+
+    if (name) {
+      await this.storeRepository.verifyThereIsNoStoreWithName(
+        name.toUpperCase(),
+      );
+    }
+
+    if (email) {
+      await this.storeRepository.verifyThereIsNoStoreWithEmail(email);
+      await this.userRepository.verifyThereIsNoUserWithEmail(email);
+    }
+
+    if (phone) {
+      await this.storeRepository.verifyThereIsNoStoreWithPhone(phone);
+      await this.userRepository.verifyThereIsNoUserWithPhone(phone);
+    }
+
+    if (cnpj) {
+      await this.storeRepository.verifyThereIsNoStoreWithCnpj(cnpj);
+    }
+
+    const store = {
+      email: email ? email : user.email,
+      password: user.password,
+      name: name ? name.toUpperCase() : user.name,
+      phone: incomingPhone ? phone : user.phone,
+      cnpj: incomingCnpj ? cnpj : null,
+      cpf: user.cpf,
+      cep: incomingCep ? address.cep : user.cep,
+      logradouro: incomingCep ? address.logradouro : user.logradouro,
+      bairro: incomingCep ? address.bairro : user.bairro,
+      cidade: incomingCep ? address.cidade : user.cidade,
+      uf: incomingCep ? address.uf : user.uf,
+      userId: user.id,
+    };
+
+    await this.storeRepository.create(store);
+
+    return {
+      store,
+      access_token: newAccess_token,
+      refresh_token: newRefresh_token,
+    };
+  }
+
   async login({ email, password }: LoginStoreDTO) {
+    await this.userRepository.verifyThereIsNoUserWithEmail(
+      email,
+      `O email ${email} é vinculado a uma conta de usuario, por favor va para user/login`,
+    );
+
     const store = await this.storeRepository.verifyExistingStoreByEmail(email);
 
     await this.utilsService.passwordIsCorrect(store.password, password);
@@ -152,13 +167,15 @@ export class StoreService {
   async getStoreInfo({ access_token }: GetStoreInfoDTO) {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
+
     const id: UUID = await this.authService.getTokenId(newAccess_token);
 
-    await this.utilsService.verifyIsNotAnUserAccount(id);
+    await this.userRepository.verifyThereIsNoUserWithId(
+      id,
+      `O id ${id} é vinculado a uma conta de usuario, por favor va para /user/store/info`,
+    );
 
     const store = await this.storeRepository.verifyExistingStoreById(id);
-
-    await this.authService.verifyTokenId(access_token, store.id);
 
     return {
       store: await this.storeRepository.getStoreInfo(store.id),
@@ -173,11 +190,12 @@ export class StoreService {
 
     const id: UUID = await this.authService.getTokenId(newAccess_token);
 
-    await this.utilsService.verifyIsNotAnStoreAccount(id);
+    await this.storeRepository.verifyThereIsNoStoreWithId(id);
 
-    const user = await this.userRepository.verifyExistingUserById(id);
-
-    await this.authService.verifyTokenId(access_token, user.id);
+    const user = await this.userRepository.verifyExistingUserById(
+      id,
+      `O id ${id} é vinculado a uma conta de loja, por favor va para /store/info`,
+    );
 
     if (storeId) {
       return {
@@ -194,50 +212,220 @@ export class StoreService {
     };
   }
 
-  async editStore({ access_token }: EditProductDto) {
+  async editStore({
+    access_token,
+    password,
+    newCEP,
+    newEmail,
+    newName,
+    newPassword,
+    newPhone,
+  }: EditStoreDTO) {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
     const id: UUID = await this.authService.getTokenId(newAccess_token);
 
-    await this.utilsService.verifyIsNotAnUserAccount(id);
+    await this.userRepository.verifyThereIsNoUserWithId(id);
 
     const store = await this.storeRepository.verifyExistingStoreById(id);
 
-    await this.authService.verifyTokenId(access_token, store.id);
+    const address: VerifyCepResponse | undefined =
+      newCEP && (await this.utilsService.verifyCEP(newCEP));
+
+    const phone: string | undefined =
+      newPhone && (await this.utilsService.verifyPhoneNumber(newPhone));
+
+    if (newPassword || newEmail) {
+      if (!password) {
+        throw new HttpException('Digite a senha', HttpStatus.UNAUTHORIZED);
+      }
+      await this.utilsService.passwordIsCorrect(store.password, password);
+    }
+
+    if (newName) {
+      await this.storeRepository.verifyThereIsNoStoreWithName(newName);
+    }
+
+    if (newEmail) {
+      await this.storeRepository.verifyThereIsNoStoreWithEmail(newEmail);
+      await this.userRepository.verifyThereIsNoUserWithEmail(newEmail);
+    }
+
+    if (newPhone) {
+      await this.storeRepository.verifyThereIsNoStoreWithPhone(phone);
+      await this.userRepository.verifyThereIsNoUserWithPhone(phone);
+    }
+
+    const editedStore: {
+      name: string;
+      email: string;
+      phone: string;
+      passoword: string;
+      cep: string;
+      logradouro: string;
+      bairro: string;
+      cidade: string;
+      uf: string;
+    } = {
+      name: newName ? newName.toUpperCase() : store.name,
+      email: newEmail ? newEmail : store.email,
+      phone: newPhone ? phone : store.phone,
+      passoword: newPassword
+        ? await this.utilsService.hashPassword(newPassword)
+        : store.password,
+      cep: newCEP ? address.cep : store.cep,
+      logradouro: newCEP ? address.logradouro : store.logradouro,
+      bairro: newCEP ? address.bairro : store.bairro,
+      cidade: newCEP ? address.cidade : store.cidade,
+      uf: newCEP ? address.uf : store.uf,
+    };
+
+    if (
+      editedStore.cep === store.cep &&
+      editedStore.name === store.name &&
+      editedStore.email === store.email &&
+      editedStore.passoword === store.password &&
+      editedStore.phone === store.phone
+    ) {
+      throw new HttpException(
+        'Nenhuma mudança foi requerida',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.storeRepository.editStore(
+      id,
+      editedStore.name,
+      editedStore.email,
+      editedStore.phone,
+      editedStore.passoword,
+      editedStore.cep,
+      editedStore.logradouro,
+      editedStore.bairro,
+      editedStore.cidade,
+      editedStore.uf,
+    );
 
     return {
+      store: editedStore,
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
     };
   }
 
-  async editUserStore(access_token: string, storeId: UUID) {
+  async editUserStore({
+    access_token,
+    storeId,
+    password,
+    newCEP,
+    newName,
+    newEmail,
+    newPhone,
+  }: EditUserStoreDTO) {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
     const id: UUID = await this.authService.getTokenId(newAccess_token);
 
-    await this.utilsService.verifyIsNotAnStoreAccount(id);
+    await this.storeRepository.verifyThereIsNoStoreWithId(id);
 
     const user = await this.userRepository.verifyExistingUserById(id);
 
-    await this.authService.verifyTokenId(access_token, user.id);
+    const store = await this.storeRepository.verifyExistingStoreById(storeId);
 
-    console.log(storeId);
+    if (store.userId !== user.id) {
+      throw new HttpException(
+        'O id fornecido não corresponde a nenhuma loja nesse usuário',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const address: VerifyCepResponse | undefined =
+      newCEP && (await this.utilsService.verifyCEP(newCEP));
+
+    const phone: string | undefined =
+      newPhone && (await this.utilsService.verifyPhoneNumber(newPhone));
+
+    if (newName) {
+      await this.storeRepository.verifyThereIsNoStoreWithName(newName);
+    }
+
+    if (newEmail) {
+      if (!password) {
+        throw new HttpException('Digite a senha', HttpStatus.UNAUTHORIZED);
+      }
+
+      await this.storeRepository.verifyThereIsNoStoreWithEmail(newEmail);
+      await this.userRepository.verifyThereIsNoUserWithEmail(newEmail);
+      await this.utilsService.passwordIsCorrect(user.password, password);
+    }
+
+    if (newPhone) {
+      await this.userRepository.verifyThereIsNoUserWithPhone(phone);
+      await this.storeRepository.verifyThereIsNoStoreWithPhone(phone);
+    }
+
+    const editedStore: {
+      name: string;
+      email: string;
+      phone: string;
+      cep: string;
+      logradouro: string;
+      bairro: string;
+      cidade: string;
+      uf: string;
+    } = {
+      name: newName ? newName.toUpperCase() : store.name,
+      email: newEmail ? newEmail : store.email,
+      phone: newPhone ? phone : store.phone,
+      cep: newCEP ? address.cep : store.cep,
+      logradouro: newCEP ? address.logradouro : store.logradouro,
+      bairro: newCEP ? address.bairro : store.bairro,
+      cidade: newCEP ? address.cidade : store.cidade,
+      uf: newCEP ? address.uf : store.uf,
+    };
+
+    if (
+      editedStore.cep === store.cep &&
+      editedStore.name === store.name &&
+      editedStore.email === store.email &&
+      editedStore.phone === store.phone
+    ) {
+      throw new HttpException(
+        'Nenhuma mudança foi requerida',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.storeRepository.editUserStore(
+      id,
+      storeId,
+      editedStore.name,
+      editedStore.email,
+      editedStore.phone,
+      editedStore.cep,
+      editedStore.logradouro,
+      editedStore.bairro,
+      editedStore.cidade,
+      editedStore.uf,
+    );
 
     return {
+      store: editedStore,
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
     };
   }
 
-  async deleteStore({ access_token }: DeleteStoreDTO) {
+  async deleteStore({ access_token, password }: DeleteStoreDTO) {
     const id: UUID = await this.authService.getTokenId(access_token);
 
-    await this.utilsService.verifyIsNotAnUserAccount(id);
+    await this.userRepository.verifyThereIsNoUserWithId(id);
 
     const store = await this.storeRepository.verifyExistingStoreById(id);
+
+    await this.utilsService.passwordIsCorrect(store.password, password);
 
     await this.authService.verifyTokenId(access_token, store.id);
 
@@ -248,21 +436,37 @@ export class StoreService {
     };
   }
 
-  async deleteUserStore({ access_token, storeId }: IDeleteUserStoreDTO) {
+  async deleteUserStore({
+    access_token,
+    storeId,
+    password,
+  }: IDeleteUserStoreDTO) {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
     const id: UUID = await this.authService.getTokenId(newAccess_token);
 
-    await this.utilsService.verifyIsNotAnStoreAccount(id);
+    await this.storeRepository.verifyThereIsNoStoreWithId(id);
 
     const user = await this.userRepository.verifyExistingUserById(id);
 
+    const store = await this.storeRepository.verifyExistingStoreById(storeId);
+
+    await this.utilsService.passwordIsCorrect(user.password, password);
+
+    if (store.userId !== user.id) {
+      throw new HttpException(
+        'O id fornecido não corresponde a nenhuma loja nesse usuário',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     await this.authService.verifyTokenId(access_token, user.id);
 
-    console.log(storeId);
+    await this.storeRepository.deleteUserStore(id, storeId);
 
     return {
+      message: `${store.name} deletado com sucesso`,
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
     };

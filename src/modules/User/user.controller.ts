@@ -7,7 +7,6 @@ import {
   Get,
   Post,
   Put,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { CreateUserDTO } from './dto/create-user.dto';
@@ -17,7 +16,6 @@ import { EditUserDTO } from './dto/edit-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
 import { GetUserInfoDTO } from './dto/get-user-Info.dto';
 import { StoreService } from '../Store/store.service';
-import { Request } from 'express';
 
 @Controller('user')
 export class UserController {
@@ -74,7 +72,6 @@ export class UserController {
     {
       access_token,
       refresh_token,
-      email,
       password,
       newEmail,
       newPassword,
@@ -87,7 +84,6 @@ export class UserController {
     return await this.userService.editUser({
       access_token,
       refresh_token,
-      email,
       password,
       newEmail,
       newPassword,
@@ -100,13 +96,10 @@ export class UserController {
 
   @UseGuards(AuthGuard)
   @Delete('/delete')
-  delete(
-    @Body() { access_token, refresh_token, email, password }: DeleteUserDTO,
-  ) {
+  delete(@Body() { access_token, refresh_token, password }: DeleteUserDTO) {
     return this.userService.deleteUser({
       access_token,
       refresh_token,
-      email,
       password,
     });
   }

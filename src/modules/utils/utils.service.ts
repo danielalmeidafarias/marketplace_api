@@ -4,7 +4,6 @@ import axios from 'axios';
 import { phone } from 'phone';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from 'src/modules/User/repository/user.repository';
-import { UUID } from 'crypto';
 export interface VerifyCepResponse {
   cep: any;
   logradouro: any;
@@ -90,26 +89,6 @@ export class UtilsService {
       throw new HttpException(
         'A senha digitada está incorreta',
         HttpStatus.UNAUTHORIZED,
-      );
-    }
-  }
-
-  async verifyIsNotAnUserAccount(id: UUID) {
-    const user = await this.userRepository.findUserById(id);
-    if (user) {
-      throw new HttpException(
-        'O id to token fornecido é de uma conta de Usuário, por favor va para user/store/info',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
-  async verifyIsNotAnStoreAccount(id: UUID) {
-    const store = await this.storeRepository.findStoreById(id);
-    if (store) {
-      throw new HttpException(
-        'O id to token fornecido é de uma conta de Loja, por favor va para /store/info',
-        HttpStatus.BAD_REQUEST,
       );
     }
   }

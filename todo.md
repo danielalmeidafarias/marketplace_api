@@ -62,5 +62,8 @@
 
 # Integracao API Recomendacoes google
 
+# Verificacoes de email e de telefone
+# Opcao de esqueceu a senha
+
 # Uso de Sessions com Nest para lidar com sessoes de usuários
 

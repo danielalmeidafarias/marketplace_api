@@ -1,4 +1,4 @@
-import { IsEmail, IsJWT, IsString } from 'class-validator';
+import { IsJWT, IsString } from 'class-validator';
 
 export class DeleteUserDTO {
   @IsJWT()
@@ -6,10 +6,6 @@ export class DeleteUserDTO {
 
   @IsJWT()
   refresh_token: string;
-
-  @IsString()
-  @IsEmail()
-  email: string;
 
   @IsString()
   password: string;

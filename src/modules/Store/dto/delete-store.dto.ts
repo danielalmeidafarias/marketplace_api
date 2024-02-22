@@ -1,4 +1,4 @@
-import { IsJWT } from 'class-validator';
+import { IsJWT, IsString } from 'class-validator';
 
 export class DeleteStoreDTO {
   @IsJWT()
@@ -6,4 +6,7 @@ export class DeleteStoreDTO {
 
   @IsJWT()
   refresh_token: string;
+
+  @IsString()
+  password: string;
 }

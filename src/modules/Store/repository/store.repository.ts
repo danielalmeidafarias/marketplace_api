@@ -102,135 +102,80 @@ export class StoreRepository {
     }
   }
 
-  async findStoreByEmail(email: string) {
-    const store = await this.dataSource
-      .getRepository(Store)
-      .createQueryBuilder('store')
-      .where('store.email = :email', { email })
-      .getOne();
-
-    return store;
-  }
-
-  async findStoreByCnpj(cnpj: string) {
-    const store = await this.dataSource
-      .getRepository(Store)
-      .createQueryBuilder('store')
-      .where('store.cnpj = :cnpj', { cnpj })
-      .getOne();
-
-    return store;
-  }
-
-  async findStoreByCpf(cpf: string) {
-    const store = await this.dataSource
-      .getRepository(Store)
-      .createQueryBuilder('store')
-      .where('store.cpf = :cpf', { cpf })
-      .getMany();
-
-    return store;
-  }
-
-  async findStoreByPhone(phone: string) {
-    const store = await this.dataSource
-      .getRepository(Store)
-      .createQueryBuilder('store')
-      .where('store.phone = :phone', { phone })
-      .getOne();
-
-    return store;
-  }
-
-  async findStoreById(id: UUID) {
-    const store = await this.dataSource
-      .getRepository(Store)
-      .createQueryBuilder('store')
-      .where('store.id = :id', { id })
-      .getOne();
-
-    return store;
-  }
-
-  async findStoreByName(name: string) {
-    const store = await this.dataSource
-      .getRepository(Store)
-      .createQueryBuilder('store')
-      .where('store.name = :name', { name })
-      .getOne();
-
-    return store;
-  }
-
-  async verifyExistingStoreByEmail(email: string) {
-    const store = await this.findStoreByEmail(email);
-
-    if (!store) {
+  async editStore(
+    id: UUID,
+    name: string,
+    email: string,
+    phone: string,
+    password: string,
+    cep: string,
+    logradouro: string,
+    bairro: string,
+    cidade: string,
+    uf: string,
+  ) {
+    try {
+      await this.dataSource
+        .getRepository(Store)
+        .createQueryBuilder()
+        .update()
+        .where('id = :id', { id })
+        .set({
+          name,
+          email,
+          phone,
+          password,
+          cep,
+          logradouro,
+          bairro,
+          cidade,
+          uf,
+        })
+        .execute();
+    } catch (err) {
+      console.error(err);
       throw new HttpException(
-        `Não existe nenhuma loja com o email ${email} registrada`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    if (store.userId) {
-      throw new HttpException(
-        `O endereço de email ${email} é vinculado a uma conta de usuário, por favor faça o login em /user/login`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    return store;
-  }
-
-  async verifyExistingStoreById(id: UUID) {
-    const store = this.findStoreById(id);
-
-    if (!store) {
-      throw new HttpException(
-        `Não há nenhuma loja registrada com o id ${id}`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    return store;
-  }
-
-  async verifyThereIsNoStoreWithCnpj(cnpj: string) {
-    const store = await this.findStoreByCnpj(cnpj);
-    if (store) {
-      throw new HttpException(
-        'Já existe uma loja registrada com esse cnpj',
-        HttpStatus.BAD_REQUEST,
+        'Ocorreu um erro durante a edição da loja, por favor tente novamente',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
-  async verifyThereIsNotStoreWithEmail(email: string) {
-    const store = await this.findStoreByEmail(email);
-    if (store) {
+  async editUserStore(
+    id: UUID,
+    storeId: UUID,
+    name: string,
+    email: string,
+    phone: string,
+    cep: string,
+    logradouro: string,
+    bairro: string,
+    cidade: string,
+    uf: string,
+  ) {
+    try {
+      await this.dataSource
+        .getRepository(Store)
+        .createQueryBuilder()
+        .update()
+        .where('id = :id', { id: storeId })
+        .andWhere('userId = :userId', { userId: id })
+        .set({
+          name,
+          email,
+          phone,
+          cep,
+          logradouro,
+          bairro,
+          cidade,
+          uf,
+        })
+        .execute();
+    } catch (err) {
+      console.error(err);
       throw new HttpException(
-        'Já existe uma loja registrada com esse email',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
-  async verifyThereIsNoStoreWithPhone(phone: string) {
-    const store = await this.findStoreByPhone(phone);
-    if (store) {
-      throw new HttpException(
-        'Já existe uma loja registrada com esse numero de telefone',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
-  async verifyThereIsNoStoreWithName(name: string) {
-    const store = await this.findStoreByName(name);
-    if (store) {
-      throw new HttpException(
-        'Já existe uma loja registrada com esse nome',
-        HttpStatus.BAD_REQUEST,
+        'Ocorreu um erro durante a edição da loja, por favor tente novamente',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -248,6 +193,182 @@ export class StoreRepository {
       throw new HttpException(
         'Ocorreu um erro ao tentar deletar a loja, por favor tente novamente mais tarde',
         HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async deleteUserStore(id: UUID, storeId: UUID) {
+    try {
+      await this.dataSource
+        .getRepository(Store)
+        .createQueryBuilder()
+        .delete()
+        .where('id = :id', { id: storeId })
+        .andWhere('userId = :userId', { userId: id })
+        .execute();
+    } catch (err) {
+      console.error(err);
+      throw new HttpException(
+        'Ocorreu um erro ao tentar deletar a loja, por favor tente novamente mais tarde',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  private async findStoreByEmail(email: string) {
+    const store = await this.dataSource
+      .getRepository(Store)
+      .createQueryBuilder('store')
+      .where('store.email = :email', { email })
+      .getOne();
+
+    return store;
+  }
+
+  private async findStoreByCnpj(cnpj: string) {
+    const store = await this.dataSource
+      .getRepository(Store)
+      .createQueryBuilder('store')
+      .where('store.cnpj = :cnpj', { cnpj })
+      .getOne();
+
+    return store;
+  }
+
+  private async findStoreByPhone(phone: string) {
+    const store = await this.dataSource
+      .getRepository(Store)
+      .createQueryBuilder('store')
+      .where('store.phone = :phone', { phone })
+      .getOne();
+
+    return store;
+  }
+
+  private async findStoreById(id: UUID) {
+    const store = await this.dataSource
+      .getRepository(Store)
+      .createQueryBuilder('store')
+      .where('id = :id', { id })
+      .getOne();
+
+    return store;
+  }
+
+  private async findStoreByName(name: string) {
+    const store = await this.dataSource
+      .getRepository(Store)
+      .createQueryBuilder('store')
+      .where('store.name = :name', { name })
+      .getOne();
+
+    return store;
+  }
+
+  async verifyExistingStoreByEmail(
+    email: string,
+    message?: string,
+    status?: HttpStatus,
+  ) {
+    const store = await this.findStoreByEmail(email);
+
+    if (!store) {
+      throw new HttpException(
+        message
+          ? message
+          : `Não existe nenhuma loja com o email ${email} registrada`,
+        status ? status : HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return store;
+  }
+
+  async verifyExistingStoreById(
+    id: UUID,
+    message?: string,
+    status?: HttpStatus,
+  ) {
+    const store = await this.findStoreById(id);
+
+    if (!store) {
+      throw new HttpException(
+        message ? message : `Não há nenhuma loja registrada com o id ${id}`,
+        status ? status : HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return store;
+  }
+
+  async verifyThereIsNoStoreWithId(
+    id: UUID,
+    message?: string,
+    status?: HttpStatus,
+  ) {
+    const store = await this.findStoreById(id);
+    if (store) {
+      throw new HttpException(
+        message ? message : 'Já existe uma loja registrada com esse id',
+        status ? status : HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async verifyThereIsNoStoreWithCnpj(
+    cnpj: string,
+    message?: string,
+    status?: HttpStatus,
+  ) {
+    const store = await this.findStoreByCnpj(cnpj);
+    if (store) {
+      throw new HttpException(
+        message ? message : 'Já existe uma loja registrada com esse cnpj',
+        status ? status : HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async verifyThereIsNoStoreWithEmail(
+    email: string,
+    message?: string,
+    status?: HttpStatus,
+  ) {
+    const store = await this.findStoreByEmail(email);
+    if (store) {
+      throw new HttpException(
+        message ? message : 'Já existe uma loja registrada com esse email',
+        status ? status : HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async verifyThereIsNoStoreWithPhone(
+    phone: string,
+    message?: string,
+    status?: HttpStatus,
+  ) {
+    const store = await this.findStoreByPhone(phone);
+    if (store) {
+      throw new HttpException(
+        message
+          ? message
+          : 'Já existe uma loja registrada com esse numero de telefone',
+        status ? status : HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async verifyThereIsNoStoreWithName(
+    name: string,
+    message?: string,
+    status?: HttpStatus,
+  ) {
+    const store = await this.findStoreByName(name);
+    if (store) {
+      throw new HttpException(
+        message ? message : 'Já existe uma loja registrada com esse nome',
+        status ? status : HttpStatus.BAD_REQUEST,
       );
     }
   }

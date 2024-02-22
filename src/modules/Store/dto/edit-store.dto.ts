@@ -15,15 +15,12 @@ export class EditStoreDTO {
   @IsJWT()
   refresh_token: string;
 
-  @IsString()
-  @IsEmail()
-  email: string;
-
   @IsOptional()
   @IsEmail()
   newEmail?: string;
 
   @IsString()
+  @IsOptional()
   password: string;
 
   @IsOptional()

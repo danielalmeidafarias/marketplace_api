@@ -19,6 +19,7 @@ import {
   DeleteUserStoreIdDTO,
   DeleteUserStoreTokensDTO,
 } from './dto/delete-user-store.dto';
+import { EditUserStoreDTO } from './dto/edit-user-store.dto';
 
 @Controller('/user/store')
 export class UserStoreController {
@@ -63,18 +64,42 @@ export class UserStoreController {
   }
 
   @UseGuards(AuthGuard)
-  @Put('/edit')
-  async editStore() {}
+  @Put('/update')
+  async editStore(
+    @Body()
+    {
+      access_token,
+      refresh_token,
+      password,
+      storeId,
+      newCEP,
+      newEmail,
+      newName,
+      newPhone,
+    }: EditUserStoreDTO,
+  ) {
+    return this.storeService.editUserStore({
+      access_token,
+      refresh_token,
+      password,
+      storeId,
+      newCEP,
+      newEmail,
+      newName,
+      newPhone,
+    });
+  }
 
   @UseGuards(AuthGuard)
   @Delete('/delete')
   async deleteStore(
     @Query() { storeId }: DeleteUserStoreIdDTO,
-    @Body() { access_token, refresh_token }: DeleteUserStoreTokensDTO,
+    @Body() { access_token, refresh_token, password }: DeleteUserStoreTokensDTO,
   ) {
     return this.storeService.deleteUserStore({
       access_token,
       refresh_token,
+      password,
       storeId,
     });
   }

@@ -15,14 +15,11 @@ export class EditUserDTO {
   @IsJWT()
   refresh_token: string;
 
-  @IsString()
-  @IsEmail()
-  email: string;
-
   @IsOptional()
   @IsEmail()
   newEmail?: string;
 
+  @IsOptional()
   @IsString()
   password: string;
 

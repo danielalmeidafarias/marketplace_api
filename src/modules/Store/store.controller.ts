@@ -12,6 +12,8 @@ import { StoreService } from './store.service';
 import { LoginStoreDTO } from './dto/login-store.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { GetStoreInfoDTO } from './dto/get-store-info.dto';
+import { DeleteStoreDTO } from './dto/delete-store.dto';
+import { EditStoreDTO } from './dto/edit-store.dto';
 @Controller('store')
 export class StoreController {
   constructor(private storeService: StoreService) {}
@@ -45,14 +47,43 @@ export class StoreController {
     });
   }
 
-  // Protegida
+  @UseGuards(AuthGuard)
   @Put('/update')
-  async updateStore() {}
+  async updateStore(
+    @Body()
+    {
+      access_token,
+      refresh_token,
+      password,
+      newCEP,
+      newEmail,
+      newName,
+      newPassword,
+      newPhone,
+    }: EditStoreDTO,
+  ) {
+    return await this.storeService.editStore({
+      access_token,
+      refresh_token,
+      password,
+      newCEP,
+      newEmail,
+      newName,
+      newPassword,
+      newPhone,
+    });
+  }
 
   @UseGuards(AuthGuard)
   @Delete('/delete')
-  async deleteStore(@Body() access_token: string) {
-    return await this.storeService.deleteStore(access_token);
+  async deleteStore(
+    @Body() { access_token, refresh_token, password }: DeleteStoreDTO,
+  ) {
+    return await this.storeService.deleteStore({
+      access_token,
+      refresh_token,
+      password,
+    });
   }
 
   @Get()

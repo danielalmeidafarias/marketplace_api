@@ -13,12 +13,14 @@ import {
   UtilsService,
   VerifyCepResponse,
 } from 'src/modules/utils/utils.service';
+import { StoreRepository } from '../Store/repository/store.repository';
 @Injectable()
 export class UserService {
   constructor(
     private userRepository: UserRepository,
     private authService: AuthService,
     private utilsService: UtilsService,
+    private storeRepository: StoreRepository,
   ) {}
 
   async createUser({
@@ -31,20 +33,24 @@ export class UserService {
     lastName,
     phone: incomingPhone,
   }: CreateUserDTO) {
-    await this.userRepository.verifyThereIsNoUserWithEmail(email);
-
     const cpf = await this.utilsService.verifyCPF(incomingCpf);
 
-    await this.userRepository.verifyThereIsNoUserWithCPF(cpf);
-
     const phone = await this.utilsService.verifyPhoneNumber(incomingPhone);
-
-    await this.userRepository.verifyThereIsNoUserWithPhone(phone);
 
     const { cep, logradouro, bairro, cidade, uf } =
       await this.utilsService.verifyCEP(incomingCep);
 
     const hashedPassword = await this.utilsService.hashPassword(password);
+
+    await this.storeRepository.verifyThereIsNoStoreWithEmail(email);
+
+    await this.userRepository.verifyThereIsNoUserWithEmail(email);
+
+    await this.userRepository.verifyThereIsNoUserWithCPF(cpf);
+
+    await this.storeRepository.verifyThereIsNoStoreWithPhone(phone);
+
+    await this.userRepository.verifyThereIsNoUserWithPhone(phone);
 
     const user = new User(
       email,
@@ -104,7 +110,6 @@ export class UserService {
 
   async editUser({
     access_token,
-    email,
     password,
     newPassword,
     newEmail,
@@ -113,20 +118,38 @@ export class UserService {
     newLastName,
     newPhone,
   }: EditUserDTO) {
-    const user = await this.userRepository.verifyExistingUserByEmail(email);
-
-    await this.utilsService.passwordIsCorrect(user.password, password);
-
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
-    await this.authService.verifyTokenId(newAccess_token, user.id);
+    const id = await this.authService.getTokenId(newAccess_token);
+
+    const user = await this.userRepository.verifyExistingUserById(id);
+
+    const phone: string | undefined =
+      newPhone && (await this.utilsService.verifyPhoneNumber(newPhone));
 
     const address: VerifyCepResponse | undefined =
       newCEP && (await this.utilsService.verifyCEP(newCEP));
 
-    const phone: string | undefined =
-      newPhone && (await this.utilsService.verifyPhoneNumber(newPhone));
+    await this.authService.verifyTokenId(newAccess_token, user.id);
+
+    if (newPassword || newEmail) {
+      if (!password) {
+        throw new HttpException('Digite a senha', HttpStatus.UNAUTHORIZED);
+      }
+      await this.utilsService.passwordIsCorrect(user.password, password);
+    }
+
+    if (newEmail) {
+      await this.storeRepository.verifyThereIsNoStoreWithEmail(newEmail);
+      await this.userRepository.verifyThereIsNoUserWithEmail(newEmail);
+      await this.userRepository.verifyThereIsNoUserWithEmail(newEmail);
+    }
+
+    if (newPhone) {
+      await this.storeRepository.verifyThereIsNoStoreWithPhone(phone);
+      await this.userRepository.verifyThereIsNoUserWithPhone(newPhone);
+    }
 
     const editedUser: {
       id: UUID;
@@ -190,8 +213,10 @@ export class UserService {
     };
   }
 
-  async deleteUser({ access_token, email, password }: DeleteUserDTO) {
-    const user = await this.userRepository.verifyExistingUserByEmail(email);
+  async deleteUser({ access_token, password }: DeleteUserDTO) {
+    const id = await this.authService.getTokenId(access_token);
+
+    const user = await this.userRepository.verifyExistingUserById(id);
 
     await this.utilsService.passwordIsCorrect(user.password, password);
 

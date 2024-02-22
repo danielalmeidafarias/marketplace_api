@@ -1,10 +1,11 @@
-import { IsJWT, IsUUID } from 'class-validator';
+import { IsJWT, IsString, IsUUID } from 'class-validator';
 import { UUID } from 'crypto';
 
 export interface IDeleteUserStoreDTO {
   access_token: string;
   refresh_token: string;
   storeId: UUID;
+  password: string;
 }
 export class DeleteUserStoreTokensDTO {
   @IsJWT()
@@ -12,6 +13,9 @@ export class DeleteUserStoreTokensDTO {
 
   @IsJWT()
   refresh_token: string;
+
+  @IsString()
+  password: string;
 }
 
 export class DeleteUserStoreIdDTO {
