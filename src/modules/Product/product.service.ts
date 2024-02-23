@@ -1,3 +1,4 @@
+import { StoreRepository } from './../Store/repository/store.repository';
 import { AuthService } from './../auth/auth.service';
 import {
   HttpException,
@@ -13,6 +14,9 @@ import { UUID } from 'crypto';
 import { EditProductDto } from './dto/edit-product.dto';
 import { DeleteProductDTO } from './dto/delete-product.dto';
 import { SearchProductDTO } from './dto/search-product.dto';
+import { CreateUserStoreProduct } from '../User/dto/create-user-store-product.dto';
+import { EditUserProductDto } from '../User/dto/edit-user-store-product.dto';
+import { DeleteUserStoreProductDTO } from '../User/dto/delete-user-store-product.dto';
 
 @Injectable()
 @UseGuards(AuthGuard)
@@ -21,6 +25,7 @@ export class ProductService {
     private productRepository: ProductRepository,
     private authService: AuthService,
     private userRepository: UserRepository,
+    private storeRepository: StoreRepository,
   ) {}
 
   async createProduct({
@@ -29,19 +34,22 @@ export class ProductService {
     quantity,
     access_token,
   }: CreateProductDTO) {
-    const { id: userId } = await this.authService.getTokenId(access_token);
+    const id = await this.authService.getTokenId(access_token);
 
-    await this.userRepository.verifyExistingUserById(userId);
+    await this.storeRepository.verifyExistingStoreById(id);
 
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
-    await this.authService.verifyTokenId(newAccess_token, userId);
+    name = name.toUpperCase()
 
-    await this.productRepository.verifyExistingProduct(name, userId);
+    await this.productRepository.verifyThereIsNoProductWithNameAndStore(
+      name,
+      id,
+    );
 
     const product = await this.productRepository.createProduct(
-      userId,
+      id,
       name,
       price,
       quantity,
@@ -55,82 +63,81 @@ export class ProductService {
     };
   }
 
-  async findByUserId(id: UUID) {
+  async createUserStoreProduct({
+    storeId,
+    name,
+    price,
+    quantity,
+    access_token,
+  }: CreateUserStoreProduct) {
+    const id = await this.authService.getTokenId(access_token);
+
     await this.userRepository.verifyExistingUserById(id);
 
-    const products = await this.productRepository.findByUserId(id);
+    await this.storeRepository.verifyExistingStoreById(storeId);
 
-    if (!products[0]) {
-      return {
-        message: 'Nenhum produto registrado com o id fornecido',
-      };
-    }
+    await this.storeRepository.verifyExistingStoreInUser(id, storeId);
 
-    const filterdProducts = Array.from(products, (product) => {
-      return {
-        id: product.id,
-        userId: product.userId,
-        name: product.name,
-        price: product.price,
-      };
-    });
+    const { newAccess_token, newRefresh_token } =
+      await this.authService.getNewTokens(access_token);
 
-    return filterdProducts;
-  }
+    name = name.toUpperCase()
 
-  async getProduct(id: UUID) {
-    const product = await this.productRepository.findById(id);
+    await this.productRepository.verifyThereIsNoProductWithNameAndStore(
+      name,
+      storeId,
+    );
 
-    if (!product) {
-      throw new HttpException(
-        'O id fornecido não corresponde a nenhum produto registrado',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const product = await this.productRepository.createProduct(
+      id,
+      name,
+      price,
+      quantity,
+    );
 
     return {
-      id: product.id,
-      userId: product.id,
-      name: product.name,
-      price: product.price,
+      message: 'Produto criado com sucesso!',
+      product,
+      access_token: newAccess_token,
+      refresh_token: newRefresh_token,
     };
   }
 
   async editProduct({
     access_token,
     id,
-    userId,
     newName,
     newPrice,
     newQuantity,
   }: EditProductDto) {
-    await this.userRepository.verifyExistingUserById(userId);
+    const product = await this.productRepository.verifyExistingProductById(id);
+
+    const storeId = await this.authService.getTokenId(access_token);
+
+    await this.storeRepository.verifyExistingStoreById(storeId);
+
+    await this.productRepository.verifyExistingProductInStoreWithId(
+      id,
+      storeId,
+    );
 
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
-    await this.authService.verifyTokenId(newAccess_token, userId);
-
-    const product = await this.productRepository.findById(id);
-
-    if (!product) {
-      throw new HttpException(
-        'O id fornecido não corresponde a nenhum produto regstrado',
-        HttpStatus.BAD_REQUEST,
+    if (newName) {
+      newName = newName.toUpperCase()
+      await this.productRepository.verifyThereIsNoProductWithNameAndStore(
+        newName,
+        storeId,
       );
     }
 
     const editedProduct = {
       id: id,
-      userId: userId,
       name: newName ? newName : product.name,
       price: newPrice ? newPrice : product.price,
       quantity: newQuantity ? newQuantity : product.quantity,
     };
-
-    if (product.name !== editedProduct.name) {
-      await this.productRepository.verifyExistingProduct(newName, userId);
-    }
 
     if (
       editedProduct.name === product.name &&
@@ -145,7 +152,6 @@ export class ProductService {
 
     await this.productRepository.editProduct(
       id,
-      userId,
       editedProduct.name,
       editedProduct.price,
       editedProduct.quantity,
@@ -159,22 +165,87 @@ export class ProductService {
     };
   }
 
-  async deleteProduct({ id, userId, access_token }: DeleteProductDTO) {
+  async editUserStoreProduct({
+    access_token,
+    storeId,
+    id,
+    newName,
+    newPrice,
+    newQuantity,
+  }: EditUserProductDto) {
+    const product = await this.productRepository.verifyExistingProductById(id);
+
+    const userId = await this.authService.getTokenId(access_token);
+
     await this.userRepository.verifyExistingUserById(userId);
+
+    await this.storeRepository.verifyExistingStoreById(id);
+
+    await this.storeRepository.verifyExistingStoreInUser(id, storeId);
+
+    await this.productRepository.verifyExistingProductInStoreWithId(
+      id,
+      storeId,
+    );
 
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
-    await this.authService.verifyTokenId(newAccess_token, userId);
+    if (newName) {
+      newName = newName.toUpperCase()
+      await this.productRepository.verifyThereIsNoProductWithNameAndStore(
+        newName,
+        storeId,
+      );
+    }
 
-    const product = await this.productRepository.findById(id);
+    const editedProduct = {
+      id: id,
+      name: newName ? newName : product.name,
+      price: newPrice ? newPrice : product.price,
+      quantity: newQuantity ? newQuantity : product.quantity,
+    };
 
-    if (!product) {
+    if (
+      editedProduct.name === product.name &&
+      editedProduct.price === product.price &&
+      editedProduct.quantity === product.quantity
+    ) {
       throw new HttpException(
-        'O id fornecido não corresponde a nenhum produto regstrado',
+        'Nenhuma mudança foi requerida',
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    await this.productRepository.editProduct(
+      id,
+      editedProduct.name,
+      editedProduct.price,
+      editedProduct.quantity,
+    );
+
+    return {
+      message: `Produto ${id} editado com sucesso!`,
+      product: editedProduct,
+      access_token: newAccess_token,
+      refresh_token: newRefresh_token,
+    };
+  }
+
+  async deleteProduct({ id, access_token }: DeleteProductDTO) {
+    const product = await this.productRepository.verifyExistingProductById(id);
+
+    const storeId = await this.authService.getTokenId(access_token);
+
+    await this.storeRepository.verifyExistingStoreById(storeId);
+
+    await this.productRepository.verifyExistingProductInStoreWithId(
+      id,
+      storeId,
+    );
+
+    const { newAccess_token, newRefresh_token } =
+      await this.authService.getNewTokens(access_token);
 
     await this.productRepository.deleteProduct(id);
 
@@ -185,7 +256,25 @@ export class ProductService {
     };
   }
 
-  async searchProduct({ name }: SearchProductDTO) {
-    return this.productRepository.searchProduct(name);
+  async deleteUserStorProduct({ id, access_token, storeId }: DeleteUserStoreProductDTO) {
+    const product = await this.productRepository.verifyExistingProductById(id);
+
+    const userId = await this.authService.getTokenId(access_token);
+
+    await this.userRepository.verifyExistingUserById(userId);
+
+    await this.storeRepository.verifyExistingStoreById(id);
+
+    await this.storeRepository.verifyExistingStoreInUser(id, storeId);
+
+    await this.productRepository.verifyExistingProductInStoreWithId(
+      id,
+      storeId,
+    );
+
+    await this.productRepository.deleteProduct(id);
+
+    const { newAccess_token, newRefresh_token } =
+      await this.authService.getNewTokens(access_token);
   }
 }

@@ -141,44 +141,42 @@ export class StoreRepository {
     }
   }
 
-  async editUserStore(
-    id: UUID,
-    storeId: UUID,
-    name: string,
-    email: string,
-    phone: string,
-    cep: string,
-    logradouro: string,
-    bairro: string,
-    cidade: string,
-    uf: string,
-  ) {
-    try {
-      await this.dataSource
-        .getRepository(Store)
-        .createQueryBuilder()
-        .update()
-        .where('id = :id', { id: storeId })
-        .andWhere('userId = :userId', { userId: id })
-        .set({
-          name,
-          email,
-          phone,
-          cep,
-          logradouro,
-          bairro,
-          cidade,
-          uf,
-        })
-        .execute();
-    } catch (err) {
-      console.error(err);
-      throw new HttpException(
-        'Ocorreu um erro durante a edição da loja, por favor tente novamente',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
+  // async editUserStore(
+  //   storeId: UUID,
+  //   name: string,
+  //   email: string,
+  //   phone: string,
+  //   cep: string,
+  //   logradouro: string,
+  //   bairro: string,
+  //   cidade: string,
+  //   uf: string,
+  // ) {
+  //   try {
+  //     await this.dataSource
+  //       .getRepository(Store)
+  //       .createQueryBuilder()
+  //       .update()
+  //       .where('id = :id', { id: storeId })
+  //       .set({
+  //         name,
+  //         email,
+  //         phone,
+  //         cep,
+  //         logradouro,
+  //         bairro,
+  //         cidade,
+  //         uf,
+  //       })
+  //       .execute();
+  //   } catch (err) {
+  //     console.error(err);
+  //     throw new HttpException(
+  //       'Ocorreu um erro durante a edição da loja, por favor tente novamente',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 
   async deleteStore(id: UUID) {
     try {
@@ -197,23 +195,23 @@ export class StoreRepository {
     }
   }
 
-  async deleteUserStore(id: UUID, storeId: UUID) {
-    try {
-      await this.dataSource
-        .getRepository(Store)
-        .createQueryBuilder()
-        .delete()
-        .where('id = :id', { id: storeId })
-        .andWhere('userId = :userId', { userId: id })
-        .execute();
-    } catch (err) {
-      console.error(err);
-      throw new HttpException(
-        'Ocorreu um erro ao tentar deletar a loja, por favor tente novamente mais tarde',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
+  // async deleteUserStore(id: UUID, storeId: UUID) {
+  //   try {
+  //     await this.dataSource
+  //       .getRepository(Store)
+  //       .createQueryBuilder()
+  //       .delete()
+  //       .where('id = :id', { id: storeId })
+  //       .andWhere('userId = :userId', { userId: id })
+  //       .execute();
+  //   } catch (err) {
+  //     console.error(err);
+  //     throw new HttpException(
+  //       'Ocorreu um erro ao tentar deletar a loja, por favor tente novamente mais tarde',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 
   private async findStoreByEmail(email: string) {
     const store = await this.dataSource
@@ -265,6 +263,17 @@ export class StoreRepository {
     return store;
   }
 
+  private async findOneInUserById(userId: UUID, storeId: UUID) {
+    const store = await this.dataSource
+      .getRepository(Store)
+      .createQueryBuilder('store')
+      .where('id = :id', { id: storeId })
+      .andWhere('userId = :userId', { userId })
+      .getOne();
+
+    return store;
+  }
+
   async verifyExistingStoreByEmail(
     email: string,
     message?: string,
@@ -299,6 +308,24 @@ export class StoreRepository {
     }
 
     return store;
+  }
+
+  async verifyExistingStoreInUser(
+    userId: UUID,
+    storeId: UUID,
+    message?: string,
+    status?: HttpStatus,
+  ) {
+    const store = await this.findOneInUserById(userId, storeId);
+
+    if (!store) {
+      throw new HttpException(
+        message
+          ? message
+          : `Não há nenhuma loja com o id ${storeId} no usuário ${userId}`,
+        status ? status : HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async verifyThereIsNoStoreWithId(

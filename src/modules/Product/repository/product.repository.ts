@@ -11,64 +11,27 @@ export class ProductRepository {
     private dataSource: DataSource,
   ) {}
 
-  async findById(id: UUID) {
-    try {
-      const queryRunner = this.dataSource.createQueryRunner();
-      await queryRunner.connect();
-      const product = await queryRunner.manager.findOneBy(Product, { id });
-      return product;
-    } catch (err) {
-      console.error(err);
-      throw new HttpException(
-        'Ocorreu um erro, por favor tente novamente',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async findByUserId(userId: UUID) {
-    const entityManager = this.dataSource.createEntityManager();
-
-    try {
-      const product = await entityManager.findBy(Product, { userId });
-      return product;
-    } catch (err) {
-      console.error(err);
-      throw new HttpException(
-        'Ocorreu um erro, por favor tente novamente',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async findOneByName(name: string, userId: UUID) {
-    const entityManager = this.dataSource.createEntityManager();
-
-    const product = await entityManager.findOneBy(Product, {
-      name,
-      userId,
-    });
-
-    return product;
-  }
-
   async createProduct(
-    userId: UUID,
+    storeId: UUID,
     name: string,
     price: number,
     quantity?: number,
+    userId?: UUID,
   ) {
     try {
-      const product = new Product(name, userId, price, quantity);
-
       this.dataSource
+        .getRepository(Product)
         .createQueryBuilder()
         .insert()
-        .into(Product)
-        .values(product)
+        .values({
+          name,
+          price,
+          quantity,
+          available: quantity,
+          storeId,
+          userId: userId ? userId : null,
+        })
         .execute();
-
-      return product;
     } catch (err) {
       console.error(err);
       throw new HttpException(
@@ -78,21 +41,14 @@ export class ProductRepository {
     }
   }
 
-  async editProduct(
-    id: UUID,
-    userId: UUID,
-    newName: string,
-    newPrice: number,
-    quantity: number,
-  ) {
-    const queryBuilder = this.dataSource.createQueryBuilder();
-
+  async editProduct(id: UUID, name: string, price: number, quantity: number) {
     try {
-      queryBuilder
+      await this.dataSource
+        .getRepository(Product)
+        .createQueryBuilder()
         .update(Product)
-        .set({ name: newName, price: newPrice, quantity: quantity })
+        .set({ name, price, quantity: quantity })
         .where('id = :id', { id })
-        .andWhere('userId = :userId', { userId })
         .execute();
     } catch (err) {
       console.error(err);
@@ -104,14 +60,12 @@ export class ProductRepository {
   }
 
   async deleteProduct(id: UUID) {
-    const queryBuilder = this.dataSource.createQueryBuilder();
-
     try {
-      await queryBuilder
+      await this.dataSource
+        .getRepository(Product)
+        .createQueryBuilder()
         .delete()
-        .from(Product)
-        .where('id = :id', { id: id })
-        // .andWhere('userId = :userId', { userId: userId })
+        .where('id = :id', { id })
         .execute();
     } catch (err) {
       console.error(err);
@@ -122,13 +76,120 @@ export class ProductRepository {
     }
   }
 
-  async verifyExistingProduct(name: string, userId: UUID) {
-    const alreadyAdded = await this.findOneByName(name, userId);
+  private async findOneById(id: UUID) {
+    return await this.dataSource
+      .getRepository(Product)
+      .createQueryBuilder('product')
+      .where('id = :id', { id })
+      .getOne();
+  }
 
-    if (alreadyAdded) {
+  private async findOneInStoreById(productId: UUID, storeId: UUID) {
+    return await this.dataSource
+      .getRepository(Product)
+      .createQueryBuilder('product')
+      .where('id = :id', { id: productId })
+      .andWhere('product.storeId = :storeId', { storeId })
+      .getOne();
+  }
+
+  private async findManyByStoreId(storeId: UUID) {
+    return await this.dataSource
+      .getRepository(Product)
+      .createQueryBuilder('product')
+      .where('storeId = :storeId', { storeId })
+      .getMany();
+  }
+
+  private async findManyByUserId(userId: UUID) {
+    return await this.dataSource
+      .getRepository(Product)
+      .createQueryBuilder('product')
+      .where('userId = :userId', { userId })
+      .getMany();
+  }
+
+  private async findManyByName(name: string) {
+    return await this.dataSource
+      .getRepository(Product)
+      .createQueryBuilder('product')
+      .where('name = :name', { name })
+      .getMany();
+  }
+
+  private async findOneByNameAndStore(name: string, storeId: UUID) {
+    return await this.dataSource
+      .getRepository(Product)
+      .createQueryBuilder('product')
+      .where('product.storeId = :storeId', { storeId })
+      .andWhere('name = :name', { name })
+      .getOne();
+  }
+
+  async verifyExistingProductById(
+    id: UUID,
+    message?: string,
+    status?: HttpStatus,
+  ) {
+    const product = await this.findOneById(id);
+
+    if (!product) {
       throw new HttpException(
-        'Um produto com mesmo nome já foi adicionado',
-        HttpStatus.BAD_REQUEST,
+        message ? message : `Não há nenhum produto registrada com o id ${id}`,
+        status ? status : HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return product;
+  }
+
+  async verifyExistingProductInStoreWithId(
+    id: UUID,
+    storeId: UUID,
+    message?: string,
+    status?: HttpStatus,
+  ) {
+    const product = await this.findOneInStoreById(id, storeId);
+
+    if (!product) {
+      throw new HttpException(
+        message
+          ? message
+          : `Não há nenhum produto registrada com o id ${id} na loja ${storeId}`,
+        status ? status : HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return product;
+  }
+
+  async verifyExistingProductByNameAndStoreId(
+    name: string,
+    storeId: UUID,
+    message?: string,
+    status?: HttpStatus,
+  ) {
+    const product = await this.findOneByNameAndStore(name, storeId);
+
+    if (!product) {
+      throw new HttpException(
+        message
+          ? message
+          : `Não há nenhum produto registrada com o nome ${name}, na loja ${storeId}`,
+        status ? status : HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return product;
+  }
+
+  async verifyThereIsNoProductWithNameAndStore(name: string, storeId: UUID) {
+    const store = await this.findOneByNameAndStore(name, storeId);
+
+    if (store) {
+      throw new HttpException(
+        'Já existe um produto registrado nessa loja com esse nome',
+        HttpStatus.CONFLICT,
       );
     }
   }

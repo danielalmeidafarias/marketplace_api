@@ -1,9 +1,12 @@
 import { IsJWT, IsUUID } from 'class-validator';
 import { UUID } from 'crypto';
 
-export class DeleteProductDTO {
+export class DeleteUserStoreProductDTO {
   @IsUUID()
   id: UUID;
+
+  @IsUUID()
+  storeId: UUID;
 
   @IsJWT()
   access_token: string;

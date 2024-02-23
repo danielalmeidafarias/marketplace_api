@@ -8,30 +8,27 @@ import {
   IsUUID,
 } from 'class-validator';
 import { UUID } from 'crypto';
-
-export class EditProductDto {
+export class CreateUserStoreProduct {
   @IsUUID()
-  id: UUID;
+  storeId: UUID
+
+  @IsString()
+  name: string;
+
+  @IsNumber({
+    maxDecimalPlaces: 2,
+  })
+  @IsPositive()
+  price: number;
+
+  @IsInt()
+  @IsOptional()
+  @IsPositive()
+  quantity: number;
 
   @IsJWT()
   access_token: string;
 
   @IsJWT()
   refresh_token: string;
-
-  @IsOptional()
-  @IsString()
-  newName?: string;
-
-  @IsOptional()
-  @IsNumber({
-    maxDecimalPlaces: 2,
-  })
-  @IsPositive()
-  newPrice?: number;
-
-  @IsOptional()
-  @IsInt()
-  @IsPositive()
-  newQuantity?: number;
 }

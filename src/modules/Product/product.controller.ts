@@ -27,7 +27,7 @@ export class ProductController {
     { name, price, quantity, access_token, refresh_token }: CreateProductDTO,
   ) {
     return this.productService.createProduct({
-      name: name.toUpperCase(),
+      name,
       price,
       quantity,
       access_token,
@@ -41,7 +41,6 @@ export class ProductController {
     @Body()
     {
       id,
-      userId,
       access_token,
       refresh_token,
       newName,
@@ -51,7 +50,6 @@ export class ProductController {
   ) {
     return this.productService.editProduct({
       id,
-      userId,
       access_token,
       refresh_token,
       newName,
@@ -63,23 +61,24 @@ export class ProductController {
   @UseGuards(AuthGuard)
   @Delete('/delete')
   async delete(
-    @Query() { id, userId, access_token, refresh_token }: DeleteProductDTO,
+    @Body() { id, access_token, refresh_token }: DeleteProductDTO,
   ) {
     return this.productService.deleteProduct({
       id,
-      userId,
       access_token,
       refresh_token,
     });
   }
 
-  @Get()
-  async get(@Query() { id }: GetProductDTO) {
-    return this.productService.getProduct(id);
-  }
+  
 
-  @Get('/search')
-  async searchProducts(@Query() name: SearchProductDTO) {
-    return this.productService.searchProduct(name);
-  }
+  // @Get()
+  // async get(@Query() { id }: GetProductDTO) {
+  //   return this.productService.getProduct(id);
+  // }
+
+  // @Get('/search')
+  // async searchProducts(@Query() name: SearchProductDTO) {
+  //   return this.productService.searchProduct(name);
+  // }
 }

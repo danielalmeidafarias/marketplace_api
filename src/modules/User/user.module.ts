@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ProductModule } from '../Product/product.module';
 import { StoreModule } from '../Store/store.module';
 import { UtilsModule } from 'src/modules/utils/utils.module';
-import { UserStoreController } from './user-store.controller';
+import { UserStoreController } from '../Store/user-store.controller';
 
 @Module({
   imports: [
@@ -19,7 +19,7 @@ import { UserStoreController } from './user-store.controller';
     forwardRef(() => StoreModule),
     UtilsModule,
   ],
-  controllers: [UserController, UserStoreController],
+  controllers: [UserController],
   providers: [UserService, UserRepository, JwtService],
   exports: [UserRepository],
 })

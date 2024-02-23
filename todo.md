@@ -1,48 +1,6 @@
-<!-- # Auth   -->
-  <!-- - Pensar em alguma forma de separar a autenticacao de lojas e usuarios -->
-  <!-- - Adicionar a verificacao de compatibilidade com o Id ja no Auth -->
-
-<!-- # Criar validacao de cpf
-  - Biblioteca de validacao br
-  - Api para validar cpf e cnpj -->
-
 # Adicionar rotas de search
 
-<!-- # Modificar tabela de user para store
-  - id
-  - nome loja 
-  - email
-  - password
-  - cpf/cnpj
-    - api verificacao de cpf/cnpj
-  - endereco
-  - pedidos
-  - produtos
-    - id
-    - nome
-    - preco
-    - quantidade provisoria (para gerenciar pedidos)
-    - quantidade -->
-
-<!-- # Criar tabela de user
-  - id
-  - nome
-  - email
-  - password
-  - cpf
-    - api verificacao de cpf/cnpj
-  - endereco
-    - api para calculo de frete
-  - dados para pagamento (não obrigatorio)
-  - Pedidos
-    - numero de pedido
-    - produtos
-    - data pedido
-    - status
-    - total
-  - Carrinho
-    - produtos
-    - total -->
+# Quando for criado os pedidos, uma loja não poderá ser excluida com pedidos pendentes.
 
 # Rotas Main
   - pesquisa lojas

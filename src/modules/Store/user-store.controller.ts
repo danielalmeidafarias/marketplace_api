@@ -9,25 +9,25 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
-import { CreateStoreByUserDTO } from '../Store/dto/create-store-by-user.dto';
-import { StoreService } from '../Store/store.service';
+import { CreateStoreByUserDTO } from '../User/dto/create-user-store.dto';
+import { StoreService } from './store.service';
 import {
   GetUserStoreInfoIdDTO,
   GetUserStoreInfoTokensDTO,
-} from './dto/get-user-store-info.dto';
+} from '../User/dto/get-user-store-info.dto';
 import {
   DeleteUserStoreIdDTO,
   DeleteUserStoreTokensDTO,
-} from './dto/delete-user-store.dto';
-import { EditUserStoreDTO } from './dto/edit-user-store.dto';
+} from '../User/dto/delete-user-store.dto';
+import { EditUserStoreDTO } from '../User/dto/edit-user-store.dto';
 
 @Controller('/user/store')
 export class UserStoreController {
   constructor(private storeService: StoreService) {}
 
   @UseGuards(AuthGuard)
-  @Post('/create')
-  async createStore(
+  @Post('/user/create')
+  async createUserStore(
     @Body()
     {
       access_token,
@@ -51,8 +51,8 @@ export class UserStoreController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('/info')
-  async getStoreInfo(
+  @Get('/user/info')
+  async getUserStoreInfo(
     @Query() { storeId }: GetUserStoreInfoIdDTO,
     @Body() { access_token, refresh_token }: GetUserStoreInfoTokensDTO,
   ) {
@@ -64,8 +64,8 @@ export class UserStoreController {
   }
 
   @UseGuards(AuthGuard)
-  @Put('/update')
-  async editStore(
+  @Put('/user/update')
+  async editUserStore(
     @Body()
     {
       access_token,
@@ -91,8 +91,8 @@ export class UserStoreController {
   }
 
   @UseGuards(AuthGuard)
-  @Delete('/delete')
-  async deleteStore(
+  @Delete('/user/delete')
+  async deleteUserStore(
     @Query() { storeId }: DeleteUserStoreIdDTO,
     @Body() { access_token, refresh_token, password }: DeleteUserStoreTokensDTO,
   ) {

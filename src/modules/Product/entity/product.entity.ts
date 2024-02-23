@@ -1,4 +1,5 @@
 import { UUID } from 'crypto';
+import { Store } from 'src/modules/Store/entity/store.entity';
 import { User } from 'src/modules/User/entity/user.entity';
 import {
   Column,
@@ -12,14 +13,6 @@ import {
 
 @Entity()
 export class Product {
-  constructor(name: string, userId: UUID, price: number, quantity?: number) {
-    this.name = name;
-    this.price = price;
-    this.userId = userId;
-
-    quantity ? (this.quantity = quantity) : null;
-  }
-
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -32,10 +25,16 @@ export class Product {
   @Column({ nullable: true })
   quantity: number;
 
-  @ManyToOne(() => User, (user) => user.id)
+  @Column({ nullable: true })
+  available: number;
+
+  @ManyToOne(() => Store, (store) => store.id)
   user: User;
 
   @Column()
+  storeId: UUID;
+
+  @Column({ nullable: true })
   userId: UUID;
 
   @CreateDateColumn()

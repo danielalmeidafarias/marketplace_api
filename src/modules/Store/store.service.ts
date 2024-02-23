@@ -7,7 +7,7 @@ import {
   UtilsService,
   VerifyCepResponse,
 } from 'src/modules/utils/utils.service';
-import { CreateStoreByUserDTO } from './dto/create-store-by-user.dto';
+import { CreateStoreByUserDTO } from '../User/dto/create-user-store.dto';
 import { LoginStoreDTO } from './dto/login-store.dto';
 import { GetStoreInfoDTO } from './dto/get-store-info.dto';
 import { UUID } from 'crypto';
@@ -398,19 +398,19 @@ export class StoreService {
       );
     }
 
-    await this.storeRepository.editUserStore(
-      id,
+    await this.storeRepository.editStore(
       storeId,
       editedStore.name,
       editedStore.email,
       editedStore.phone,
+      null,
       editedStore.cep,
       editedStore.logradouro,
       editedStore.bairro,
       editedStore.cidade,
       editedStore.uf,
-    );
-
+    ); 
+    
     return {
       store: editedStore,
       access_token: newAccess_token,
@@ -463,7 +463,7 @@ export class StoreService {
 
     await this.authService.verifyTokenId(access_token, user.id);
 
-    await this.storeRepository.deleteUserStore(id, storeId);
+    await this.storeRepository.deleteStore(storeId);
 
     return {
       message: `${store.name} deletado com sucesso`,

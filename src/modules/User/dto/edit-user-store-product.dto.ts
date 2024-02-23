@@ -9,9 +9,12 @@ import {
 } from 'class-validator';
 import { UUID } from 'crypto';
 
-export class EditProductDto {
+export class EditUserProductDto {
   @IsUUID()
   id: UUID;
+
+  @IsUUID()
+  storeId: UUID;
 
   @IsJWT()
   access_token: string;
