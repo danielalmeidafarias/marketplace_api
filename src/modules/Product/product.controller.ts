@@ -3,82 +3,118 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
+  Param,
   Post,
   Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
-import { CreateProductDTO } from './dto/create-product.dto';
-import { GetProductDTO } from './dto/get-product.dto';
-import { EditProductDto } from './dto/edit-product.dto';
-import { DeleteProductDTO } from './dto/delete-product.dto';
-import { SearchProductDTO } from './dto/search-product.dto';
+import { CreateProductStoreDTO, CreateProductUserDTO } from './dto/create-product.dto';
+import { DeleteProductBodyDTO, DeleteProductStoreQueryDTO, DeleteProductUserQueryDTO } from './dto/delete-product.dto';
+import { UpdateProductBodyDTO, UpdateProductStoreQuery, UpdateProductUserQuery } from './dto/update-product.dto';
 
 @Controller('product')
 export class ProductController {
-  constructor(private productService: ProductService) {}
+  constructor(private productService: ProductService,
+  ) { }
 
   @UseGuards(AuthGuard)
   @Post('/create')
   async create(
     @Body()
-    { name, price, quantity, access_token, refresh_token }: CreateProductDTO,
+    { name, price, quantity, access_token, refresh_token }: CreateProductStoreDTO,
   ) {
     return this.productService.createProduct({
       name,
       price,
       quantity,
       access_token,
-      refresh_token,
     });
   }
 
   @UseGuards(AuthGuard)
-  @Put('/edit')
-  async edit(
+  @Post('user/create')
+  async createUserStoreProduct(
+    @Body() { access_token, refresh_token, name, price, quantity, storeId }: CreateProductUserDTO,
+  ) {
+    return this.productService.createUserStoreProduct({
+      storeId,
+      name,
+      price,
+      quantity,
+      access_token,
+    });
+  }
+
+  @UseGuards(AuthGuard)
+  @Put('/update')
+  async update(
     @Body()
     {
-      id,
       access_token,
       refresh_token,
       newName,
       newPrice,
       newQuantity,
-    }: EditProductDto,
+    }: UpdateProductBodyDTO,
+    @Query() { productId }: UpdateProductStoreQuery
   ) {
-    return this.productService.editProduct({
-      id,
+    return this.productService.updateProduct({
       access_token,
-      refresh_token,
+      productId,
       newName,
       newPrice,
       newQuantity,
     });
   }
+
+  @UseGuards(AuthGuard)
+  @Put('/user/update')
+  async updateUserStoreProduct(
+    @Body()
+    {
+      access_token,
+      refresh_token,
+      newName,
+      newPrice,
+      newQuantity,
+    }: UpdateProductBodyDTO,
+    @Query() { productId, storeId }: UpdateProductUserQuery,
+  ) {
+    return this.productService.updateUserStoreProduct({
+      productId,
+      storeId,
+      access_token,
+      newName,
+      newPrice,
+      newQuantity,
+    });
+  }
+
 
   @UseGuards(AuthGuard)
   @Delete('/delete')
   async delete(
-    @Body() { id, access_token, refresh_token }: DeleteProductDTO,
+    @Body() { access_token, refresh_token }: DeleteProductBodyDTO,
+    @Query() { productId }: DeleteProductStoreQueryDTO
   ) {
     return this.productService.deleteProduct({
-      id,
+      productId,
       access_token,
-      refresh_token,
+    })
+  };
+
+  @UseGuards(AuthGuard)
+  @Delete('/user/delete')
+  async deleteUserStoreProduct(
+    @Body() { access_token, refresh_token }: DeleteProductBodyDTO,
+    @Query() { productId, storeId }: DeleteProductUserQueryDTO,
+  ) {
+    return this.productService.deleteUserStoreProduct({
+      productId,
+      access_token,
+      storeId
     });
   }
-
-  
-
-  // @Get()
-  // async get(@Query() { id }: GetProductDTO) {
-  //   return this.productService.getProduct(id);
-  // }
-
-  // @Get('/search')
-  // async searchProducts(@Query() name: SearchProductDTO) {
-  //   return this.productService.searchProduct(name);
-  // }
 }

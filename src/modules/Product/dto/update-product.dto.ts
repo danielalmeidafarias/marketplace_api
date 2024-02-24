@@ -9,10 +9,7 @@ import {
 } from 'class-validator';
 import { UUID } from 'crypto';
 
-export class EditProductDto {
-  @IsUUID()
-  id: UUID;
-
+export class UpdateProductBodyDTO {
   @IsJWT()
   access_token: string;
 
@@ -35,3 +32,16 @@ export class EditProductDto {
   @IsPositive()
   newQuantity?: number;
 }
+
+export class UpdateProductStoreQuery {
+  @IsUUID()
+  productId: UUID
+
+}
+
+export class UpdateProductUserQuery extends UpdateProductStoreQuery{
+  @IsUUID()
+  storeId: UUID;
+}
+
+

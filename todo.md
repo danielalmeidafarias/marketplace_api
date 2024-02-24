@@ -1,4 +1,23 @@
+
+
 # Adicionar rotas de search
+
+# Organização
+  - Interfaces funcoes services e repositories
+  - Refatoracao dto's
+
+# Adicionar produtos nas rotas de getInfo
+# Adicionar relações ao criar lojas e produtos
+  - Relações entre usuários e lojas e entre lojas e produtos
+# Verificar se o usuário é maior de idade
+# Remover possíveis mudancças iguais
+# Utilizar new Entity para criacao e update de registros
+# Edit -> Update
+
+
+
+
+
 
 # Quando for criado os pedidos, uma loja não poderá ser excluida com pedidos pendentes.
 

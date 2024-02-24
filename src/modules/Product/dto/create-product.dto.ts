@@ -5,8 +5,11 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  IsUUID,
 } from 'class-validator';
-export class CreateProductDTO {
+import { UUID } from 'crypto';
+
+export class CreateProductStoreDTO {
   @IsString()
   name: string;
 
@@ -26,4 +29,9 @@ export class CreateProductDTO {
 
   @IsJWT()
   refresh_token: string;
+}
+
+export class CreateProductUserDTO extends CreateProductStoreDTO {
+  @IsUUID()
+  storeId: UUID
 }

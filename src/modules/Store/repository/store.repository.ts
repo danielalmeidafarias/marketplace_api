@@ -268,7 +268,7 @@ export class StoreRepository {
       .getRepository(Store)
       .createQueryBuilder('store')
       .where('id = :id', { id: storeId })
-      .andWhere('userId = :userId', { userId })
+      .andWhere('store.userId = :userId', { userId })
       .getOne();
 
     return store;
@@ -326,6 +326,8 @@ export class StoreRepository {
         status ? status : HttpStatus.BAD_REQUEST,
       );
     }
+
+    return store
   }
 
   async verifyThereIsNoStoreWithId(

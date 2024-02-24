@@ -16,6 +16,7 @@ import { DeleteStoreDTO } from './dto/delete-store.dto';
 import { IDeleteUserStoreDTO } from '../User/dto/delete-user-store.dto';
 import { EditStoreDTO } from './dto/edit-store.dto';
 import { EditUserStoreDTO } from '../User/dto/edit-user-store.dto';
+import { Store } from './entity/store.entity';
 
 @Injectable()
 export class StoreService {
@@ -24,7 +25,7 @@ export class StoreService {
     private authService: AuthService,
     private userRepository: UserRepository,
     private utilsService: UtilsService,
-  ) {}
+  ) { }
 
   async createStore({
     cep: incomingCep,
@@ -56,22 +57,26 @@ export class StoreService {
 
     await this.storeRepository.verifyThereIsNoStoreWithCnpj(cnpj);
 
-    const store = {
+    const store = new Store(
       email,
-      password: hashedPassword,
-      name: name.toUpperCase(),
-      phone,
+      name.toUpperCase(),
+      hashedPassword,
       cep,
       logradouro,
       bairro,
       cidade,
       uf,
-      cnpj,
-    };
+      phone,
+      cnpj
+    )
 
     await this.storeRepository.create(store);
 
+    const { access_token, refresh_token } = await this.authService.signIn(store);
+
     return {
+      access_token,
+      refresh_token,
       store,
     };
   }
@@ -135,6 +140,21 @@ export class StoreService {
       uf: incomingCep ? address.uf : user.uf,
       userId: user.id,
     };
+
+    const test = new Store(
+      email ? email : user.email,
+      name ? name.toUpperCase() : user.name,
+      user.password,
+      incomingCep ? address.cep : user.cep,
+      incomingCep ? address.logradouro : user.logradouro,
+      incomingCep ? address.bairro : user.bairro,
+      incomingCep ? address.cidade : user.cidade,
+      incomingCep ? address.uf : user.uf,
+      incomingPhone ? phone : user.phone,
+      incomingCnpj ? cnpj : null,
+      user.cpf,
+      user.id
+    )
 
     await this.storeRepository.create(store);
 
@@ -409,8 +429,8 @@ export class StoreService {
       editedStore.bairro,
       editedStore.cidade,
       editedStore.uf,
-    ); 
-    
+    );
+
     return {
       store: editedStore,
       access_token: newAccess_token,
@@ -473,13 +493,13 @@ export class StoreService {
   }
 
   // encontrar lojas pelo nome
-  async findStoreByName() {}
+  async findStoreByName() { }
 
   // encontrar lojas pelo id da loja
-  async findStoreById() {}
+  async findStoreById() { }
 
   // encontrar lojas pelo id do usuario
-  async findStoreByUserId() {}
+  async findStoreByUserId() { }
 
   // encontrar produtos da loja
   async searchStoreProducts() {

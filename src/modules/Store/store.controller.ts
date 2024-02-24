@@ -23,7 +23,7 @@ import { GetUserStoreInfoIdDTO, GetUserStoreInfoTokensDTO } from '../User/dto/ge
 export class StoreController {
   constructor(private storeService: StoreService) {}
 
-  @Post('store/create')
+  @Post('/store/create')
   async createStore(
     @Body()
     { cep, cnpj, email, name, password, phone }: CreateStoreDTO,
@@ -63,13 +63,13 @@ export class StoreController {
     });
   }
 
-  @Post('/login')
+  @Post('/store/login')
   async storeLogin(@Body() { email, password }: LoginStoreDTO) {
     return await this.storeService.login({ email, password });
   }
 
   @UseGuards(AuthGuard)
-  @Get('store/info')
+  @Get('/store/info')
   async getStoreInfo(@Body() { access_token, refresh_token }: GetStoreInfoDTO) {
     return await this.storeService.getStoreInfo({
       access_token,
@@ -91,7 +91,7 @@ export class StoreController {
   }
 
   @UseGuards(AuthGuard)
-  @Put('store/update')
+  @Put('/store/update')
   async updateStore(
     @Body()
     {
@@ -145,7 +145,7 @@ export class StoreController {
   }
 
   @UseGuards(AuthGuard)
-  @Delete('store/delete')
+  @Delete('/store/delete')
   async deleteStore(
     @Body() { access_token, refresh_token, password }: DeleteStoreDTO,
   ) {

@@ -13,6 +13,17 @@ import {
 
 @Entity()
 export class Product {
+  constructor(storeId: UUID,name: string, price: number, quantity: number, 
+    userId?: UUID) {
+    this.storeId = storeId
+    this.name = name
+    this.price = price
+    this.quantity = quantity
+    this.available = quantity
+
+    userId ? this.userId = userId : null
+  }
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

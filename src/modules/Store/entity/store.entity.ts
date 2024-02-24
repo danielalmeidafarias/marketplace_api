@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
 @Entity()
 export class Store {
   constructor(
@@ -17,18 +18,29 @@ export class Store {
     name: string,
     password: string,
     cep: string,
+    logradouro: string,
+    bairro: string,
+    cidade: string,
+    uf: string,
     phone: string,
     cnpj?: string,
     cpf?: string,
+    userId?: UUID
   ) {
     this.email = email;
-    this.cep = cep;
     this.name = name;
     this.password = password;
+    this.cep = cep;
+    this.logradouro = logradouro
+    this.bairro = bairro,
+    this.cidade = cidade,
+    this.uf = uf
     this.phone = phone;
 
     cpf ? (this.cpf = cpf) : null;
     cnpj ? (this.cnpj = cpf) : null;
+
+    userId ? (this.userId = this.userId) : null
   }
 
   @PrimaryGeneratedColumn('uuid')

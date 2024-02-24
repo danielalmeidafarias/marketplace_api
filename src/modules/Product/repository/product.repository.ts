@@ -4,19 +4,28 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { UUID } from 'crypto';
 
+export interface ICreateProduct {
+  storeId: UUID
+  name: string,
+  price: number,
+  quantity: number
+  userId?: UUID
+}
+
 @Injectable()
 export class ProductRepository {
   constructor(
     @InjectRepository(Product) private productRepository: Repository<Product>,
     private dataSource: DataSource,
-  ) {}
+  ) { }
 
   async createProduct(
-    storeId: UUID,
-    name: string,
-    price: number,
-    quantity?: number,
-    userId?: UUID,
+    { storeId,
+      name,
+      price,
+      quantity,
+      userId
+    }: ICreateProduct
   ) {
     try {
       this.dataSource
