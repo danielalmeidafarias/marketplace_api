@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UUID } from 'crypto';
-import { Store } from '../entity/store.entity';
+import { Store, UserStore } from '../entity/store.entity';
 import { DataSource } from 'typeorm';
 
 interface CreateStoreProps {
@@ -21,7 +21,7 @@ interface CreateStoreProps {
 export class StoreRepository {
   constructor(private dataSource: DataSource) {}
 
-  async create(store: Store) {
+  async create(store: Store | UserStore) {
     try {
       await this.dataSource
         .getRepository(Store)
@@ -39,7 +39,7 @@ export class StoreRepository {
           bairro: store.bairro,
           cidade: store.cidade,
           uf: store.uf,
-          userId: store.id,
+          userId: store.userId,
         })
         .execute();
     } catch (err) {
@@ -89,7 +89,7 @@ export class StoreRepository {
     }
   }
 
-  async updateStore(store: Store) {
+  async updateStore(store: Store | UserStore) {
     try {
       await this.dataSource
         .getRepository(Store)

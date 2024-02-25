@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Product } from '../entity/product.entity';
+import { Product, UserStoreProduct } from '../entity/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { UUID } from 'crypto';
@@ -20,7 +20,7 @@ export class ProductRepository {
   ) { }
 
   async createProduct(
-    product: Product
+    product: Product | UserStoreProduct
   ) {
     try {
       this.dataSource
@@ -33,7 +33,7 @@ export class ProductRepository {
           quantity: product.quantity,
           available: product.quantity,
           storeId: product.storeId,
-          userId: product.userId ? product.userId : null,
+          userId: product.userId,
         })
         .execute();
     } catch (err) {
@@ -45,13 +45,18 @@ export class ProductRepository {
     }
   }
 
-  async updateProduct(product: Product) {
+  async updateProduct(product: Product | UserStoreProduct) {
     try {
       await this.dataSource
         .getRepository(Product)
         .createQueryBuilder()
         .update(Product)
-        .set({ name: product.name, price: product.price, quantity: product.quantity, available: product.quantity })
+        .set({
+          name: product.name,
+          price: product.price,
+          quantity: product.quantity,
+          available: product.quantity
+        })
         .where('id = :id', { id: product.id })
         .execute();
     } catch (err) {
@@ -85,11 +90,11 @@ export class ProductRepository {
 
       const products = await this.findManyByStoreId(id)
 
-      products.forEach(async(product) => {
+      products.forEach(async (product) => {
         await this.deleteProduct(product.id)
       })
 
-    } catch(err) {
+    } catch (err) {
       console.error(err)
       throw new HttpException('Ocorreu um erro ao tentar excluir os produtos', HttpStatus.INTERNAL_SERVER_ERROR)
     }
@@ -100,11 +105,11 @@ export class ProductRepository {
 
       const products = await this.findManyByUserId(id)
 
-      products.forEach(async(product) => {
+      products.forEach(async (product) => {
         await this.deleteProduct(product.id)
       })
 
-    } catch(err) {
+    } catch (err) {
       console.error(err)
       throw new HttpException('Ocorreu um erro ao tentar excluir os produtos', HttpStatus.INTERNAL_SERVER_ERROR)
     }

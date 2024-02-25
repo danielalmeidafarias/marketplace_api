@@ -8,7 +8,7 @@ import {
 } from 'src/modules/utils/utils.service';
 import { LoginStoreDTO } from './dto/login-store.dto';
 import { UUID } from 'crypto';
-import { Store } from './entity/store.entity';
+import { Store, UserStore } from './entity/store.entity';
 import { ProductRepository } from '../Product/repository/product.repository';
 
 interface ICreateStore {
@@ -84,10 +84,11 @@ export class StoreService {
 
     await this.storeRepository.verifyThereIsNoStoreWithCnpj(cnpj);
 
-    const store = new Store({
+
+    const store = new Store(
       email,
-      name: name.toUpperCase(),
-      password: hashedPassword,
+      name.toUpperCase(),
+      hashedPassword,
       cep,
       logradouro,
       bairro,
@@ -95,9 +96,6 @@ export class StoreService {
       uf,
       phone,
       cnpj,
-      cpf: null,
-      userId: null
-    }
     )
 
     await this.storeRepository.create(store);
@@ -156,20 +154,18 @@ export class StoreService {
       await this.storeRepository.verifyThereIsNoStoreWithCnpj(cnpj);
     }
 
-    const store = new Store({
-      email: email ? email : user.email,
-      name: name ? name.toUpperCase() : user.name,
-      password: user.password,
-      cep: incomingCep ? address.cep : user.cep,
-      logradouro: incomingCep ? address.logradouro : user.logradouro,
-      bairro: incomingCep ? address.bairro : user.bairro,
-      cidade: incomingCep ? address.cidade : user.cidade,
-      uf: incomingCep ? address.uf : user.uf,
-      phone: incomingPhone ? phone : user.phone,
-      cnpj: incomingCnpj ? cnpj : null,
-      cpf: user.cpf,
-      userId: user.id
-    }
+    const store = new UserStore(
+      email ? email : user.email,
+      name ? name.toUpperCase() : user.name,
+      incomingCep ? address.cep : user.cep,
+      incomingCep ? address.logradouro : user.logradouro,
+      incomingCep ? address.bairro : user.bairro,
+      incomingCep ? address.cidade : user.cidade,
+      incomingCep ? address.uf : user.uf,
+      incomingPhone ? phone : user.phone,
+      user.cpf,
+      user.id,
+      incomingCnpj ? cnpj : null,
     )
 
     await this.storeRepository.create(store);
@@ -293,21 +289,17 @@ export class StoreService {
       await this.userRepository.verifyThereIsNoUserWithPhone(phone);
     }
 
-    const editedStore = new Store({
-      email: newEmail ? newEmail : store.email,
-      name: newName ? newName.toUpperCase() : store.name,
-      password: newPassword ? await this.utilsService.hashPassword(newPassword) : store.password,
-      cep: newCEP ? address.cep : store.cep,
-      logradouro: newCEP ? address.logradouro : store.logradouro,
-      bairro: newCEP ? address.bairro : store.bairro,
-      cidade: newCEP ? address.cidade : store.cidade,
-      uf: newCEP ? address.uf : store.uf,
-      phone: store.phone,
-      cnpj: store.cnpj,
-      cpf: store.cpf,
-      storeId: store.id,
-      userId: store.userId
-    }
+    const editedStore = new Store(
+      newEmail ? newEmail : store.email,
+      newName ? newName.toUpperCase() : store.name,
+      newPassword ? await this.utilsService.hashPassword(newPassword) : store.password,
+      newCEP ? address.cep : store.cep,
+      newCEP ? address.logradouro : store.logradouro,
+      newCEP ? address.bairro : store.bairro,
+      newCEP ? address.uf : store.uf,
+      store.phone,
+      store.cnpj,
+      store.id,
     )
 
     if (
@@ -384,21 +376,19 @@ export class StoreService {
       await this.storeRepository.verifyThereIsNoStoreWithPhone(phone);
     }
 
-    const editedStore = new Store({
-      email: newEmail ? newEmail : store.email,
-      name: newName ? newName.toUpperCase() : store.name,
-      password: store.password,
-      cep: newCEP ? address.cep : store.cep,
-      logradouro: newCEP ? address.logradouro : store.logradouro,
-      bairro: newCEP ? address.bairro : store.bairro,
-      cidade: newCEP ? address.cidade : store.cidade,
-      uf: newCEP ? address.uf : store.uf,
-      phone: store.phone,
-      cnpj: store.cnpj,
-      cpf: store.cpf,
-      storeId: store.id,
-      userId: store.userId
-    }
+    const editedStore = new UserStore(
+      newEmail ? newEmail : store.email,
+      newName ? newName.toUpperCase() : store.name,
+      newCEP ? address.cep : store.cep,
+      newCEP ? address.logradouro : store.logradouro,
+      newCEP ? address.bairro : store.bairro,
+      newCEP ? address.cidade : store.cidade,
+      newCEP ? address.uf : store.uf,
+      store.phone,
+      store.cpf,
+      store.userId,
+      store.cnpj,
+      store.id,
     )
 
     if (

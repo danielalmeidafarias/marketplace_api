@@ -11,41 +11,38 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export interface IStoreConstructor {
-  email: string,
-  name: string,
-  password: string | null,
-  cep: string,
-  logradouro: string,
-  bairro: string,
-  cidade: string,
-  uf: string,
-  phone: string,
-  cnpj: string | null,
-  cpf: string | null,
-  userId: UUID | null,
-  storeId?: UUID,
-}
-
 @Entity()
 export class Store {
   constructor(
-    { email, bairro, cep, cidade, cnpj, cpf, logradouro, name, password, phone, uf, userId, storeId }: IStoreConstructor
-  ) {
-    this.email = email;
-    this.name = name;
-    this.password = password;
-    this.cep = cep;
-    this.logradouro = logradouro
-    this.bairro = bairro,
-      this.cidade = cidade,
-      this.uf = uf
-    this.phone = phone;
+    email: string,
+    name: string,
+    password: string,
+    cep: string,
+    logradouro: string,
+    bairro: string,
+    cidade: string,
+    uf: string,
+    phone: string,
+    cnpj: string,
+    storeId?: UUID
+    )
+    {
 
-    cpf ? (this.cpf = cpf) : null;
-    cnpj ? (this.cnpj = cpf) : null;
-    storeId ? this.id = storeId : null
-    userId ? (this.userId = this.userId) : null
+      if(storeId) {
+        this.id = storeId
+      }
+
+      this.cnpj = cnpj
+      this.password = password
+      this.email = email
+      this.name = name
+      this.cep = cep
+      this.logradouro = logradouro
+      this.bairro = bairro
+      this.cidade = cidade
+      this.uf = uf
+      this.phone = phone
+
   }
 
   @PrimaryGeneratedColumn('uuid')
@@ -63,7 +60,7 @@ export class Store {
   @Column({ nullable: true })
   cpf: string;
 
-  @Column()
+  @Column({ nullable: true })
   password: string;
 
   @ManyToOne(() => User, (user) => user.id)
@@ -98,7 +95,62 @@ export class Store {
 
   @DeleteDateColumn()
   deleted_at: Date;
+}
 
-  // products
-  // orders
+export class UserStore implements Store{
+  constructor(    
+    email: string,
+    name: string,
+    cep: string,
+    logradouro: string,
+    bairro: string,
+    cidade: string,
+    uf: string,
+    phone: string,
+    cpf: string,
+    userId: UUID,
+    cnpj?: string,
+    storeId?: UUID) {
+
+      if(storeId) {
+        this.id = storeId
+      }
+
+      if(userId) {
+        this.userId = userId
+      }
+
+      if(cnpj) {
+        this.cnpj = cnpj
+      }
+
+      this.cpf = cpf
+      this.email = email
+      this.name = name
+      this.cep = cep
+      this.logradouro = logradouro
+      this.bairro = bairro
+      this.cidade = cidade
+      this.uf = uf
+      this.phone = phone
+  }
+
+  id: UUID;
+  email: string;
+  name: string;
+  cnpj: string;
+  cpf: string;
+  password: string;
+  user: User;
+  userId: UUID;
+  cep: string;
+  logradouro: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
+  phone: string;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date;
+  
 }

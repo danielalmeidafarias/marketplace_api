@@ -10,7 +10,7 @@ import { ProductRepository } from './repository/product.repository';
 import { AuthGuard } from '../auth/auth.guard';
 import { UserRepository } from '../User/repository/user.repository';
 import { UUID } from 'crypto';
-import { Product } from './entity/product.entity';
+import { Product, UserStoreProduct } from './entity/product.entity';
 
 export interface ICreateProduct {
   name: string;
@@ -85,13 +85,13 @@ export class ProductService {
     quantity,
     access_token,
   }: ICreateProduct) {
-    const id = await this.authService.getTokenId(access_token);
+    const userId = await this.authService.getTokenId(access_token);
 
-    await this.userRepository.verifyExistingUserById(id);
+    await this.userRepository.verifyExistingUserById(userId);
 
     await this.storeRepository.verifyExistingStoreById(storeId);
 
-    await this.storeRepository.verifyExistingStoreInUser(id, storeId);
+    await this.storeRepository.verifyExistingStoreInUser(userId, storeId);
 
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
@@ -103,7 +103,7 @@ export class ProductService {
       storeId,
     );
 
-    const product = new Product(storeId, name, price, quantity, id)
+    const product = new UserStoreProduct(storeId, userId, name, price, quantity)
 
     await this.productRepository.createProduct(product);
 
@@ -208,14 +208,14 @@ export class ProductService {
     }
 
 
-    const editedProduct = new Product(      
+    const editedProduct = new UserStoreProduct(
       storeId,
+      userId,
       newName ? newName : product.name,
       newPrice ? newPrice : product.price,
       newQuantity ? newQuantity : product.quantity,
       productId,
-      userId
-      )
+    )
 
     if (
       editedProduct.name === product.name &&

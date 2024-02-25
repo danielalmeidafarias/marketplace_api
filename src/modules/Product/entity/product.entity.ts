@@ -13,16 +13,24 @@ import {
 
 @Entity()
 export class Product {
-  constructor(storeId: UUID, name: string, price: number, quantity: number, productId?: UUID, userId?: UUID) {
+  constructor(
+    storeId: UUID, 
+    name: string, 
+    price: number, 
+    quantity: number, 
+    productId?: UUID
+  ) {
+
     this.storeId = storeId
     this.name = name
     this.price = price
     this.quantity = quantity
     this.available = quantity
 
-    userId ? this.userId = userId : null
-
-    productId ? this.id = productId : null
+    if (productId) {
+      this.id = productId
+    }
+    
   }
 
   @PrimaryGeneratedColumn('uuid')
@@ -57,4 +65,42 @@ export class Product {
 
   @DeleteDateColumn()
   deleted_at: Date;
+}
+
+export class UserStoreProduct implements Product {
+
+  constructor(
+    storeId: UUID, 
+    userId: UUID, 
+    name: string, 
+    price: number, 
+    quantity: number, 
+    productId?: UUID
+  ) {
+
+    this.storeId = storeId
+    this.userId = userId
+    this.name = name
+    this.price = price
+    this.quantity = quantity
+    this.available = quantity
+
+    if (productId) {
+      this.id = productId
+    }
+
+  }
+
+  id: UUID;
+  name: string;
+  price: number;
+  quantity: number;
+  available: number;
+  user: User;
+  storeId: UUID;
+  userId: UUID;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date;
+
 }
