@@ -59,4 +59,3 @@ export class CreateUserStoreDTO {
   @IsOptional()
   cep: string;
 }
-

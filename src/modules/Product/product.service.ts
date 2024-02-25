@@ -17,24 +17,26 @@ export interface ICreateProduct {
   price: number;
   quantity: number;
   access_token: string;
-  storeId?: UUID
+  refresh_token: string;
+  storeId?: UUID;
 }
 
 export interface IUpdateProduct {
   access_token: string;
+  refresh_token: string;
   productId: UUID;
   newName?: string;
   newPrice?: number;
   newQuantity?: number;
-  storeId?: UUID
+  storeId?: UUID;
 }
 
 export interface IDeleteProduct {
-  productId: UUID,
-  access_token: string
-  storeId?: UUID
+  productId: UUID;
+  access_token: string;
+  refresh_token: string;
+  storeId?: UUID;
 }
-
 
 @Injectable()
 @UseGuards(AuthGuard)
@@ -44,14 +46,9 @@ export class ProductService {
     private authService: AuthService,
     private userRepository: UserRepository,
     private storeRepository: StoreRepository,
-  ) { }
+  ) {}
 
-  async createProduct({
-    name,
-    price,
-    quantity,
-    access_token,
-  }: ICreateProduct) {
+  async createProduct({ name, price, quantity, access_token }: ICreateProduct) {
     const id = await this.authService.getTokenId(access_token);
 
     await this.storeRepository.verifyExistingStoreById(id);
@@ -59,14 +56,14 @@ export class ProductService {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
-    name = name.toUpperCase()
+    name = name.toUpperCase();
 
     await this.productRepository.verifyThereIsNoProductWithNameAndStore(
       name,
       id,
     );
 
-    const product = new Product(id, name, price, quantity)
+    const product = new Product(id, name, price, quantity);
 
     await this.productRepository.createProduct(product);
 
@@ -96,14 +93,20 @@ export class ProductService {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
-    name = name.toUpperCase()
+    name = name.toUpperCase();
 
     await this.productRepository.verifyThereIsNoProductWithNameAndStore(
       name,
       storeId,
     );
 
-    const product = new UserStoreProduct(storeId, userId, name, price, quantity)
+    const product = new UserStoreProduct(
+      storeId,
+      userId,
+      name,
+      price,
+      quantity,
+    );
 
     await this.productRepository.createProduct(product);
 
@@ -122,7 +125,8 @@ export class ProductService {
     newPrice,
     newQuantity,
   }: IUpdateProduct) {
-    const product = await this.productRepository.verifyExistingProductById(productId);
+    const product =
+      await this.productRepository.verifyExistingProductById(productId);
 
     const storeId = await this.authService.getTokenId(access_token);
 
@@ -137,7 +141,7 @@ export class ProductService {
       await this.authService.getNewTokens(access_token);
 
     if (newName) {
-      newName = newName.toUpperCase()
+      newName = newName.toUpperCase();
       await this.productRepository.verifyThereIsNoProductWithNameAndStore(
         newName,
         storeId,
@@ -149,8 +153,8 @@ export class ProductService {
       newName ? newName : product.name,
       newPrice ? newPrice : product.price,
       newQuantity ? newQuantity : product.quantity,
-      productId
-    )
+      productId,
+    );
 
     if (
       editedProduct.name === product.name &&
@@ -181,7 +185,8 @@ export class ProductService {
     newPrice,
     newQuantity,
   }: IUpdateProduct) {
-    const product = await this.productRepository.verifyExistingProductById(productId);
+    const product =
+      await this.productRepository.verifyExistingProductById(productId);
 
     const userId = await this.authService.getTokenId(access_token);
 
@@ -200,13 +205,12 @@ export class ProductService {
       await this.authService.getNewTokens(access_token);
 
     if (newName) {
-      newName = newName.toUpperCase()
+      newName = newName.toUpperCase();
       await this.productRepository.verifyThereIsNoProductWithNameAndStore(
         newName,
         storeId,
       );
     }
-
 
     const editedProduct = new UserStoreProduct(
       storeId,
@@ -215,7 +219,7 @@ export class ProductService {
       newPrice ? newPrice : product.price,
       newQuantity ? newQuantity : product.quantity,
       productId,
-    )
+    );
 
     if (
       editedProduct.name === product.name &&
@@ -239,7 +243,7 @@ export class ProductService {
   }
 
   async deleteProduct({ productId, access_token }: IDeleteProduct) {
-    const product = await this.productRepository.verifyExistingProductById(productId);
+    await this.productRepository.verifyExistingProductById(productId);
 
     const storeId = await this.authService.getTokenId(access_token);
 
@@ -262,8 +266,12 @@ export class ProductService {
     };
   }
 
-  async deleteUserStoreProduct({ productId, access_token, storeId }: IDeleteProduct) {
-    const product = await this.productRepository.verifyExistingProductById(productId);
+  async deleteUserStoreProduct({
+    productId,
+    access_token,
+    storeId,
+  }: IDeleteProduct) {
+    await this.productRepository.verifyExistingProductById(productId);
 
     const userId = await this.authService.getTokenId(access_token);
 

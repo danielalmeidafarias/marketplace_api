@@ -24,25 +24,22 @@ export class Store {
     uf: string,
     phone: string,
     cnpj: string,
-    storeId?: UUID
-    )
-    {
+    storeId?: UUID,
+  ) {
+    if (storeId) {
+      this.id = storeId;
+    }
 
-      if(storeId) {
-        this.id = storeId
-      }
-
-      this.cnpj = cnpj
-      this.password = password
-      this.email = email
-      this.name = name
-      this.cep = cep
-      this.logradouro = logradouro
-      this.bairro = bairro
-      this.cidade = cidade
-      this.uf = uf
-      this.phone = phone
-
+    this.cnpj = cnpj;
+    this.password = password;
+    this.email = email;
+    this.name = name;
+    this.cep = cep;
+    this.logradouro = logradouro;
+    this.bairro = bairro;
+    this.cidade = cidade;
+    this.uf = uf;
+    this.phone = phone;
   }
 
   @PrimaryGeneratedColumn('uuid')
@@ -97,8 +94,8 @@ export class Store {
   deleted_at: Date;
 }
 
-export class UserStore implements Store{
-  constructor(    
+export class UserStore implements Store {
+  constructor(
     email: string,
     name: string,
     cep: string,
@@ -110,29 +107,29 @@ export class UserStore implements Store{
     cpf: string,
     userId: UUID,
     cnpj?: string,
-    storeId?: UUID) {
+    storeId?: UUID,
+  ) {
+    if (storeId) {
+      this.id = storeId;
+    }
 
-      if(storeId) {
-        this.id = storeId
-      }
+    if (userId) {
+      this.userId = userId;
+    }
 
-      if(userId) {
-        this.userId = userId
-      }
+    if (cnpj) {
+      this.cnpj = cnpj;
+    }
 
-      if(cnpj) {
-        this.cnpj = cnpj
-      }
-
-      this.cpf = cpf
-      this.email = email
-      this.name = name
-      this.cep = cep
-      this.logradouro = logradouro
-      this.bairro = bairro
-      this.cidade = cidade
-      this.uf = uf
-      this.phone = phone
+    this.cpf = cpf;
+    this.email = email;
+    this.name = name;
+    this.cep = cep;
+    this.logradouro = logradouro;
+    this.bairro = bairro;
+    this.cidade = cidade;
+    this.uf = uf;
+    this.phone = phone;
   }
 
   id: UUID;
@@ -152,5 +149,4 @@ export class UserStore implements Store{
   created_at: Date;
   updated_at: Date;
   deleted_at: Date;
-  
 }

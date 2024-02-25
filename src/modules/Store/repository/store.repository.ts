@@ -3,20 +3,6 @@ import { UUID } from 'crypto';
 import { Store, UserStore } from '../entity/store.entity';
 import { DataSource } from 'typeorm';
 
-interface CreateStoreProps {
-  email: string;
-  password: string;
-  name: string;
-  cep: string;
-  logradouro: string;
-  bairro: string;
-  cidade: string;
-  uf: string;
-  phone: string;
-  cnpj?: string;
-  cpf?: string;
-  userId?: UUID;
-}
 @Injectable()
 export class StoreRepository {
   constructor(private dataSource: DataSource) {}
@@ -136,15 +122,17 @@ export class StoreRepository {
 
   async deleteUserStores(userId: UUID) {
     try {
-      const userStores = await this.findManyByUserId(userId)
+      const userStores = await this.findManyByUserId(userId);
 
-      userStores.forEach(async store => {
-        await this.deleteStore(store.id)
-      })
-
+      userStores.forEach(async (store) => {
+        await this.deleteStore(store.id);
+      });
     } catch (err) {
-      console.error(err)
-      throw new HttpException('Ocorreu um erro ao excluir as lojas', HttpStatus.INTERNAL_SERVER_ERROR)
+      console.error(err);
+      throw new HttpException(
+        'Ocorreu um erro ao excluir as lojas',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -270,7 +258,7 @@ export class StoreRepository {
       );
     }
 
-    return store
+    return store;
   }
 
   async verifyThereIsNoStoreWithId(

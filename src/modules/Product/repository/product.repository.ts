@@ -5,11 +5,11 @@ import { DataSource, Repository } from 'typeorm';
 import { UUID } from 'crypto';
 
 export interface ICreateProduct {
-  storeId: UUID
-  name: string,
-  price: number,
-  quantity: number
-  userId?: UUID
+  storeId: UUID;
+  name: string;
+  price: number;
+  quantity: number;
+  userId?: UUID;
 }
 
 @Injectable()
@@ -17,11 +17,9 @@ export class ProductRepository {
   constructor(
     @InjectRepository(Product) private productRepository: Repository<Product>,
     private dataSource: DataSource,
-  ) { }
+  ) {}
 
-  async createProduct(
-    product: Product | UserStoreProduct
-  ) {
+  async createProduct(product: Product | UserStoreProduct) {
     try {
       this.dataSource
         .getRepository(Product)
@@ -55,7 +53,7 @@ export class ProductRepository {
           name: product.name,
           price: product.price,
           quantity: product.quantity,
-          available: product.quantity
+          available: product.quantity,
         })
         .where('id = :id', { id: product.id })
         .execute();
@@ -87,31 +85,33 @@ export class ProductRepository {
 
   async deleteStoreProducts(id: UUID) {
     try {
-
-      const products = await this.findManyByStoreId(id)
+      const products = await this.findManyByStoreId(id);
 
       products.forEach(async (product) => {
-        await this.deleteProduct(product.id)
-      })
-
+        await this.deleteProduct(product.id);
+      });
     } catch (err) {
-      console.error(err)
-      throw new HttpException('Ocorreu um erro ao tentar excluir os produtos', HttpStatus.INTERNAL_SERVER_ERROR)
+      console.error(err);
+      throw new HttpException(
+        'Ocorreu um erro ao tentar excluir os produtos',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
   async deleteUserProducts(id: UUID) {
     try {
-
-      const products = await this.findManyByUserId(id)
+      const products = await this.findManyByUserId(id);
 
       products.forEach(async (product) => {
-        await this.deleteProduct(product.id)
-      })
-
+        await this.deleteProduct(product.id);
+      });
     } catch (err) {
-      console.error(err)
-      throw new HttpException('Ocorreu um erro ao tentar excluir os produtos', HttpStatus.INTERNAL_SERVER_ERROR)
+      console.error(err);
+      throw new HttpException(
+        'Ocorreu um erro ao tentar excluir os produtos',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 

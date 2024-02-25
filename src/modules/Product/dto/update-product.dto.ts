@@ -35,13 +35,10 @@ export class UpdateProductBodyDTO {
 
 export class UpdateProductStoreQuery {
   @IsUUID()
-  productId: UUID
-
+  productId: UUID;
 }
 
-export class UpdateProductUserQuery extends UpdateProductStoreQuery{
+export class UpdateProductUserQuery extends UpdateProductStoreQuery {
   @IsUUID()
   storeId: UUID;
 }
-
-

@@ -14,23 +14,21 @@ import {
 @Entity()
 export class Product {
   constructor(
-    storeId: UUID, 
-    name: string, 
-    price: number, 
-    quantity: number, 
-    productId?: UUID
+    storeId: UUID,
+    name: string,
+    price: number,
+    quantity: number,
+    productId?: UUID,
   ) {
-
-    this.storeId = storeId
-    this.name = name
-    this.price = price
-    this.quantity = quantity
-    this.available = quantity
+    this.storeId = storeId;
+    this.name = name;
+    this.price = price;
+    this.quantity = quantity;
+    this.available = quantity;
 
     if (productId) {
-      this.id = productId
+      this.id = productId;
     }
-    
   }
 
   @PrimaryGeneratedColumn('uuid')
@@ -68,27 +66,24 @@ export class Product {
 }
 
 export class UserStoreProduct implements Product {
-
   constructor(
-    storeId: UUID, 
-    userId: UUID, 
-    name: string, 
-    price: number, 
-    quantity: number, 
-    productId?: UUID
+    storeId: UUID,
+    userId: UUID,
+    name: string,
+    price: number,
+    quantity: number,
+    productId?: UUID,
   ) {
-
-    this.storeId = storeId
-    this.userId = userId
-    this.name = name
-    this.price = price
-    this.quantity = quantity
-    this.available = quantity
+    this.storeId = storeId;
+    this.userId = userId;
+    this.name = name;
+    this.price = price;
+    this.quantity = quantity;
+    this.available = quantity;
 
     if (productId) {
-      this.id = productId
+      this.id = productId;
     }
-
   }
 
   id: UUID;
@@ -102,5 +97,4 @@ export class UserStoreProduct implements Product {
   created_at: Date;
   updated_at: Date;
   deleted_at: Date;
-
 }

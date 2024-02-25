@@ -12,36 +12,39 @@ import { Store, UserStore } from './entity/store.entity';
 import { ProductRepository } from '../Product/repository/product.repository';
 
 interface ICreateStore {
-  cep: string
-  email: string
-  name: string
-  password?: string
-  phone: string
-  cnpj: string
-  access_token?: string
+  cep: string;
+  email: string;
+  name: string;
+  password?: string;
+  phone: string;
+  cnpj: string;
+  access_token?: string;
+  refresh_token?: string;
 }
 
 interface IUpdateStore {
-  access_token: string,
-  password?: string,
-  newCEP?: string,
-  newEmail?: string,
-  newName?: string,
-  newPassword?: string,
-  newPhone?: string,
-  storeId?: UUID
+  access_token: string;
+  refresh_token: string;
+  password?: string;
+  newCEP?: string;
+  newEmail?: string;
+  newName?: string;
+  newPassword?: string;
+  newPhone?: string;
+  storeId?: UUID;
 }
 
 interface IDeleteStore {
-  access_token: string,
-  password?: string,
-  storeId?: UUID,
-
+  access_token: string;
+  refresh_token: string;
+  password?: string;
+  storeId?: UUID;
 }
 
 interface IGetStoreInfo {
-  access_token: string
-  storeId?: UUID
+  access_token: string;
+  refresh_token: string;
+  storeId?: UUID;
 }
 
 @Injectable()
@@ -52,7 +55,7 @@ export class StoreService {
     private authService: AuthService,
     private userRepository: UserRepository,
     private utilsService: UtilsService,
-  ) { }
+  ) {}
 
   async createStore({
     cep: incomingCep,
@@ -84,7 +87,6 @@ export class StoreService {
 
     await this.storeRepository.verifyThereIsNoStoreWithCnpj(cnpj);
 
-
     const store = new Store(
       email,
       name.toUpperCase(),
@@ -96,11 +98,12 @@ export class StoreService {
       uf,
       phone,
       cnpj,
-    )
+    );
 
     await this.storeRepository.create(store);
 
-    const { access_token, refresh_token } = await this.authService.signIn(store);
+    const { access_token, refresh_token } =
+      await this.authService.signIn(store);
 
     return {
       access_token,
@@ -166,7 +169,7 @@ export class StoreService {
       user.cpf,
       user.id,
       incomingCnpj ? cnpj : null,
-    )
+    );
 
     await this.storeRepository.create(store);
 
@@ -292,7 +295,9 @@ export class StoreService {
     const editedStore = new Store(
       newEmail ? newEmail : store.email,
       newName ? newName.toUpperCase() : store.name,
-      newPassword ? await this.utilsService.hashPassword(newPassword) : store.password,
+      newPassword
+        ? await this.utilsService.hashPassword(newPassword)
+        : store.password,
       newCEP ? address.cep : store.cep,
       newCEP ? address.logradouro : store.logradouro,
       newCEP ? address.bairro : store.bairro,
@@ -300,7 +305,7 @@ export class StoreService {
       store.phone,
       store.cnpj,
       store.id,
-    )
+    );
 
     if (
       editedStore.cep === store.cep &&
@@ -389,7 +394,7 @@ export class StoreService {
       store.userId,
       store.cnpj,
       store.id,
-    )
+    );
 
     if (
       editedStore.cep === store.cep &&
@@ -423,7 +428,7 @@ export class StoreService {
 
     await this.authService.verifyTokenId(access_token, store.id);
 
-    await this.productRepository.deleteStoreProducts(store.id)
+    await this.productRepository.deleteStoreProducts(store.id);
 
     await this.storeRepository.deleteStore(id);
 
@@ -432,11 +437,7 @@ export class StoreService {
     };
   }
 
-  async deleteUserStore({
-    access_token,
-    storeId,
-    password,
-  }: IDeleteStore) {
+  async deleteUserStore({ access_token, storeId, password }: IDeleteStore) {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
@@ -459,7 +460,7 @@ export class StoreService {
 
     await this.authService.verifyTokenId(access_token, user.id);
 
-    await this.productRepository.deleteStoreProducts(store.id)
+    await this.productRepository.deleteStoreProducts(store.id);
 
     await this.storeRepository.deleteStore(storeId);
 
@@ -471,13 +472,13 @@ export class StoreService {
   }
 
   // encontrar lojas pelo nome
-  async findStoreByName() { }
+  async findStoreByName() {}
 
   // encontrar lojas pelo id da loja
-  async findStoreById() { }
+  async findStoreById() {}
 
   // encontrar lojas pelo id do usuario
-  async findStoreByUserId() { }
+  async findStoreByUserId() {}
 
   // encontrar produtos da loja
   async searchStoreProducts() {

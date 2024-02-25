@@ -9,7 +9,7 @@ export class UserRepository {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private dataSource: DataSource,
-  ) { }
+  ) {}
 
   async createUser(user: User) {
     const queryRunner = this.dataSource.createQueryRunner();

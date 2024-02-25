@@ -11,14 +11,20 @@ import {
 import { StoreService } from './store.service';
 import { LoginStoreDTO } from './dto/login-store.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { GetStoreInfoDTO, GetUserStoreInfoQueryDTO } from './dto/get-store-info.dto';
+import {
+  GetStoreInfoDTO,
+  GetUserStoreInfoQueryDTO,
+} from './dto/get-store-info.dto';
 import { CreateStoreDTO, CreateUserStoreDTO } from './dto/create-store.dto';
 import { UpdateStoreDTO } from './dto/update-store.dto';
 import { UpdateProductUserQuery } from '../Product/dto/update-product.dto';
-import { DeleteStoreBodyDTO, DeleteUserStoreQueryDTO } from './dto/delete-store.dto';
+import {
+  DeleteStoreBodyDTO,
+  DeleteUserStoreQueryDTO,
+} from './dto/delete-store.dto';
 @Controller()
 export class StoreController {
-  constructor(private storeService: StoreService) { }
+  constructor(private storeService: StoreService) {}
 
   @Post('/store/create')
   async createStore(
@@ -49,8 +55,15 @@ export class StoreController {
       cnpj,
     }: CreateUserStoreDTO,
   ) {
-    const password = '232'
-    return await this.storeService.createStoreByUser({ access_token, name, email, phone, cnpj, cep });
+    return await this.storeService.createStoreByUser({
+      access_token,
+      refresh_token,
+      name,
+      email,
+      phone,
+      cnpj,
+      cep,
+    });
   }
 
   @Post('/store/login')
@@ -62,7 +75,8 @@ export class StoreController {
   @Get('/store/info')
   async getStoreInfo(@Body() { access_token, refresh_token }: GetStoreInfoDTO) {
     return await this.storeService.getStoreInfo({
-      access_token
+      access_token,
+      refresh_token,
     });
   }
 
@@ -74,6 +88,7 @@ export class StoreController {
   ) {
     return this.storeService.getUserStoreInfo({
       access_token,
+      refresh_token,
       storeId,
     });
   }
@@ -95,6 +110,7 @@ export class StoreController {
   ) {
     return await this.storeService.updateStore({
       access_token,
+      refresh_token,
       password,
       newCEP,
       newEmail,
@@ -117,10 +133,11 @@ export class StoreController {
       newName,
       newPhone,
     }: UpdateStoreDTO,
-    @Query() { storeId }: UpdateProductUserQuery
+    @Query() { storeId }: UpdateProductUserQuery,
   ) {
     return this.storeService.updateUserStore({
       access_token,
+      refresh_token,
       password,
       storeId,
       newCEP,
@@ -137,6 +154,7 @@ export class StoreController {
   ) {
     return await this.storeService.deleteStore({
       access_token,
+      refresh_token,
       password,
     });
   }
@@ -149,17 +167,18 @@ export class StoreController {
   ) {
     return this.storeService.deleteUserStore({
       access_token,
+      refresh_token,
       password,
       storeId,
     });
   }
 
   @Get()
-  async getStore() { }
+  async getStore() {}
 
   @Get('/products')
-  async searchProduct() { }
+  async searchProduct() {}
 
   @Get('/orders')
-  async getOrders() { }
+  async getOrders() {}
 }

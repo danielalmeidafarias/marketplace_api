@@ -3,40 +3,64 @@ import {
   Body,
   Controller,
   Delete,
-  Param,
   Post,
   Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
-import { CreateProductStoreDTO, CreateProductUserDTO } from './dto/create-product.dto';
-import { DeleteProductBodyDTO, DeleteProductStoreQueryDTO, DeleteProductUserQueryDTO } from './dto/delete-product.dto';
-import { UpdateProductBodyDTO, UpdateProductStoreQuery, UpdateProductUserQuery } from './dto/update-product.dto';
+import {
+  CreateProductStoreDTO,
+  CreateProductUserDTO,
+} from './dto/create-product.dto';
+import {
+  DeleteProductBodyDTO,
+  DeleteProductStoreQueryDTO,
+  DeleteProductUserQueryDTO,
+} from './dto/delete-product.dto';
+import {
+  UpdateProductBodyDTO,
+  UpdateProductStoreQuery,
+  UpdateProductUserQuery,
+} from './dto/update-product.dto';
 
 @Controller()
 export class ProductController {
-  constructor(private productService: ProductService,
-  ) { }
+  constructor(private productService: ProductService) {}
 
   @UseGuards(AuthGuard)
   @Post('/product/create')
   async create(
     @Body()
-    { name, price, quantity, access_token, refresh_token }: CreateProductStoreDTO,
+    {
+      name,
+      price,
+      quantity,
+      access_token,
+      refresh_token,
+    }: CreateProductStoreDTO,
   ) {
     return this.productService.createProduct({
       name,
       price,
       quantity,
       access_token,
+      refresh_token,
     });
   }
 
   @UseGuards(AuthGuard)
   @Post('/user/product/create')
   async createUserStoreProduct(
-    @Body() { access_token, refresh_token, name, price, quantity, storeId }: CreateProductUserDTO,
+    @Body()
+    {
+      access_token,
+      refresh_token,
+      name,
+      price,
+      quantity,
+      storeId,
+    }: CreateProductUserDTO,
   ) {
     return this.productService.createUserStoreProduct({
       storeId,
@@ -44,6 +68,7 @@ export class ProductController {
       price,
       quantity,
       access_token,
+      refresh_token,
     });
   }
 
@@ -58,10 +83,11 @@ export class ProductController {
       newPrice,
       newQuantity,
     }: UpdateProductBodyDTO,
-    @Query() { productId }: UpdateProductStoreQuery
+    @Query() { productId }: UpdateProductStoreQuery,
   ) {
     return this.productService.updateProduct({
       access_token,
+      refresh_token,
       productId,
       newName,
       newPrice,
@@ -86,24 +112,25 @@ export class ProductController {
       productId,
       storeId,
       access_token,
+      refresh_token,
       newName,
       newPrice,
       newQuantity,
     });
   }
 
-
   @UseGuards(AuthGuard)
   @Delete('/product/delete')
   async delete(
     @Body() { access_token, refresh_token }: DeleteProductBodyDTO,
-    @Query() { productId }: DeleteProductStoreQueryDTO
+    @Query() { productId }: DeleteProductStoreQueryDTO,
   ) {
     return this.productService.deleteProduct({
       productId,
       access_token,
-    })
-  };
+      refresh_token,
+    });
+  }
 
   @UseGuards(AuthGuard)
   @Delete('/user/product/delete')
@@ -114,7 +141,8 @@ export class ProductController {
     return this.productService.deleteUserStoreProduct({
       productId,
       access_token,
-      storeId
+      refresh_token,
+      storeId,
     });
   }
 }

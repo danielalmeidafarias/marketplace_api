@@ -33,5 +33,5 @@ export class CreateProductStoreDTO {
 
 export class CreateProductUserDTO extends CreateProductStoreDTO {
   @IsUUID()
-  storeId: UUID
+  storeId: UUID;
 }

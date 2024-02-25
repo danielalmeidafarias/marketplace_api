@@ -1,7 +1,6 @@
 import { IsJWT, IsUUID } from 'class-validator';
 import { UUID } from 'crypto';
 
-
 export class DeleteProductBodyDTO {
   @IsJWT()
   access_token: string;
@@ -12,10 +11,10 @@ export class DeleteProductBodyDTO {
 
 export class DeleteProductStoreQueryDTO {
   @IsUUID()
-  productId: UUID
+  productId: UUID;
 }
 
 export class DeleteProductUserQueryDTO extends DeleteProductStoreQueryDTO {
   @IsUUID()
-  storeId: UUID
+  storeId: UUID;
 }

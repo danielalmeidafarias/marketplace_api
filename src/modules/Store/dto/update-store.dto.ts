@@ -21,7 +21,6 @@ export class EditUserStoreBodyDTO {
   @IsOptional()
   password: string;
 
-
   @IsOptional()
   @IsEmail()
   newEmail?: string;
@@ -44,7 +43,7 @@ export class EditUserStoreQuery {
   storeId: UUID;
 }
 
-export class UpdateStoreDTO extends EditUserStoreBodyDTO{
+export class UpdateStoreDTO extends EditUserStoreBodyDTO {
   @IsOptional()
   @IsStrongPassword()
   newPassword?: string;

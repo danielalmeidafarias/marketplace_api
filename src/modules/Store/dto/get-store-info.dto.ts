@@ -14,4 +14,3 @@ export class GetUserStoreInfoQueryDTO {
   @IsOptional()
   storeId: UUID;
 }
-

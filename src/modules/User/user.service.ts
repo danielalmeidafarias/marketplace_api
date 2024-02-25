@@ -3,11 +3,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './entity/user.entity';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from '../auth/auth.service';
-import { GetUserInfoDTO } from './dto/get-user-Info.dto';
-import { CreateUserDTO } from './dto/create-user.dto';
 import { LoginUserDTO } from './dto/login-user.dto';
-import { DeleteUserDTO } from './dto/delete-user.dto';
-import { UUID } from 'crypto';
 import {
   UtilsService,
   VerifyCepResponse,
@@ -16,34 +12,37 @@ import { StoreRepository } from '../Store/repository/store.repository';
 import { ProductRepository } from '../Product/repository/product.repository';
 
 export interface ICreateUser {
-  email: string,
-  password: string,
-  incomingCep: string,
-  incomingCpf: string,
-  dataNascimento: Date,
-  name: string,
-  lastName: string,
-  incomingPhone: string,
+  email: string;
+  password: string;
+  incomingCep: string;
+  incomingCpf: string;
+  dataNascimento: Date;
+  name: string;
+  lastName: string;
+  incomingPhone: string;
 }
 
 export interface IUpdateUser {
-  access_token: string,
-  password: string,
-  newPassword: string
-  newEmail: string,
-  newCEP: string,
-  newName: string,
-  newLastName: string,
-  newPhone: string,
+  access_token: string;
+  refresh_token: string;
+  password: string;
+  newPassword: string;
+  newEmail: string;
+  newCEP: string;
+  newName: string;
+  newLastName: string;
+  newPhone: string;
 }
 
 export interface IDeleteUser {
-  access_token: string, 
-  password: string
+  access_token: string;
+  refresh_token: string;
+  password: string;
 }
 
 export interface IGetUserInfo {
-  access_token: string
+  access_token: string;
+  refresh_token: string;
 }
 
 @Injectable()
@@ -53,7 +52,7 @@ export class UserService {
     private authService: AuthService,
     private utilsService: UtilsService,
     private storeRepository: StoreRepository,
-    private productRepository: ProductRepository
+    private productRepository: ProductRepository,
   ) {}
 
   async createUser({
@@ -197,7 +196,7 @@ export class UserService {
       newCEP ? address.cidade : user.cidade,
       newCEP ? address.uf : user.uf,
       newPhone ? phone : user.phone,
-      )
+    );
 
     if (
       editedUser.email === user.email &&
@@ -235,9 +234,9 @@ export class UserService {
 
     await this.authService.verifyTokenId(newAccess_token, user.id);
 
-    await this.storeRepository.deleteUserStores(user.id)
+    await this.storeRepository.deleteUserStores(user.id);
 
-    await this.productRepository.deleteUserProducts(user.id)
+    await this.productRepository.deleteUserProducts(user.id);
 
     await this.userRepository.deleteUser(user.id);
 

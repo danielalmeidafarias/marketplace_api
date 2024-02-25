@@ -61,6 +61,7 @@ export class UserController {
   async getInfo(@Body() { access_token, refresh_token }: GetUserInfoDTO) {
     return await this.userService.getUser({
       access_token,
+      refresh_token,
     });
   }
 
@@ -82,6 +83,7 @@ export class UserController {
   ) {
     return await this.userService.updateUser({
       access_token,
+      refresh_token,
       password,
       newEmail,
       newPassword,
@@ -97,6 +99,7 @@ export class UserController {
   delete(@Body() { access_token, refresh_token, password }: DeleteUserDTO) {
     return this.userService.deleteUser({
       access_token,
+      refresh_token,
       password,
     });
   }

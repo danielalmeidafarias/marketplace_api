@@ -16,4 +16,3 @@ export class DeleteUserStoreQueryDTO {
   @IsUUID()
   storeId: UUID;
 }
-
