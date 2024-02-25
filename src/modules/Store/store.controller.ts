@@ -8,20 +8,17 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { CreateStoreDTO } from './dto/create-store.dto';
 import { StoreService } from './store.service';
 import { LoginStoreDTO } from './dto/login-store.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { GetStoreInfoDTO } from './dto/get-store-info.dto';
-import { DeleteStoreDTO } from './dto/delete-store.dto';
-import { EditStoreDTO } from './dto/edit-store.dto';
-import { CreateStoreByUserDTO } from '../User/dto/create-user-store.dto';
-import { DeleteUserStoreIdDTO, DeleteUserStoreTokensDTO } from '../User/dto/delete-user-store.dto';
-import { EditUserStoreDTO } from '../User/dto/edit-user-store.dto';
-import { GetUserStoreInfoIdDTO, GetUserStoreInfoTokensDTO } from '../User/dto/get-user-store-info.dto';
+import { GetStoreInfoDTO, GetUserStoreInfoQueryDTO } from './dto/get-store-info.dto';
+import { CreateStoreDTO, CreateUserStoreDTO } from './dto/create-store.dto';
+import { UpdateStoreDTO } from './dto/update-store.dto';
+import { UpdateProductUserQuery } from '../Product/dto/update-product.dto';
+import { DeleteStoreBodyDTO, DeleteUserStoreQueryDTO } from './dto/delete-store.dto';
 @Controller()
 export class StoreController {
-  constructor(private storeService: StoreService) {}
+  constructor(private storeService: StoreService) { }
 
   @Post('/store/create')
   async createStore(
@@ -50,17 +47,10 @@ export class StoreController {
       name,
       phone,
       cnpj,
-    }: CreateStoreByUserDTO,
+    }: CreateUserStoreDTO,
   ) {
-    return await this.storeService.createStoreByUser({
-      access_token,
-      refresh_token,
-      cep,
-      email,
-      name,
-      phone,
-      cnpj,
-    });
+    const password = '232'
+    return await this.storeService.createStoreByUser({ access_token, name, email, phone, cnpj, cep });
   }
 
   @Post('/store/login')
@@ -72,20 +62,18 @@ export class StoreController {
   @Get('/store/info')
   async getStoreInfo(@Body() { access_token, refresh_token }: GetStoreInfoDTO) {
     return await this.storeService.getStoreInfo({
-      access_token,
-      refresh_token,
+      access_token
     });
   }
 
   @UseGuards(AuthGuard)
   @Get('/user/store/info')
   async getUserStoreInfo(
-    @Query() { storeId }: GetUserStoreInfoIdDTO,
-    @Body() { access_token, refresh_token }: GetUserStoreInfoTokensDTO,
+    @Query() { storeId }: GetUserStoreInfoQueryDTO,
+    @Body() { access_token, refresh_token }: GetStoreInfoDTO,
   ) {
     return this.storeService.getUserStoreInfo({
       access_token,
-      refresh_token,
       storeId,
     });
   }
@@ -103,11 +91,10 @@ export class StoreController {
       newName,
       newPassword,
       newPhone,
-    }: EditStoreDTO,
+    }: UpdateStoreDTO,
   ) {
-    return await this.storeService.editStore({
+    return await this.storeService.updateStore({
       access_token,
-      refresh_token,
       password,
       newCEP,
       newEmail,
@@ -119,22 +106,21 @@ export class StoreController {
 
   @UseGuards(AuthGuard)
   @Put('/user/store/update')
-  async editUserStore(
+  async updateUserStore(
     @Body()
     {
       access_token,
       refresh_token,
       password,
-      storeId,
       newCEP,
       newEmail,
       newName,
       newPhone,
-    }: EditUserStoreDTO,
+    }: UpdateStoreDTO,
+    @Query() { storeId }: UpdateProductUserQuery
   ) {
-    return this.storeService.editUserStore({
+    return this.storeService.updateUserStore({
       access_token,
-      refresh_token,
       password,
       storeId,
       newCEP,
@@ -147,11 +133,10 @@ export class StoreController {
   @UseGuards(AuthGuard)
   @Delete('/store/delete')
   async deleteStore(
-    @Body() { access_token, refresh_token, password }: DeleteStoreDTO,
+    @Body() { access_token, refresh_token, password }: DeleteStoreBodyDTO,
   ) {
     return await this.storeService.deleteStore({
       access_token,
-      refresh_token,
       password,
     });
   }
@@ -159,23 +144,22 @@ export class StoreController {
   @UseGuards(AuthGuard)
   @Delete('/user/store/delete')
   async deleteUserStore(
-    @Query() { storeId }: DeleteUserStoreIdDTO,
-    @Body() { access_token, refresh_token, password }: DeleteUserStoreTokensDTO,
+    @Query() { storeId }: DeleteUserStoreQueryDTO,
+    @Body() { access_token, refresh_token, password }: DeleteStoreBodyDTO,
   ) {
     return this.storeService.deleteUserStore({
       access_token,
-      refresh_token,
       password,
       storeId,
     });
   }
 
   @Get()
-  async getStore() {}
+  async getStore() { }
 
   @Get('/products')
-  async searchProduct() {}
+  async searchProduct() { }
 
   @Get('/orders')
-  async getOrders() {}
+  async getOrders() { }
 }

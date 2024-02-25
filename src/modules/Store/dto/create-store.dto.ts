@@ -1,10 +1,15 @@
 import {
   IsEmail,
+  IsJWT,
+  IsNumber,
   IsNumberString,
+  IsOptional,
   IsPhoneNumber,
+  IsPostalCode,
   IsString,
   IsStrongPassword,
 } from 'class-validator';
+
 export class CreateStoreDTO {
   @IsString()
   name: string;
@@ -24,3 +29,34 @@ export class CreateStoreDTO {
   @IsNumberString()
   cep: string;
 }
+
+export class CreateUserStoreDTO {
+  @IsJWT()
+  @IsOptional()
+  access_token: string;
+
+  @IsOptional()
+  @IsJWT()
+  refresh_token: string;
+
+  @IsString()
+  @IsOptional()
+  name: string;
+
+  @IsEmail()
+  @IsOptional()
+  email: string;
+
+  @IsNumber()
+  @IsOptional()
+  cnpj?: string;
+
+  @IsPhoneNumber('BR')
+  @IsOptional()
+  phone: string;
+
+  @IsPostalCode('BR')
+  @IsOptional()
+  cep: string;
+}
+

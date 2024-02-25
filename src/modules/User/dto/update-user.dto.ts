@@ -1,27 +1,19 @@
 import {
-  IsJWT,
-  IsString,
   IsEmail,
+  IsJWT,
+  IsNumberString,
   IsOptional,
   IsPhoneNumber,
-  IsNumberString,
-  IsUUID,
+  IsString,
+  IsStrongPassword,
 } from 'class-validator';
-import { UUID } from 'crypto';
 
-export class EditUserStoreDTO {
+export class UpdateUserDTO {
   @IsJWT()
   access_token: string;
 
   @IsJWT()
   refresh_token: string;
-
-  @IsString()
-  @IsOptional()
-  password: string;
-
-  @IsUUID()
-  storeId: UUID;
 
   @IsOptional()
   @IsEmail()
@@ -29,7 +21,19 @@ export class EditUserStoreDTO {
 
   @IsOptional()
   @IsString()
+  password: string;
+
+  @IsOptional()
+  @IsStrongPassword()
+  newPassword?: string;
+
+  @IsOptional()
+  @IsString()
   newName?: string;
+
+  @IsOptional()
+  @IsString()
+  newLastName?: string;
 
   @IsOptional()
   @IsPhoneNumber('BR')

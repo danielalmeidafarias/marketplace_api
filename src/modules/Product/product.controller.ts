@@ -14,13 +14,13 @@ import { CreateProductStoreDTO, CreateProductUserDTO } from './dto/create-produc
 import { DeleteProductBodyDTO, DeleteProductStoreQueryDTO, DeleteProductUserQueryDTO } from './dto/delete-product.dto';
 import { UpdateProductBodyDTO, UpdateProductStoreQuery, UpdateProductUserQuery } from './dto/update-product.dto';
 
-@Controller('product')
+@Controller()
 export class ProductController {
   constructor(private productService: ProductService,
   ) { }
 
   @UseGuards(AuthGuard)
-  @Post('/create')
+  @Post('/product/create')
   async create(
     @Body()
     { name, price, quantity, access_token, refresh_token }: CreateProductStoreDTO,
@@ -34,7 +34,7 @@ export class ProductController {
   }
 
   @UseGuards(AuthGuard)
-  @Post('user/create')
+  @Post('/user/product/create')
   async createUserStoreProduct(
     @Body() { access_token, refresh_token, name, price, quantity, storeId }: CreateProductUserDTO,
   ) {
@@ -48,7 +48,7 @@ export class ProductController {
   }
 
   @UseGuards(AuthGuard)
-  @Put('/update')
+  @Put('/product/update')
   async update(
     @Body()
     {
@@ -70,7 +70,7 @@ export class ProductController {
   }
 
   @UseGuards(AuthGuard)
-  @Put('/user/update')
+  @Put('/user/product/update')
   async updateUserStoreProduct(
     @Body()
     {
@@ -94,7 +94,7 @@ export class ProductController {
 
 
   @UseGuards(AuthGuard)
-  @Delete('/delete')
+  @Delete('/product/delete')
   async delete(
     @Body() { access_token, refresh_token }: DeleteProductBodyDTO,
     @Query() { productId }: DeleteProductStoreQueryDTO
@@ -106,7 +106,7 @@ export class ProductController {
   };
 
   @UseGuards(AuthGuard)
-  @Delete('/user/delete')
+  @Delete('/user/product/delete')
   async deleteUserStoreProduct(
     @Body() { access_token, refresh_token }: DeleteProductBodyDTO,
     @Query() { productId, storeId }: DeleteProductUserQueryDTO,

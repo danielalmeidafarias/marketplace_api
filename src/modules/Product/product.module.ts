@@ -18,6 +18,6 @@ import { StoreModule } from '../Store/store.module';
   ],
   controllers: [ProductController],
   providers: [ProductService, ProductRepository, JwtService],
-  exports: [ProductService],
+  exports: [ProductService, ProductRepository],
 })
 export class ProductModule {}

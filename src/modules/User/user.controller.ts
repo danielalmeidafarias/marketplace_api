@@ -12,7 +12,7 @@ import {
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UserService } from './user.service';
 import { LoginUserDTO } from './dto/login-user.dto';
-import { EditUserDTO } from './dto/edit-user.dto';
+import { UpdateUserDTO } from './dto/update-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
 import { GetUserInfoDTO } from './dto/get-user-Info.dto';
 import { StoreService } from '../Store/store.service';
@@ -44,10 +44,10 @@ export class UserController {
       password,
       name,
       lastName,
-      cep,
-      cpf,
+      incomingCep: cep,
+      incomingCpf: cpf,
       dataNascimento,
-      phone,
+      incomingPhone: phone,
     });
   }
 
@@ -61,13 +61,12 @@ export class UserController {
   async getInfo(@Body() { access_token, refresh_token }: GetUserInfoDTO) {
     return await this.userService.getUser({
       access_token,
-      refresh_token,
     });
   }
 
   @UseGuards(AuthGuard)
-  @Put('/edit')
-  async edit(
+  @Put('/update')
+  async update(
     @Body()
     {
       access_token,
@@ -79,11 +78,10 @@ export class UserController {
       newName,
       newLastName,
       newPhone,
-    }: EditUserDTO,
+    }: UpdateUserDTO,
   ) {
-    return await this.userService.editUser({
+    return await this.userService.updateUser({
       access_token,
-      refresh_token,
       password,
       newEmail,
       newPassword,
@@ -99,7 +97,6 @@ export class UserController {
   delete(@Body() { access_token, refresh_token, password }: DeleteUserDTO) {
     return this.userService.deleteUser({
       access_token,
-      refresh_token,
       password,
     });
   }

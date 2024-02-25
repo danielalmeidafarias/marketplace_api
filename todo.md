@@ -13,6 +13,7 @@
 # Remover possíveis mudancças iguais
 # Utilizar new Entity para criacao e update de registros
 # Edit -> Update
+# Excluir lojas ao excluir usuário
 
 
 

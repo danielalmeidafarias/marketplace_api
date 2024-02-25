@@ -144,12 +144,13 @@ export class ProductService {
       );
     }
 
-    const editedProduct = {
-      id: productId,
-      name: newName ? newName : product.name,
-      price: newPrice ? newPrice : product.price,
-      quantity: newQuantity ? newQuantity : product.quantity,
-    };
+    const editedProduct = new Product(
+      storeId,
+      newName ? newName : product.name,
+      newPrice ? newPrice : product.price,
+      newQuantity ? newQuantity : product.quantity,
+      productId
+    )
 
     if (
       editedProduct.name === product.name &&
@@ -162,12 +163,7 @@ export class ProductService {
       );
     }
 
-    await this.productRepository.editProduct(
-      productId,
-      editedProduct.name,
-      editedProduct.price,
-      editedProduct.quantity,
-    );
+    await this.productRepository.updateProduct(editedProduct);
 
     return {
       message: `Produto ${productId} editado com sucesso!`,
@@ -211,12 +207,15 @@ export class ProductService {
       );
     }
 
-    const editedProduct = {
-      id: productId,
-      name: newName ? newName : product.name,
-      price: newPrice ? newPrice : product.price,
-      quantity: newQuantity ? newQuantity : product.quantity,
-    };
+
+    const editedProduct = new Product(      
+      storeId,
+      newName ? newName : product.name,
+      newPrice ? newPrice : product.price,
+      newQuantity ? newQuantity : product.quantity,
+      productId,
+      userId
+      )
 
     if (
       editedProduct.name === product.name &&
@@ -229,12 +228,7 @@ export class ProductService {
       );
     }
 
-    await this.productRepository.editProduct(
-      productId,
-      editedProduct.name,
-      editedProduct.price,
-      editedProduct.quantity,
-    );
+    await this.productRepository.updateProduct(editedProduct);
 
     return {
       message: `Produto ${productId} editado com sucesso!`,

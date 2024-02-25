@@ -20,12 +20,7 @@ export class ProductRepository {
   ) { }
 
   async createProduct(
-    { storeId,
-      name,
-      price,
-      quantity,
-      userId
-    }: ICreateProduct
+    product: Product
   ) {
     try {
       this.dataSource
@@ -33,12 +28,12 @@ export class ProductRepository {
         .createQueryBuilder()
         .insert()
         .values({
-          name,
-          price,
-          quantity,
-          available: quantity,
-          storeId,
-          userId: userId ? userId : null,
+          name: product.name,
+          price: product.price,
+          quantity: product.quantity,
+          available: product.quantity,
+          storeId: product.storeId,
+          userId: product.userId ? product.userId : null,
         })
         .execute();
     } catch (err) {
@@ -50,14 +45,14 @@ export class ProductRepository {
     }
   }
 
-  async editProduct(id: UUID, name: string, price: number, quantity: number) {
+  async updateProduct(product: Product) {
     try {
       await this.dataSource
         .getRepository(Product)
         .createQueryBuilder()
         .update(Product)
-        .set({ name, price, quantity: quantity })
-        .where('id = :id', { id })
+        .set({ name: product.name, price: product.price, quantity: product.quantity, available: product.quantity })
+        .where('id = :id', { id: product.id })
         .execute();
     } catch (err) {
       console.error(err);
@@ -85,6 +80,36 @@ export class ProductRepository {
     }
   }
 
+  async deleteStoreProducts(id: UUID) {
+    try {
+
+      const products = await this.findManyByStoreId(id)
+
+      products.forEach(async(product) => {
+        await this.deleteProduct(product.id)
+      })
+
+    } catch(err) {
+      console.error(err)
+      throw new HttpException('Ocorreu um erro ao tentar excluir os produtos', HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  async deleteUserProducts(id: UUID) {
+    try {
+
+      const products = await this.findManyByUserId(id)
+
+      products.forEach(async(product) => {
+        await this.deleteProduct(product.id)
+      })
+
+    } catch(err) {
+      console.error(err)
+      throw new HttpException('Ocorreu um erro ao tentar excluir os produtos', HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
   private async findOneById(id: UUID) {
     return await this.dataSource
       .getRepository(Product)
@@ -106,7 +131,7 @@ export class ProductRepository {
     return await this.dataSource
       .getRepository(Product)
       .createQueryBuilder('product')
-      .where('storeId = :storeId', { storeId })
+      .where('product.storeId = :storeId', { storeId })
       .getMany();
   }
 
@@ -114,7 +139,7 @@ export class ProductRepository {
     return await this.dataSource
       .getRepository(Product)
       .createQueryBuilder('product')
-      .where('userId = :userId', { userId })
+      .where('product.userId = :userId', { userId })
       .getMany();
   }
 

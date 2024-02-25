@@ -21,38 +21,25 @@ interface CreateStoreProps {
 export class StoreRepository {
   constructor(private dataSource: DataSource) {}
 
-  async create({
-    email,
-    password,
-    name,
-    cep,
-    logradouro,
-    bairro,
-    cidade,
-    uf,
-    phone,
-    cnpj,
-    cpf,
-    userId,
-  }: CreateStoreProps) {
+  async create(store: Store) {
     try {
       await this.dataSource
         .getRepository(Store)
         .createQueryBuilder()
         .insert()
         .values({
-          email,
-          password,
-          name,
-          phone,
-          cnpj,
-          cpf,
-          cep,
-          logradouro,
-          bairro,
-          cidade,
-          uf,
-          userId,
+          email: store.email,
+          password: store.password,
+          name: store.name,
+          phone: store.phone,
+          cnpj: store.cnpj,
+          cpf: store.cpf,
+          cep: store.cep,
+          logradouro: store.logradouro,
+          bairro: store.bairro,
+          cidade: store.cidade,
+          uf: store.uf,
+          userId: store.id,
         })
         .execute();
     } catch (err) {
@@ -102,34 +89,23 @@ export class StoreRepository {
     }
   }
 
-  async editStore(
-    id: UUID,
-    name: string,
-    email: string,
-    phone: string,
-    password: string,
-    cep: string,
-    logradouro: string,
-    bairro: string,
-    cidade: string,
-    uf: string,
-  ) {
+  async updateStore(store: Store) {
     try {
       await this.dataSource
         .getRepository(Store)
         .createQueryBuilder()
         .update()
-        .where('id = :id', { id })
+        .where('id = :id', { id: store.id })
         .set({
-          name,
-          email,
-          phone,
-          password,
-          cep,
-          logradouro,
-          bairro,
-          cidade,
-          uf,
+          name: store.name,
+          email: store.email,
+          phone: store.phone,
+          password: store.password,
+          cep: store.cep,
+          logradouro: store.logradouro,
+          bairro: store.bairro,
+          cidade: store.cidade,
+          uf: store.uf,
         })
         .execute();
     } catch (err) {
@@ -140,43 +116,6 @@ export class StoreRepository {
       );
     }
   }
-
-  // async editUserStore(
-  //   storeId: UUID,
-  //   name: string,
-  //   email: string,
-  //   phone: string,
-  //   cep: string,
-  //   logradouro: string,
-  //   bairro: string,
-  //   cidade: string,
-  //   uf: string,
-  // ) {
-  //   try {
-  //     await this.dataSource
-  //       .getRepository(Store)
-  //       .createQueryBuilder()
-  //       .update()
-  //       .where('id = :id', { id: storeId })
-  //       .set({
-  //         name,
-  //         email,
-  //         phone,
-  //         cep,
-  //         logradouro,
-  //         bairro,
-  //         cidade,
-  //         uf,
-  //       })
-  //       .execute();
-  //   } catch (err) {
-  //     console.error(err);
-  //     throw new HttpException(
-  //       'Ocorreu um erro durante a edição da loja, por favor tente novamente',
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
 
   async deleteStore(id: UUID) {
     try {
@@ -195,23 +134,27 @@ export class StoreRepository {
     }
   }
 
-  // async deleteUserStore(id: UUID, storeId: UUID) {
-  //   try {
-  //     await this.dataSource
-  //       .getRepository(Store)
-  //       .createQueryBuilder()
-  //       .delete()
-  //       .where('id = :id', { id: storeId })
-  //       .andWhere('userId = :userId', { userId: id })
-  //       .execute();
-  //   } catch (err) {
-  //     console.error(err);
-  //     throw new HttpException(
-  //       'Ocorreu um erro ao tentar deletar a loja, por favor tente novamente mais tarde',
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
+  async deleteUserStores(userId: UUID) {
+    try {
+      const userStores = await this.findManyByUserId(userId)
+
+      userStores.forEach(async store => {
+        await this.deleteStore(store.id)
+      })
+
+    } catch (err) {
+      console.error(err)
+      throw new HttpException('Ocorreu um erro ao excluir as lojas', HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  private async findManyByUserId(userId: UUID) {
+    return await this.dataSource
+      .getRepository(Store)
+      .createQueryBuilder('store')
+      .where('store.userId = :userId', { userId })
+      .getMany();
+  }
 
   private async findStoreByEmail(email: string) {
     const store = await this.dataSource

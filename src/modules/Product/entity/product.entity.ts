@@ -13,8 +13,7 @@ import {
 
 @Entity()
 export class Product {
-  constructor(storeId: UUID,name: string, price: number, quantity: number, 
-    userId?: UUID) {
+  constructor(storeId: UUID, name: string, price: number, quantity: number, productId?: UUID, userId?: UUID) {
     this.storeId = storeId
     this.name = name
     this.price = price
@@ -22,10 +21,12 @@ export class Product {
     this.available = quantity
 
     userId ? this.userId = userId : null
+
+    productId ? this.id = productId : null
   }
 
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: UUID;
 
   @Column()
   name: string;

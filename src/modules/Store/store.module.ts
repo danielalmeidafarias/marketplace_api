@@ -6,11 +6,12 @@ import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../User/user.module';
 import { JwtService } from '@nestjs/jwt';
 import { UtilsModule } from 'src/modules/utils/utils.module';
+import { ProductModule } from '../Product/product.module';
 
 @Module({
   controllers: [StoreController],
   providers: [StoreService, StoreRepository, JwtService],
-  imports: [AuthModule, UserModule, UtilsModule],
+  imports: [AuthModule, UserModule, UtilsModule, ProductModule],
   exports: [StoreService, StoreRepository],
 })
 export class StoreModule {}

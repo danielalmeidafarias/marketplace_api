@@ -11,21 +11,26 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export interface IStoreConstructor {
+  email: string,
+  name: string,
+  password: string | null,
+  cep: string,
+  logradouro: string,
+  bairro: string,
+  cidade: string,
+  uf: string,
+  phone: string,
+  cnpj: string | null,
+  cpf: string | null,
+  userId: UUID | null,
+  storeId?: UUID,
+}
+
 @Entity()
 export class Store {
   constructor(
-    email: string,
-    name: string,
-    password: string,
-    cep: string,
-    logradouro: string,
-    bairro: string,
-    cidade: string,
-    uf: string,
-    phone: string,
-    cnpj?: string,
-    cpf?: string,
-    userId?: UUID
+    { email, bairro, cep, cidade, cnpj, cpf, logradouro, name, password, phone, uf, userId, storeId }: IStoreConstructor
   ) {
     this.email = email;
     this.name = name;
@@ -33,13 +38,13 @@ export class Store {
     this.cep = cep;
     this.logradouro = logradouro
     this.bairro = bairro,
-    this.cidade = cidade,
-    this.uf = uf
+      this.cidade = cidade,
+      this.uf = uf
     this.phone = phone;
 
     cpf ? (this.cpf = cpf) : null;
     cnpj ? (this.cnpj = cpf) : null;
-
+    storeId ? this.id = storeId : null
     userId ? (this.userId = this.userId) : null
   }
 

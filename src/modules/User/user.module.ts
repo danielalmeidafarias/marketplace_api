@@ -9,7 +9,6 @@ import { JwtService } from '@nestjs/jwt';
 import { ProductModule } from '../Product/product.module';
 import { StoreModule } from '../Store/store.module';
 import { UtilsModule } from 'src/modules/utils/utils.module';
-import { UserStoreController } from '../Store/user-store.controller';
 
 @Module({
   imports: [

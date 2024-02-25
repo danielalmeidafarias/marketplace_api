@@ -6,7 +6,6 @@ import { AuthService } from '../auth/auth.service';
 import { GetUserInfoDTO } from './dto/get-user-Info.dto';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { LoginUserDTO } from './dto/login-user.dto';
-import { EditUserDTO } from './dto/edit-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
 import { UUID } from 'crypto';
 import {
@@ -14,6 +13,39 @@ import {
   VerifyCepResponse,
 } from 'src/modules/utils/utils.service';
 import { StoreRepository } from '../Store/repository/store.repository';
+import { ProductRepository } from '../Product/repository/product.repository';
+
+export interface ICreateUser {
+  email: string,
+  password: string,
+  incomingCep: string,
+  incomingCpf: string,
+  dataNascimento: Date,
+  name: string,
+  lastName: string,
+  incomingPhone: string,
+}
+
+export interface IUpdateUser {
+  access_token: string,
+  password: string,
+  newPassword: string
+  newEmail: string,
+  newCEP: string,
+  newName: string,
+  newLastName: string,
+  newPhone: string,
+}
+
+export interface IDeleteUser {
+  access_token: string, 
+  password: string
+}
+
+export interface IGetUserInfo {
+  access_token: string
+}
+
 @Injectable()
 export class UserService {
   constructor(
@@ -21,18 +53,19 @@ export class UserService {
     private authService: AuthService,
     private utilsService: UtilsService,
     private storeRepository: StoreRepository,
+    private productRepository: ProductRepository
   ) {}
 
   async createUser({
     email,
     password,
-    cep: incomingCep,
-    cpf: incomingCpf,
+    incomingCep,
+    incomingCpf,
     dataNascimento,
     name,
     lastName,
-    phone: incomingPhone,
-  }: CreateUserDTO) {
+    incomingPhone,
+  }: ICreateUser) {
     const cpf = await this.utilsService.verifyCPF(incomingCpf);
 
     const phone = await this.utilsService.verifyPhoneNumber(incomingPhone);
@@ -91,7 +124,7 @@ export class UserService {
     };
   }
 
-  async getUser({ access_token }: GetUserInfoDTO) {
+  async getUser({ access_token }: IGetUserInfo) {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
@@ -108,7 +141,7 @@ export class UserService {
     };
   }
 
-  async editUser({
+  async updateUser({
     access_token,
     password,
     newPassword,
@@ -117,7 +150,7 @@ export class UserService {
     newName,
     newLastName,
     newPhone,
-  }: EditUserDTO) {
+  }: IUpdateUser) {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
@@ -151,31 +184,20 @@ export class UserService {
       await this.userRepository.verifyThereIsNoUserWithPhone(newPhone);
     }
 
-    const editedUser: {
-      id: UUID;
-      email: string;
-      password: string;
-      cep: string;
-      logradouro: string;
-      bairro: string;
-      cidade: string;
-      uf: string;
-      name: string;
-      lastName: string;
-      phone: string;
-    } = {
-      id: user.id,
-      email: newEmail ? newEmail : user.email,
-      password: newPassword ? bcrypt.hashSync(newPassword, 10) : password,
-      cep: newCEP ? address.cep : user.cep,
-      logradouro: newCEP ? address.logradouro : user.logradouro,
-      bairro: newCEP ? address.bairro : user.bairro,
-      cidade: newCEP ? address.cidade : user.cidade,
-      uf: newCEP ? address.uf : user.uf,
-      name: newName ? newName.toUpperCase() : user.name,
-      lastName: newLastName ? newLastName : user.lastName,
-      phone: newPhone ? phone : user.phone,
-    };
+    const editedUser = new User(
+      newEmail ? newEmail : user.email,
+      newPassword ? bcrypt.hashSync(newPassword, 10) : password,
+      newName ? newName.toUpperCase() : user.name,
+      newLastName ? newLastName : user.lastName,
+      user.dataNascimento,
+      user.cpf,
+      newCEP ? address.cep : user.cep,
+      newCEP ? address.logradouro : user.logradouro,
+      newCEP ? address.bairro : user.bairro,
+      newCEP ? address.cidade : user.cidade,
+      newCEP ? address.uf : user.uf,
+      newPhone ? phone : user.phone,
+      )
 
     if (
       editedUser.email === user.email &&
@@ -191,19 +213,7 @@ export class UserService {
       );
     }
 
-    await this.userRepository.editUser(
-      editedUser.id,
-      editedUser.email,
-      editedUser.password,
-      editedUser.name,
-      editedUser.lastName,
-      editedUser.cep,
-      editedUser.logradouro,
-      editedUser.bairro,
-      editedUser.cidade,
-      editedUser.uf,
-      editedUser.phone,
-    );
+    await this.userRepository.updateUser(editedUser);
 
     return {
       message: 'Usuario editado com sucesso!',
@@ -213,7 +223,7 @@ export class UserService {
     };
   }
 
-  async deleteUser({ access_token, password }: DeleteUserDTO) {
+  async deleteUser({ access_token, password }: IDeleteUser) {
     const id = await this.authService.getTokenId(access_token);
 
     const user = await this.userRepository.verifyExistingUserById(id);
@@ -224,6 +234,10 @@ export class UserService {
       await this.authService.getNewTokens(access_token);
 
     await this.authService.verifyTokenId(newAccess_token, user.id);
+
+    await this.storeRepository.deleteUserStores(user.id)
+
+    await this.productRepository.deleteUserProducts(user.id)
 
     await this.userRepository.deleteUser(user.id);
 

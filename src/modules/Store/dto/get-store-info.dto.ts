@@ -1,4 +1,5 @@
-import { IsJWT } from 'class-validator';
+import { IsJWT, IsOptional, IsUUID } from 'class-validator';
+import { UUID } from 'crypto';
 
 export class GetStoreInfoDTO {
   @IsJWT()
@@ -7,3 +8,10 @@ export class GetStoreInfoDTO {
   @IsJWT()
   refresh_token: string;
 }
+
+export class GetUserStoreInfoQueryDTO {
+  @IsUUID()
+  @IsOptional()
+  storeId: UUID;
+}
+

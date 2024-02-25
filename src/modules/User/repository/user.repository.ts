@@ -9,7 +9,7 @@ export class UserRepository {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private dataSource: DataSource,
-  ) {}
+  ) { }
 
   async createUser(user: User) {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -51,37 +51,25 @@ export class UserRepository {
     }
   }
 
-  async editUser(
-    id: UUID,
-    newEmail?: string,
-    newPassword?: string,
-    newName?: string,
-    newLastName?: string,
-    newCEP?: string,
-    newLogradouro?: string,
-    newBairro?: string,
-    newCidade?: string,
-    newUf?: string,
-    newPhone?: string,
-  ) {
+  async updateUser(user: User) {
     const queryBuilder = this.dataSource.createQueryBuilder();
 
     try {
       queryBuilder
         .update(User)
         .set({
-          email: newEmail,
-          password: newPassword,
-          name: newName,
-          lastName: newLastName,
-          cep: newCEP,
-          logradouro: newLogradouro,
-          bairro: newBairro,
-          cidade: newCidade,
-          uf: newUf,
-          phone: newPhone,
+          email: user.email,
+          password: user.password,
+          name: user.name,
+          lastName: user.lastName,
+          cep: user.cep,
+          logradouro: user.logradouro,
+          bairro: user.bairro,
+          cidade: user.cidade,
+          uf: user.uf,
+          phone: user.phone,
         })
-        .where('id = :id', { id: id })
+        .where('id = :id', { id: user.id })
         .execute();
     } catch (err) {
       console.error(err);
