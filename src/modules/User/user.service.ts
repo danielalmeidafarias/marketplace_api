@@ -65,6 +65,8 @@ export class UserService {
     lastName,
     incomingPhone,
   }: ICreateUser) {
+    await this.utilsService.verifyIsMaiorDeIdade(dataNascimento)
+
     const cpf = await this.utilsService.verifyCPF(incomingCpf);
 
     const phone = await this.utilsService.verifyPhoneNumber(incomingPhone);

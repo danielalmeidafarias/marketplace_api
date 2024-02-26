@@ -64,6 +64,19 @@ export class UtilsService {
     }
   }
 
+  async verifyIsMaiorDeIdade(dataNascimento: Date) {
+    const todaysDate = new Date();
+    const birthDate = new Date(dataNascimento);
+    const idade = (todaysDate.getTime() - birthDate.getTime()) / 31536000000;
+
+    if (idade < 18) {
+      throw new HttpException(
+        'É necessário ter pelo menos 18 anos',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   async verifyPhoneNumber(phoneNumber: string) {
     const validPhone = phone(phoneNumber, { country: 'BR' });
 
