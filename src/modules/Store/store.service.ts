@@ -60,7 +60,7 @@ export class StoreService {
   async createStore({
     cep: incomingCep,
     email,
-    name,
+    name: incomingName,
     password,
     phone: incomingPhone,
     cnpj: incomingCnpj,
@@ -74,8 +74,10 @@ export class StoreService {
       await this.utilsService.verifyCEP(incomingCep);
 
     const hashedPassword = await this.utilsService.hashPassword(password);
+    
+    const name = incomingName.toUpperCase()
 
-    await this.storeRepository.verifyThereIsNoStoreWithName(name.toUpperCase());
+    await this.storeRepository.verifyThereIsNoStoreWithName(name);
 
     await this.storeRepository.verifyThereIsNoStoreWithEmail(email);
 
@@ -89,7 +91,7 @@ export class StoreService {
 
     const store = new Store(
       email,
-      name.toUpperCase(),
+      name,
       hashedPassword,
       cep,
       logradouro,
@@ -116,7 +118,7 @@ export class StoreService {
     access_token,
     cep: incomingCep,
     email,
-    name,
+    name: incomingName,
     phone: incomingPhone,
     cnpj: incomingCnpj,
   }: ICreateStore) {
@@ -137,10 +139,10 @@ export class StoreService {
       incomingPhone &&
       (await this.utilsService.verifyPhoneNumber(incomingPhone));
 
+    const name = incomingName ? incomingName.toUpperCase() :  null
+
     if (name) {
-      await this.storeRepository.verifyThereIsNoStoreWithName(
-        name.toUpperCase(),
-      );
+      await this.storeRepository.verifyThereIsNoStoreWithName(name);
     }
 
     if (email) {
@@ -161,7 +163,7 @@ export class StoreService {
       user.id,
       user,
       email ? email : user.email,
-      name ? name.toUpperCase() : user.name,
+      name ? name : user.name,
       incomingCep ? address.cep : user.cep,
       incomingCep ? address.logradouro : user.logradouro,
       incomingCep ? address.bairro : user.bairro,
@@ -272,33 +274,37 @@ export class StoreService {
     const phone: string | undefined =
       newPhone && (await this.utilsService.verifyPhoneNumber(newPhone));
 
-    if (newPassword || newEmail) {
+    const name = newName ? newName.toUpperCase() : null;
+
+    const newHashedPassword = newPassword
+      ? await this.utilsService.hashPassword(newPassword)
+      : null;
+
+    if (newPassword || (newEmail && newEmail !== store.email)) {
       if (!password) {
         throw new HttpException('Digite a senha', HttpStatus.UNAUTHORIZED);
       }
       await this.utilsService.passwordIsCorrect(store.password, password);
     }
 
-    if (newName) {
-      await this.storeRepository.verifyThereIsNoStoreWithName(newName);
+    if (newName && name !== store.name) {
+      await this.storeRepository.verifyThereIsNoStoreWithName(name);
     }
 
-    if (newEmail) {
+    if (newEmail && newEmail !== store.email) {
       await this.storeRepository.verifyThereIsNoStoreWithEmail(newEmail);
       await this.userRepository.verifyThereIsNoUserWithEmail(newEmail);
     }
 
-    if (newPhone) {
+    if (newPhone && phone !== store.phone) {
       await this.storeRepository.verifyThereIsNoStoreWithPhone(phone);
       await this.userRepository.verifyThereIsNoUserWithPhone(phone);
     }
 
     const editedStore = new Store(
       newEmail ? newEmail : store.email,
-      newName ? newName.toUpperCase() : store.name,
-      newPassword
-        ? await this.utilsService.hashPassword(newPassword)
-        : store.password,
+      newName ? name : store.name,
+      newPassword ? newHashedPassword : store.password,
       newCEP ? address.cep : store.cep,
       newCEP ? address.logradouro : store.logradouro,
       newCEP ? address.bairro : store.bairro,
@@ -350,6 +356,8 @@ export class StoreService {
 
     const store = await this.storeRepository.verifyExistingStoreById(storeId);
 
+    const name = newName ? newName.toUpperCase() : null
+
     if (store.userId !== user.id) {
       throw new HttpException(
         'O id fornecido não corresponde a nenhuma loja nesse usuário',
@@ -363,11 +371,11 @@ export class StoreService {
     const phone: string | undefined =
       newPhone && (await this.utilsService.verifyPhoneNumber(newPhone));
 
-    if (newName) {
-      await this.storeRepository.verifyThereIsNoStoreWithName(newName);
+    if (newName && name !== store.name) {
+      await this.storeRepository.verifyThereIsNoStoreWithName(name);
     }
 
-    if (newEmail) {
+    if (newEmail && newEmail !== store.email && newEmail !== user.email) {
       if (!password) {
         throw new HttpException('Digite a senha', HttpStatus.UNAUTHORIZED);
       }
@@ -377,7 +385,7 @@ export class StoreService {
       await this.utilsService.passwordIsCorrect(user.password, password);
     }
 
-    if (newPhone) {
+    if (newPhone && newPhone !== store.phone && newPhone !== user.phone) {
       await this.userRepository.verifyThereIsNoUserWithPhone(phone);
       await this.storeRepository.verifyThereIsNoStoreWithPhone(phone);
     }
@@ -386,7 +394,7 @@ export class StoreService {
       store.userId,
       user,
       newEmail ? newEmail : store.email,
-      newName ? newName.toUpperCase() : store.name,
+      newName ? name : store.name,
       newCEP ? address.cep : store.cep,
       newCEP ? address.logradouro : store.logradouro,
       newCEP ? address.bairro : store.bairro,

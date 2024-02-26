@@ -48,7 +48,7 @@ export class ProductService {
     private storeRepository: StoreRepository,
   ) {}
 
-  async createProduct({ name, price, quantity, access_token }: ICreateProduct) {
+  async createProduct({ name: incomingName, price, quantity, access_token }: ICreateProduct) {
     const storeId = await this.authService.getTokenId(access_token);
 
     const store = await this.storeRepository.verifyExistingStoreById(storeId);
@@ -56,7 +56,7 @@ export class ProductService {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
-    name = name.toUpperCase();
+    const name = incomingName.toUpperCase();
 
     await this.productRepository.verifyThereIsNoProductWithNameAndStore(
       name,
@@ -77,7 +77,7 @@ export class ProductService {
 
   async createUserStoreProduct({
     storeId,
-    name,
+    name: incomingName,
     price,
     quantity,
     access_token,
@@ -93,7 +93,7 @@ export class ProductService {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
-    name = name.toUpperCase();
+    const name = incomingName.toUpperCase();
 
     await this.productRepository.verifyThereIsNoProductWithNameAndStore(
       name,
@@ -134,6 +134,8 @@ export class ProductService {
 
     const store = await this.storeRepository.verifyExistingStoreById(storeId);
 
+    const name = newName ? newName.toUpperCase() : null
+
     await this.productRepository.verifyExistingProductInStoreWithId(
       productId,
       storeId,
@@ -142,10 +144,9 @@ export class ProductService {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
-    if (newName) {
-      newName = newName.toUpperCase();
+    if (newName && name !== product.name) {
       await this.productRepository.verifyThereIsNoProductWithNameAndStore(
-        newName,
+        name,
         storeId,
       );
     }
@@ -153,7 +154,7 @@ export class ProductService {
     const editedProduct = new Product(
       storeId,
       store,
-      newName ? newName : product.name,
+      newName ? name : product.name,
       newPrice ? newPrice : product.price,
       newQuantity ? newQuantity : product.quantity,
       productId,
@@ -197,6 +198,8 @@ export class ProductService {
 
     const store = await this.storeRepository.verifyExistingStoreById(storeId);
 
+    const name = newName ? newName.toUpperCase() : null
+
     await this.storeRepository.verifyExistingStoreInUser(userId, storeId);
 
     await this.productRepository.verifyExistingProductInStoreWithId(
@@ -207,10 +210,9 @@ export class ProductService {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
-    if (newName) {
-      newName = newName.toUpperCase();
+    if (newName && name !== product.name) {
       await this.productRepository.verifyThereIsNoProductWithNameAndStore(
-        newName,
+        name,
         storeId,
       );
     }
@@ -220,7 +222,7 @@ export class ProductService {
       store,
       userId,
       user,
-      newName ? newName : product.name,
+      newName ? name : product.name,
       newPrice ? newPrice : product.price,
       newQuantity ? newQuantity : product.quantity,
       productId,
