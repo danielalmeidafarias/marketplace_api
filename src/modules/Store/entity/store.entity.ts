@@ -96,6 +96,8 @@ export class Store {
 
 export class UserStore implements Store {
   constructor(
+    userId: UUID,
+    user: User,
     email: string,
     name: string,
     cep: string,
@@ -105,22 +107,20 @@ export class UserStore implements Store {
     uf: string,
     phone: string,
     cpf: string,
-    userId: UUID,
     cnpj?: string,
     storeId?: UUID,
   ) {
+    
     if (storeId) {
       this.id = storeId;
-    }
-
-    if (userId) {
-      this.userId = userId;
     }
 
     if (cnpj) {
       this.cnpj = cnpj;
     }
 
+    this.userId = userId;
+    this.user = user;
     this.cpf = cpf;
     this.email = email;
     this.name = name;

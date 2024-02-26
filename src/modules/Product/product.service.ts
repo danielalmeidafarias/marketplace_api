@@ -49,9 +49,9 @@ export class ProductService {
   ) {}
 
   async createProduct({ name, price, quantity, access_token }: ICreateProduct) {
-    const id = await this.authService.getTokenId(access_token);
+    const storeId = await this.authService.getTokenId(access_token);
 
-    await this.storeRepository.verifyExistingStoreById(id);
+    const store = await this.storeRepository.verifyExistingStoreById(storeId);
 
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
@@ -60,10 +60,10 @@ export class ProductService {
 
     await this.productRepository.verifyThereIsNoProductWithNameAndStore(
       name,
-      id,
+      storeId,
     );
 
-    const product = new Product(id, name, price, quantity);
+    const product = new Product(storeId, store, name, price, quantity);
 
     await this.productRepository.createProduct(product);
 
@@ -84,9 +84,9 @@ export class ProductService {
   }: ICreateProduct) {
     const userId = await this.authService.getTokenId(access_token);
 
-    await this.userRepository.verifyExistingUserById(userId);
+    const user = await this.userRepository.verifyExistingUserById(userId);
 
-    await this.storeRepository.verifyExistingStoreById(storeId);
+    const store = await this.storeRepository.verifyExistingStoreById(storeId);
 
     await this.storeRepository.verifyExistingStoreInUser(userId, storeId);
 
@@ -102,7 +102,9 @@ export class ProductService {
 
     const product = new UserStoreProduct(
       storeId,
+      store,
       userId,
+      user,
       name,
       price,
       quantity,
@@ -130,7 +132,7 @@ export class ProductService {
 
     const storeId = await this.authService.getTokenId(access_token);
 
-    await this.storeRepository.verifyExistingStoreById(storeId);
+    const store = await this.storeRepository.verifyExistingStoreById(storeId);
 
     await this.productRepository.verifyExistingProductInStoreWithId(
       productId,
@@ -150,6 +152,7 @@ export class ProductService {
 
     const editedProduct = new Product(
       storeId,
+      store,
       newName ? newName : product.name,
       newPrice ? newPrice : product.price,
       newQuantity ? newQuantity : product.quantity,
@@ -190,9 +193,9 @@ export class ProductService {
 
     const userId = await this.authService.getTokenId(access_token);
 
-    await this.userRepository.verifyExistingUserById(userId);
+    const user = await this.userRepository.verifyExistingUserById(userId);
 
-    await this.storeRepository.verifyExistingStoreById(storeId);
+    const store = await this.storeRepository.verifyExistingStoreById(storeId);
 
     await this.storeRepository.verifyExistingStoreInUser(userId, storeId);
 
@@ -214,7 +217,9 @@ export class ProductService {
 
     const editedProduct = new UserStoreProduct(
       storeId,
+      store,
       userId,
+      user,
       newName ? newName : product.name,
       newPrice ? newPrice : product.price,
       newQuantity ? newQuantity : product.quantity,

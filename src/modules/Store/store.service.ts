@@ -158,6 +158,8 @@ export class StoreService {
     }
 
     const store = new UserStore(
+      user.id,
+      user,
       email ? email : user.email,
       name ? name.toUpperCase() : user.name,
       incomingCep ? address.cep : user.cep,
@@ -167,7 +169,6 @@ export class StoreService {
       incomingCep ? address.uf : user.uf,
       incomingPhone ? phone : user.phone,
       user.cpf,
-      user.id,
       incomingCnpj ? cnpj : null,
     );
 
@@ -382,6 +383,8 @@ export class StoreService {
     }
 
     const editedStore = new UserStore(
+      store.userId,
+      user,
       newEmail ? newEmail : store.email,
       newName ? newName.toUpperCase() : store.name,
       newCEP ? address.cep : store.cep,
@@ -391,7 +394,6 @@ export class StoreService {
       newCEP ? address.uf : store.uf,
       store.phone,
       store.cpf,
-      store.userId,
       store.cnpj,
       store.id,
     );

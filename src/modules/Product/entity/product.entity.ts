@@ -15,12 +15,15 @@ import {
 export class Product {
   constructor(
     storeId: UUID,
+    store: Store,
     name: string,
     price: number,
     quantity: number,
     productId?: UUID,
   ) {
+
     this.storeId = storeId;
+    this.store = store;
     this.name = name;
     this.price = price;
     this.quantity = quantity;
@@ -47,11 +50,13 @@ export class Product {
   available: number;
 
   @ManyToOne(() => Store, (store) => store.id)
-  user: User;
+  store: Store;
 
   @Column()
   storeId: UUID;
 
+  @ManyToOne(() => User, (user) => user.id)
+  user: User;
   @Column({ nullable: true })
   userId: UUID;
 
@@ -68,14 +73,18 @@ export class Product {
 export class UserStoreProduct implements Product {
   constructor(
     storeId: UUID,
+    store: Store,
     userId: UUID,
+    user: User,
     name: string,
     price: number,
     quantity: number,
     productId?: UUID,
   ) {
     this.storeId = storeId;
+    this.store = store
     this.userId = userId;
+    this.user = user
     this.name = name;
     this.price = price;
     this.quantity = quantity;
@@ -86,14 +95,15 @@ export class UserStoreProduct implements Product {
     }
   }
 
+  storeId: UUID;
+  store: Store;
+  userId: UUID;
+  user: User;
   id: UUID;
   name: string;
   price: number;
   quantity: number;
   available: number;
-  user: User;
-  storeId: UUID;
-  userId: UUID;
   created_at: Date;
   updated_at: Date;
   deleted_at: Date;
