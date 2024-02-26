@@ -115,7 +115,7 @@ export class ProductRepository {
     }
   }
 
-  private async findOneById(id: UUID) {
+  async findOneById(id: UUID) {
     return await this.dataSource
       .getRepository(Product)
       .createQueryBuilder('product')
@@ -123,7 +123,7 @@ export class ProductRepository {
       .getOne();
   }
 
-  private async findOneInStoreById(productId: UUID, storeId: UUID) {
+  async findOneInStoreById(productId: UUID, storeId: UUID) {
     return await this.dataSource
       .getRepository(Product)
       .createQueryBuilder('product')
@@ -132,7 +132,7 @@ export class ProductRepository {
       .getOne();
   }
 
-  private async findManyByStoreId(storeId: UUID) {
+  async findManyByStoreId(storeId: UUID) {
     return await this.dataSource
       .getRepository(Product)
       .createQueryBuilder('product')
@@ -140,7 +140,7 @@ export class ProductRepository {
       .getMany();
   }
 
-  private async findManyByUserId(userId: UUID) {
+  async findManyByUserId(userId: UUID) {
     return await this.dataSource
       .getRepository(Product)
       .createQueryBuilder('product')
@@ -148,7 +148,7 @@ export class ProductRepository {
       .getMany();
   }
 
-  private async findManyByName(name: string) {
+  async findManyByName(name: string) {
     return await this.dataSource
       .getRepository(Product)
       .createQueryBuilder('product')
@@ -156,7 +156,7 @@ export class ProductRepository {
       .getMany();
   }
 
-  private async findOneByNameAndStore(name: string, storeId: UUID) {
+  async findOneByNameAndStore(name: string, storeId: UUID) {
     return await this.dataSource
       .getRepository(Product)
       .createQueryBuilder('product')
@@ -258,4 +258,5 @@ export class ProductRepository {
       );
     }
   }
+
 }

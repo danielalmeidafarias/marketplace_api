@@ -2,10 +2,14 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UUID } from 'crypto';
 import { Store, UserStore } from '../entity/store.entity';
 import { DataSource } from 'typeorm';
+import { ProductRepository } from 'src/modules/Product/repository/product.repository';
 
 @Injectable()
 export class StoreRepository {
-  constructor(private dataSource: DataSource) {}
+  constructor(
+    private dataSource: DataSource,
+    private productRepository: ProductRepository,
+  ) {}
 
   async create(store: Store | UserStore) {
     try {
@@ -38,15 +42,20 @@ export class StoreRepository {
   }
 
   async getStoreInfo(id: UUID) {
-    const queryBuilder = this.dataSource.createQueryBuilder();
-
     try {
-      const store = await queryBuilder
+      const store = await this.dataSource
+        .createQueryBuilder()
         .select('store')
         .from(Store, 'store')
         .where('store.id = :id', { id })
         .getOne();
-      return store;
+
+      const storeProducts = await this.productRepository.findManyByStoreId(id);
+
+      return {
+        store,
+        storeProducts,
+      };
     } catch (err) {
       console.error(err);
       throw new HttpException(
