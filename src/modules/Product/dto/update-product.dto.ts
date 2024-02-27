@@ -21,6 +21,10 @@ export class UpdateProductBodyDTO {
   newName?: string;
 
   @IsOptional()
+  @IsString()
+  newDescription?: string
+
+  @IsOptional()
   @IsNumber({
     maxDecimalPlaces: 2,
   })

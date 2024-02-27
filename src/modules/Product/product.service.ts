@@ -14,6 +14,7 @@ import { Product, UserStoreProduct } from './entity/product.entity';
 
 export interface ICreateProduct {
   name: string;
+  description: string
   price: number;
   quantity: number;
   access_token: string;
@@ -26,6 +27,7 @@ export interface IUpdateProduct {
   refresh_token: string;
   productId: UUID;
   newName?: string;
+  newDescription: string
   newPrice?: number;
   newQuantity?: number;
   storeId?: UUID;
@@ -48,7 +50,7 @@ export class ProductService {
     private storeRepository: StoreRepository,
   ) {}
 
-  async createProduct({ name: incomingName, price, quantity, access_token }: ICreateProduct) {
+  async createProduct({ name: incomingName, description ,price, quantity, access_token }: ICreateProduct) {
     const storeId = await this.authService.getTokenId(access_token);
 
     const store = await this.storeRepository.verifyExistingStoreById(storeId);
@@ -63,7 +65,7 @@ export class ProductService {
       storeId,
     );
 
-    const product = new Product(storeId, store, name, price, quantity);
+    const product = new Product(storeId, store, name, description, price, quantity);
 
     await this.productRepository.createProduct(product);
 
@@ -78,6 +80,7 @@ export class ProductService {
   async createUserStoreProduct({
     storeId,
     name: incomingName,
+    description,
     price,
     quantity,
     access_token,
@@ -106,6 +109,7 @@ export class ProductService {
       userId,
       user,
       name,
+      description,
       price,
       quantity,
     );
@@ -124,6 +128,7 @@ export class ProductService {
     access_token,
     productId,
     newName,
+    newDescription,
     newPrice,
     newQuantity,
   }: IUpdateProduct) {
@@ -155,6 +160,7 @@ export class ProductService {
       storeId,
       store,
       newName ? name : product.name,
+      newDescription ? newDescription : product.description,
       newPrice ? newPrice : product.price,
       newQuantity ? newQuantity : product.quantity,
       productId,
@@ -186,6 +192,7 @@ export class ProductService {
     storeId,
     productId,
     newName,
+    newDescription,
     newPrice,
     newQuantity,
   }: IUpdateProduct) {
@@ -223,6 +230,7 @@ export class ProductService {
       userId,
       user,
       newName ? name : product.name,
+      newDescription ? newDescription : product.description,
       newPrice ? newPrice : product.price,
       newQuantity ? newQuantity : product.quantity,
       productId,

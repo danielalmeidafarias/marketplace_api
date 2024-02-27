@@ -17,14 +17,15 @@ export class Product {
     storeId: UUID,
     store: Store,
     name: string,
+    description: string,
     price: number,
     quantity: number,
     productId?: UUID,
   ) {
-
     this.storeId = storeId;
     this.store = store;
     this.name = name;
+    this.description = description;
     this.price = price;
     this.quantity = quantity;
     this.available = quantity;
@@ -39,6 +40,9 @@ export class Product {
 
   @Column()
   name: string;
+
+  @Column()
+  description: string;
 
   @Column()
   price: number;
@@ -77,15 +81,17 @@ export class UserStoreProduct implements Product {
     userId: UUID,
     user: User,
     name: string,
+    description: string,
     price: number,
     quantity: number,
     productId?: UUID,
   ) {
     this.storeId = storeId;
-    this.store = store
+    this.store = store;
     this.userId = userId;
-    this.user = user
+    this.user = user;
     this.name = name;
+    this.description = description;
     this.price = price;
     this.quantity = quantity;
     this.available = quantity;
@@ -101,6 +107,7 @@ export class UserStoreProduct implements Product {
   user: User;
   id: UUID;
   name: string;
+  description: string;
   price: number;
   quantity: number;
   available: number;

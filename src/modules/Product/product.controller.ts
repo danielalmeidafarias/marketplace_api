@@ -34,6 +34,7 @@ export class ProductController {
     @Body()
     {
       name,
+      description,
       price,
       quantity,
       access_token,
@@ -42,6 +43,7 @@ export class ProductController {
   ) {
     return this.productService.createProduct({
       name,
+      description,
       price,
       quantity,
       access_token,
@@ -57,6 +59,7 @@ export class ProductController {
       access_token,
       refresh_token,
       name,
+      description,
       price,
       quantity,
       storeId,
@@ -65,6 +68,7 @@ export class ProductController {
     return this.productService.createUserStoreProduct({
       storeId,
       name,
+      description,
       price,
       quantity,
       access_token,
@@ -80,6 +84,7 @@ export class ProductController {
       access_token,
       refresh_token,
       newName,
+      newDescription,
       newPrice,
       newQuantity,
     }: UpdateProductBodyDTO,
@@ -90,6 +95,7 @@ export class ProductController {
       refresh_token,
       productId,
       newName,
+      newDescription,
       newPrice,
       newQuantity,
     });
@@ -103,6 +109,7 @@ export class ProductController {
       access_token,
       refresh_token,
       newName,
+      newDescription,
       newPrice,
       newQuantity,
     }: UpdateProductBodyDTO,
@@ -114,6 +121,7 @@ export class ProductController {
       access_token,
       refresh_token,
       newName,
+      newDescription,
       newPrice,
       newQuantity,
     });

@@ -13,6 +13,9 @@ export class CreateProductStoreDTO {
   @IsString()
   name: string;
 
+  @IsString()
+  description: string;
+
   @IsNumber({
     maxDecimalPlaces: 2,
   })
