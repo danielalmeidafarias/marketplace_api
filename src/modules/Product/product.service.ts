@@ -14,7 +14,7 @@ import { Product, UserStoreProduct } from './entity/product.entity';
 
 export interface ICreateProduct {
   name: string;
-  description: string
+  description: string;
   price: number;
   quantity: number;
   access_token: string;
@@ -27,7 +27,7 @@ export interface IUpdateProduct {
   refresh_token: string;
   productId: UUID;
   newName?: string;
-  newDescription: string
+  newDescription: string;
   newPrice?: number;
   newQuantity?: number;
   storeId?: UUID;
@@ -50,7 +50,13 @@ export class ProductService {
     private storeRepository: StoreRepository,
   ) {}
 
-  async createProduct({ name: incomingName, description ,price, quantity, access_token }: ICreateProduct) {
+  async createProduct({
+    name: incomingName,
+    description,
+    price,
+    quantity,
+    access_token,
+  }: ICreateProduct) {
     const storeId = await this.authService.getTokenId(access_token);
 
     const store = await this.storeRepository.verifyExistingStoreById(storeId);
@@ -65,7 +71,14 @@ export class ProductService {
       storeId,
     );
 
-    const product = new Product(storeId, store, name, description, price, quantity);
+    const product = new Product(
+      storeId,
+      store,
+      name,
+      description,
+      price,
+      quantity,
+    );
 
     await this.productRepository.createProduct(product);
 
@@ -139,7 +152,7 @@ export class ProductService {
 
     const store = await this.storeRepository.verifyExistingStoreById(storeId);
 
-    const name = newName ? newName.toUpperCase() : null
+    const name = newName ? newName.toUpperCase() : null;
 
     await this.productRepository.verifyExistingProductInStoreWithId(
       productId,
@@ -205,7 +218,7 @@ export class ProductService {
 
     const store = await this.storeRepository.verifyExistingStoreById(storeId);
 
-    const name = newName ? newName.toUpperCase() : null
+    const name = newName ? newName.toUpperCase() : null;
 
     await this.storeRepository.verifyExistingStoreInUser(userId, storeId);
 
@@ -310,6 +323,44 @@ export class ProductService {
       message: `Produto ${productId} excluido com sucesso`,
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
+    };
+  }
+
+  async searchProduct(name?: string, id?: UUID) {
+    if (!name && !id) {
+      throw new HttpException(
+        'Pelo menos um dos parametros deve ser passado: name, id',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (id) {
+      const product =
+        await this.productRepository.verifyExistingProductById(id);
+      const filteredPRoduct = {
+        id: product.id,
+        storeId: product.storeId,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+      };
+      return { product: filteredPRoduct };
+    }
+
+    const products = await this.productRepository.searchManyByName(name);
+
+    const filteredProducts = Array.from(products, (product) => {
+      return {
+        id: product.id,
+        storeId: product.storeId,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+      };
+    });
+
+    return {
+      products: filteredProducts,
     };
   }
 }

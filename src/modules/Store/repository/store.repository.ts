@@ -4,7 +4,7 @@ import { Store, UserStore } from '../entity/store.entity';
 import { DataSource } from 'typeorm';
 import { ProductRepository } from 'src/modules/Product/repository/product.repository';
 
-@Injectable()
+@Injectable() 
 export class StoreRepository {
   constructor(
     private dataSource: DataSource,
@@ -145,7 +145,7 @@ export class StoreRepository {
     }
   }
 
-  private async findManyByUserId(userId: UUID) {
+  async findManyByUserId(userId: UUID) {
     return await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')
@@ -153,7 +153,15 @@ export class StoreRepository {
       .getMany();
   }
 
-  private async findStoreByEmail(email: string) {
+  async searchManyByName(name: string) {
+    return await this.dataSource
+    .getRepository(Store)
+    .createQueryBuilder('store')
+    .where(`store.name ~* :name`, { name })
+    .getMany();
+  }
+
+  async findStoreByEmail(email: string) {
     const store = await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')
@@ -163,7 +171,7 @@ export class StoreRepository {
     return store;
   }
 
-  private async findStoreByCnpj(cnpj: string) {
+  async findStoreByCnpj(cnpj: string) {
     const store = await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')
@@ -173,7 +181,7 @@ export class StoreRepository {
     return store;
   }
 
-  private async findStoreByPhone(phone: string) {
+  async findStoreByPhone(phone: string) {
     const store = await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')
@@ -183,7 +191,7 @@ export class StoreRepository {
     return store;
   }
 
-  private async findStoreById(id: UUID) {
+  async findStoreById(id: UUID) {
     const store = await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')
@@ -193,7 +201,7 @@ export class StoreRepository {
     return store;
   }
 
-  private async findStoreByName(name: string) {
+  async findStoreByName(name: string) {
     const store = await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')
@@ -203,7 +211,7 @@ export class StoreRepository {
     return store;
   }
 
-  private async findOneInUserById(userId: UUID, storeId: UUID) {
+  async findOneInUserById(userId: UUID, storeId: UUID) {
     const store = await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')

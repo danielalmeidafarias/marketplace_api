@@ -27,6 +27,7 @@ export class ProductRepository {
         .insert()
         .values({
           name: product.name,
+          description: product.description,
           price: product.price,
           quantity: product.quantity,
           available: product.quantity,
@@ -51,6 +52,7 @@ export class ProductRepository {
         .update(Product)
         .set({
           name: product.name,
+          description: product.description,
           price: product.price,
           quantity: product.quantity,
           available: product.quantity,
@@ -148,11 +150,20 @@ export class ProductRepository {
       .getMany();
   }
 
-  async findManyByName(name: string) {
+  async searchManyByName(name: string) {
     return await this.dataSource
       .getRepository(Product)
       .createQueryBuilder('product')
-      .where('name = :name', { name })
+      .where('name ~* :name', { name })
+      .getMany();
+  }
+
+  async searchManyByNameAndStore(name: string, storeId: UUID) {
+    return await this.dataSource
+      .getRepository(Product)
+      .createQueryBuilder('product')
+      .where('name ~* :name', { name })
+      .andWhere('product.storeId = :storeId', { storeId })
       .getMany();
   }
 
@@ -258,5 +269,4 @@ export class ProductRepository {
       );
     }
   }
-
 }

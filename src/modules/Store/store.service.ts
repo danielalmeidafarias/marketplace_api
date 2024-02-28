@@ -74,8 +74,8 @@ export class StoreService {
       await this.utilsService.verifyCEP(incomingCep);
 
     const hashedPassword = await this.utilsService.hashPassword(password);
-    
-    const name = incomingName.toUpperCase()
+
+    const name = incomingName.toUpperCase();
 
     await this.storeRepository.verifyThereIsNoStoreWithName(name);
 
@@ -139,7 +139,7 @@ export class StoreService {
       incomingPhone &&
       (await this.utilsService.verifyPhoneNumber(incomingPhone));
 
-    const name = incomingName ? incomingName.toUpperCase() :  null
+    const name = incomingName ? incomingName.toUpperCase() : null;
 
     if (name) {
       await this.storeRepository.verifyThereIsNoStoreWithName(name);
@@ -356,7 +356,7 @@ export class StoreService {
 
     const store = await this.storeRepository.verifyExistingStoreById(storeId);
 
-    const name = newName ? newName.toUpperCase() : null
+    const name = newName ? newName.toUpperCase() : null;
 
     if (store.userId !== user.id) {
       throw new HttpException(
@@ -481,18 +481,98 @@ export class StoreService {
     };
   }
 
-  // encontrar lojas pelo nome
-  async findStoreByName() {}
+  async searchStore(name?: string, id?: UUID) {
+    if (!id && !name) {
+      throw new HttpException(
+        'Pelo menos um dos parametros deve ser passado: name, id',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
-  // encontrar lojas pelo id da loja
-  async findStoreById() {}
+    if (id) {
+      const store = await this.storeRepository.verifyExistingStoreById(id);
+      const filteredStore = {
+        id: store.id,
+        name: store.name,
+        cep: store.cep,
+        logradouro: store.logradouro,
+        bairro: store.bairro,
+        cidade: store.cidade,
+        uf: store.uf,
+        phone: store.phone,
+      };
+      return {
+        store: filteredStore,
+      };
+    }
 
-  // encontrar lojas pelo id do usuario
-  async findStoreByUserId() {}
+    const stores = await this.storeRepository.searchManyByName(name);
+    const filteredStore = Array.from(stores, (store) => {
+      return {
+        id: store.id,
+        name: store.name,
+        cep: store.cep,
+        logradouro: store.logradouro,
+        bairro: store.bairro,
+        cidade: store.cidade,
+        uf: store.uf,
+        phone: store.phone,
+      };
+    });
 
-  // encontrar produtos da loja
-  async searchStoreProducts() {
-    // se tiver apenas o id da loja retornar todos produtos da loja
-    // se tiver pesquisa retornar apenas o resultado da pesquisa
+    return { stores: filteredStore };
+  }
+
+  async searchProducts(storeId: UUID, name?: string, productId?: UUID) {
+    await this.storeRepository.verifyExistingStoreById(storeId);
+
+    if (!name && !productId) {
+      const products = await this.productRepository.findManyByStoreId(storeId);
+      const filteredProducts = Array.from(products, (product) => {
+        return {
+          id: product.id,
+          storeId: product.storeId,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+        };
+      });
+
+      return {
+        products: filteredProducts,
+      };
+    }
+
+    if (productId) {
+      const product =
+        await this.productRepository.verifyExistingProductById(productId);
+      const filteredProduct = {
+        id: product.id,
+        storeId: product.storeId,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+      };
+      return {
+        product: filteredProduct,
+      };
+    }
+
+    const products = await this.productRepository.searchManyByNameAndStore(
+      name,
+      storeId,
+    );
+
+    const filteredProducts = Array.from(products, (product) => {
+      return {
+        id: product.id,
+        storeId: product.storeId,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+      };
+    });
+
+    return { products: filteredProducts };
   }
 }

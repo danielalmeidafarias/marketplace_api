@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
+  ParseUUIDPipe,
   Post,
   Put,
   Query,
@@ -22,6 +24,12 @@ import {
   DeleteStoreBodyDTO,
   DeleteUserStoreQueryDTO,
 } from './dto/delete-store.dto';
+import { SearchStoreDTO } from './dto/search-store.dto';
+import {
+  SearchStoreProductDTOQuery,
+  SearchStoreProductParamDTO,
+} from './dto/search-store-product.dto';
+import { GetStoreProductsDTO } from '../User/dto/get-store-products.dto';
 @Controller()
 export class StoreController {
   constructor(private storeService: StoreService) {}
@@ -173,12 +181,16 @@ export class StoreController {
     });
   }
 
-  @Get()
-  async getStore() {}
+  @Get('/store/search')
+  async searchStore(@Query() { name, id }: SearchStoreDTO) {
+    return this.storeService.searchStore(name, id);
+  }
 
-  @Get('/products')
-  async searchProduct() {}
-
-  @Get('/orders')
-  async getOrders() {}
+  @Get('/store/:id/products')
+  async searchStoreProduct(
+    @Param('id', new ParseUUIDPipe()) id ,
+    @Query() { name, productId }: SearchStoreProductDTOQuery,
+  ) {
+    return await this.storeService.searchProducts(id, name, productId)
+  }
 }

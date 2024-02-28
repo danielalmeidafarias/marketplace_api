@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import 'dotenv/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { databaseConfig } from './config/database.config';
-
 @Module({
   imports: [
     StoreModule,

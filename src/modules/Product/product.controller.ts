@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Post,
   Put,
   Query,
@@ -23,6 +24,7 @@ import {
   UpdateProductStoreQuery,
   UpdateProductUserQuery,
 } from './dto/update-product.dto';
+import { SearchProductDTO } from './dto/search-product.dto';
 
 @Controller()
 export class ProductController {
@@ -152,5 +154,10 @@ export class ProductController {
       refresh_token,
       storeId,
     });
+  }
+
+  @Get('/product/search')
+  async searchProduct(@Query() { name, id }: SearchProductDTO) {
+    return this.productService.searchProduct(name, id);
   }
 }
