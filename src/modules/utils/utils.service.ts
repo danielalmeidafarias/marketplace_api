@@ -59,25 +59,21 @@ export class UtilsService {
 
   async verifyCNPJ(cnpj: string): Promise<string> {
     try {
-      const data = (
-        await axios.get(
-          `https://api.cpfcnpj.com.br/5ae973d7a997af13f0aaf2bf60e65803/4/${cnpj}`,
-        )
-      ).data;
-      return data.cnpj;
+      await axios.get(
+        `https://api.cpfcnpj.com.br/5ae973d7a997af13f0aaf2bf60e65803/4/${cnpj}`,
+      );
+      return cnpj;
     } catch {
       throw new HttpException('O cnpj é inválido', HttpStatus.BAD_REQUEST);
     }
   }
 
-  async verifyCPF(cpf: number | string): Promise<string> {
+  async verifyCPF(cpf: string): Promise<string> {
     try {
-      const data = (
-        await axios.get(
-          `https://api.cpfcnpj.com.br/5ae973d7a997af13f0aaf2bf60e65803/1/${cpf}`,
-        )
-      ).data;
-      return data.cpf;
+      await axios.get(
+        `https://api.cpfcnpj.com.br/5ae973d7a997af13f0aaf2bf60e65803/1/${cpf}`,
+      );
+      return cpf;
     } catch {
       throw new HttpException('O cpf é inválido', HttpStatus.BAD_REQUEST);
     }

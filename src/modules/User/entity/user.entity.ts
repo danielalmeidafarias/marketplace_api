@@ -29,7 +29,8 @@ export class User {
     cidade: string,
     uf: string,
     mobile_phone: string | null,
-    home_phone?: string,
+    home_phone: string | null,
+    userId?: UUID
   ) {
     this.costumerId = costumerId
     this.email = email;
@@ -45,9 +46,10 @@ export class User {
     this.mobile_phone = mobile_phone;
     this.uf = uf;
     this.birthdate = birthdate;
+    this.home_phone = home_phone
 
-    if (home_phone) {
-      this.home_phone = home_phone;
+    if (userId) {
+      this.id = userId;
     }
   }
 

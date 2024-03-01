@@ -65,7 +65,7 @@ export class StoreService {
     private authService: AuthService,
     private userRepository: UserRepository,
     private utilsService: UtilsService,
-    private pagarmeService: PagarmeService
+    private pagarmeService: PagarmeService,
   ) {}
 
   async createStore({
@@ -91,8 +91,18 @@ export class StoreService {
       ? await this.utilsService.verifyPhoneNumber(incomingHomePhone)
       : null;
 
-    const { cep, logradouro, bairro, cidade, uf, addressObject }: VerifyCepResponse =
-      await this.utilsService.verifyCEP(incomingCep, numero, complemento);
+    const {
+      cep,
+      logradouro,
+      bairro,
+      cidade,
+      uf,
+      addressObject,
+    }: VerifyCepResponse = await this.utilsService.verifyCEP(
+      incomingCep,
+      numero,
+      complemento,
+    );
 
     const hashedPassword = await this.utilsService.hashPassword(password);
 
@@ -124,7 +134,7 @@ export class StoreService {
       email,
       incomingCnpj,
       'CNPJ',
-      'individual',
+      'company',
       addressObject,
       phonesObject,
       birthdate,
@@ -180,18 +190,19 @@ export class StoreService {
 
     const user = await this.userRepository.verifyExistingUserById(id);
 
-    const address: VerifyCepResponse | null = incomingCep ?
-      (await this.utilsService.verifyCEP(
-        incomingCep,
-        incomingNumero,
-        incomingComplemento,
-      )) : await this.utilsService.verifyCEP(
-        user.cep,
-        user.numero,
-        user.complemento,
-      )
+    const address: VerifyCepResponse | null = incomingCep
+      ? await this.utilsService.verifyCEP(
+          incomingCep,
+          incomingNumero,
+          incomingComplemento,
+        )
+      : await this.utilsService.verifyCEP(
+          user.cep,
+          user.numero,
+          user.complemento,
+        );
 
-    const cnpj = await this.utilsService.verifyCNPJ(incomingCnpj)
+    const cnpj = await this.utilsService.verifyCNPJ(incomingCnpj);
 
     const mobile_phone = incomingMobilePhone
       ? await this.utilsService.verifyPhoneNumber(incomingMobilePhone)
@@ -199,7 +210,9 @@ export class StoreService {
 
     const home_phone = incomingMobilePhone
       ? await this.utilsService.verifyPhoneNumber(incomingHomePhone)
-      : (user.home_phone ? await this.utilsService.verifyPhoneNumber(user.home_phone) : null);
+      : user.home_phone
+        ? await this.utilsService.verifyPhoneNumber(user.home_phone)
+        : null;
 
     const name = incomingName ? incomingName.toUpperCase() : null;
 
@@ -235,7 +248,7 @@ export class StoreService {
       email,
       incomingCnpj,
       'CNPJ',
-      'individual',
+      'company',
       address.addressObject,
       phonesObject,
       user.birthdate,
@@ -360,17 +373,23 @@ export class StoreService {
 
     const store = await this.storeRepository.verifyExistingStoreById(id);
 
-    const address: VerifyCepResponse | undefined =
-      newCEP &&
-      (await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento));
+    const address: VerifyCepResponse | undefined = newCEP
+      ? await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento)
+      : await this.utilsService.verifyCEP(
+          store.cep,
+          store.numero,
+          store.complemento,
+        );
 
     const mobile_phone = newMobilePhone
       ? await this.utilsService.verifyPhoneNumber(newMobilePhone)
-      : null;
+      : await this.utilsService.verifyPhoneNumber(store.mobile_phone);
 
     const home_phone = newMobilePhone
       ? await this.utilsService.verifyPhoneNumber(newHomePhone)
-      : null;
+      : store.home_phone
+        ? await this.utilsService.verifyPhoneNumber(store.home_phone)
+        : null;
 
     const name = newName ? newName.toUpperCase() : null;
 
@@ -410,14 +429,14 @@ export class StoreService {
       store.birthdate,
       newPassword ? newHashedPassword : store.password,
       newCEP ? address.cep : store.cep,
-      newCEP ? newNumero : store.cep,
-      newCEP ? newComplemento : store.cep,
+      newCEP ? newNumero : store.numero,
+      newCEP ? newComplemento : store.complemento,
       newCEP ? address.logradouro : store.logradouro,
       newCEP ? address.bairro : store.bairro,
+      newCEP ? address.cidade : store.cidade,
       newCEP ? address.uf : store.uf,
       newMobilePhone ? mobile_phone.phoneNumber : store.mobile_phone,
       newHomePhone ? home_phone.phoneNumber : store.home_phone,
-      store.home_phone,
       store.cnpj,
       store.id,
     );
@@ -435,6 +454,25 @@ export class StoreService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    const phonesObject = new Phones(
+      mobile_phone.phoneObject,
+      home_phone ? home_phone.phoneObject : null,
+    );
+
+    const editedCostumer = new Costumer(
+      editedStore.name,
+      editedStore.email,
+      editedStore.cnpj,
+      'CNPJ',
+      'company',
+      address.addressObject,
+      phonesObject,
+      store.birthdate,
+      store.costumerId,
+    );
+
+    await this.pagarmeService.updateCostumer(editedCostumer);
 
     await this.storeRepository.updateStore(editedStore);
 
@@ -477,17 +515,23 @@ export class StoreService {
       );
     }
 
-    const address: VerifyCepResponse | undefined =
-      newCEP &&
-      (await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento));
+    const address: VerifyCepResponse | undefined = newCEP
+      ? await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento)
+      : await this.utilsService.verifyCEP(
+          store.cep,
+          store.numero,
+          store.complemento,
+        );
 
     const mobile_phone = newMobilePhone
       ? await this.utilsService.verifyPhoneNumber(newMobilePhone)
-      : null;
+      : await this.utilsService.verifyPhoneNumber(store.mobile_phone);
 
-    const home_phone = newMobilePhone
+    const home_phone = newHomePhone
       ? await this.utilsService.verifyPhoneNumber(newHomePhone)
-      : null;
+      : store.home_phone
+        ? await this.utilsService.verifyPhoneNumber(store.home_phone)
+        : null;
 
     if (newName && name !== store.name) {
       await this.storeRepository.verifyThereIsNoStoreWithName(name);
@@ -524,13 +568,14 @@ export class StoreService {
       newName ? name : store.name,
       store.birthdate,
       newCEP ? address.cep : store.cep,
+      newNumero ? newNumero : store.numero,
+      newComplemento ? newComplemento : store.complemento,
       newCEP ? address.logradouro : store.logradouro,
       newCEP ? address.bairro : store.bairro,
       newCEP ? address.cidade : store.cidade,
       newCEP ? address.uf : store.uf,
       newMobilePhone ? mobile_phone.phoneNumber : store.mobile_phone,
       newHomePhone ? home_phone.phoneNumber : store.home_phone,
-      store.home_phone,
       store.cpf,
       store.cnpj,
       store.id,
@@ -548,6 +593,25 @@ export class StoreService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    const phonesObject = new Phones(
+      mobile_phone.phoneObject,
+      home_phone ? home_phone.phoneObject : null,
+    );
+
+    const editedCostumer = new Costumer(
+      editedStore.name,
+      editedStore.email,
+      editedStore.cnpj,
+      'CNPJ',
+      'company',
+      address.addressObject,
+      phonesObject,
+      store.birthdate,
+      store.costumerId,
+    );
+
+    await this.pagarmeService.updateCostumer(editedCostumer);
 
     await this.storeRepository.updateStore(editedStore);
 

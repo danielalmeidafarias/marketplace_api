@@ -18,7 +18,7 @@ import {
   GetUserStoreInfoQueryDTO,
 } from './dto/get-store-info.dto';
 import { CreateStoreDTO, CreateUserStoreDTO } from './dto/create-store.dto';
-import { UpdateStoreDTO } from './dto/update-store.dto';
+import { EditUserStoreBodyDTO, EditUserStoreQuery, UpdateStoreDTO } from './dto/update-store.dto';
 import { UpdateProductUserQuery } from '../Product/dto/update-product.dto';
 import {
   DeleteStoreBodyDTO,
@@ -172,8 +172,8 @@ export class StoreController {
       newName,
       newMobilePhone,
       newHomePhone
-    }: UpdateStoreDTO,
-    @Query() { storeId }: UpdateProductUserQuery,
+    }: EditUserStoreBodyDTO,
+    @Query() { storeId }: EditUserStoreQuery,
   ) {
     return this.storeService.updateUserStore({
       access_token,

@@ -112,7 +112,7 @@ export class UserService {
     );
 
     const costumer = new Costumer(
-      name,
+      name.toUpperCase(),
       email,
       incomingCpf,
       'CPF',
@@ -139,6 +139,7 @@ export class UserService {
       cidade,
       uf,
       mobile_phone.phoneNumber,
+      home_phone ? home_phone.phoneNumber : null
     );
 
     await this.userRepository.createUser(user);
@@ -201,17 +202,19 @@ export class UserService {
 
     const user = await this.userRepository.verifyExistingUserById(id);
 
-    const mobile_phone =
-      newMobilePhone ?
-      (await this.utilsService.verifyPhoneNumber(newMobilePhone)) : null
+    const mobile_phone = newMobilePhone
+      ? await this.utilsService.verifyPhoneNumber(newMobilePhone)
+      : await this.utilsService.verifyPhoneNumber(user.mobile_phone);
 
-      const home_phone =
-      newMobilePhone ?
-      (await this.utilsService.verifyPhoneNumber(newHomePhone)) : null
+    const home_phone = newMobilePhone
+      ? await this.utilsService.verifyPhoneNumber(newHomePhone)
+      : user.home_phone
+        ? await this.utilsService.verifyPhoneNumber(user.home_phone)
+        : null;
 
-    const address: VerifyCepResponse | undefined =
-      newCEP &&
-      (await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento));
+    const address: VerifyCepResponse | undefined = newCEP
+      ? await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento)
+      : await this.utilsService.verifyCEP(user.cep, user.numero, user.complemento);
 
     await this.authService.verifyTokenId(newAccess_token, user.id);
 
@@ -229,8 +232,12 @@ export class UserService {
     }
 
     if (newMobilePhone) {
-      await this.storeRepository.verifyThereIsNoStoreWithPhone(mobile_phone.phoneNumber);
-      await this.userRepository.verifyThereIsNoUserWithPhone(mobile_phone.phoneNumber);
+      await this.storeRepository.verifyThereIsNoStoreWithPhone(
+        mobile_phone.phoneNumber,
+      );
+      await this.userRepository.verifyThereIsNoUserWithPhone(
+        mobile_phone.phoneNumber,
+      );
     }
 
     const editedUser = new User(
@@ -249,6 +256,7 @@ export class UserService {
       newCEP ? address.uf : user.uf,
       newMobilePhone ? mobile_phone.phoneNumber : user.mobile_phone,
       newHomePhone ? home_phone.phoneNumber : user.home_phone,
+      user.id
     );
 
     if (
@@ -263,6 +271,25 @@ export class UserService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    const phonesObject = new Phones(
+      mobile_phone.phoneObject,
+      home_phone ? home_phone.phoneObject : null,
+    );
+
+    const editedCostumer = new Costumer(
+      editedUser.name,
+      editedUser.email,
+      editedUser.cpf,
+      'CPF',
+      'individual',
+      address.addressObject,
+      phonesObject,
+      editedUser.birthdate,
+      editedUser.costumerId,
+    );
+
+    await this.pagarmeService.updateCostumer(editedCostumer)
 
     await this.userRepository.updateUser(editedUser);
 

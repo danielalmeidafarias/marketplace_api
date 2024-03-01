@@ -93,10 +93,9 @@ export class UserRepository {
   }
 
   async updateUser(user: User) {
-    const queryBuilder = this.dataSource.createQueryBuilder();
 
     try {
-      queryBuilder
+      this.dataSource.getRepository(User).createQueryBuilder()
         .update(User)
         .set({
           email: user.email,
@@ -110,7 +109,8 @@ export class UserRepository {
           bairro: user.bairro,
           cidade: user.cidade,
           uf: user.uf,
-          phone: user.mobile_phone,
+          mobile_phone: user.mobile_phone,
+          home_phone: user.home_phone
         })
         .where('id = :id', { id: user.id })
         .execute();
