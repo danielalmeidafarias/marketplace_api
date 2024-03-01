@@ -34,9 +34,12 @@ export class UserController {
       name,
       lastName,
       cep,
+      numero,
+      complemento,
       cpf,
       dataNascimento,
-      phone,
+      mobile_phone,
+      home_phone
     }: CreateUserDTO,
   ) {
     return await this.userService.createUser({
@@ -45,9 +48,12 @@ export class UserController {
       name,
       lastName,
       incomingCep: cep,
+      numero,
+      complemento,
       incomingCpf: cpf,
       dataNascimento,
-      incomingPhone: phone,
+      incomingMobilePhone: mobile_phone,
+      incomingHomePhone: home_phone
     });
   }
 
@@ -76,6 +82,8 @@ export class UserController {
       newEmail,
       newPassword,
       newCEP,
+      newNumero,
+      newComplemento,
       newName,
       newLastName,
       newPhone,
@@ -88,6 +96,8 @@ export class UserController {
       newEmail,
       newPassword,
       newCEP,
+      newNumero,
+      newComplemento,
       newName,
       newLastName,
       newPhone,

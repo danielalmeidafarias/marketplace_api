@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ProductModule } from '../Product/product.module';
 import { StoreModule } from '../Store/store.module';
 import { UtilsModule } from 'src/modules/utils/utils.module';
+import { PagarmeModule } from '../Pagarme/pagarme.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UtilsModule } from 'src/modules/utils/utils.module';
     forwardRef(() => ProductModule),
     forwardRef(() => StoreModule),
     UtilsModule,
+    PagarmeModule
   ],
   controllers: [UserController],
   providers: [UserService, UserRepository, JwtService],

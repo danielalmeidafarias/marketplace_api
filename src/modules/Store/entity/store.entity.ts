@@ -18,6 +18,8 @@ export class Store {
     name: string,
     password: string,
     cep: string,
+    numero: string,
+    complemento: string,
     logradouro: string,
     bairro: string,
     cidade: string,
@@ -35,6 +37,8 @@ export class Store {
     this.email = email;
     this.name = name;
     this.cep = cep;
+    this.numero = numero;
+    this.complemento = complemento;
     this.logradouro = logradouro;
     this.bairro = bairro;
     this.cidade = cidade;
@@ -70,6 +74,12 @@ export class Store {
   cep: string;
 
   @Column()
+  numero: string;
+
+  @Column({ nullable: true })
+  complemento: string;
+
+  @Column()
   logradouro: string;
 
   @Column()
@@ -101,6 +111,8 @@ export class UserStore implements Store {
     email: string,
     name: string,
     cep: string,
+    numero: string,
+    complemento: string,
     logradouro: string,
     bairro: string,
     cidade: string,
@@ -110,7 +122,6 @@ export class UserStore implements Store {
     cnpj?: string,
     storeId?: UUID,
   ) {
-    
     if (storeId) {
       this.id = storeId;
     }
@@ -125,6 +136,8 @@ export class UserStore implements Store {
     this.email = email;
     this.name = name;
     this.cep = cep;
+    this.numero = numero;
+    this.complemento = complemento;
     this.logradouro = logradouro;
     this.bairro = bairro;
     this.cidade = cidade;
@@ -141,6 +154,8 @@ export class UserStore implements Store {
   user: User;
   userId: UUID;
   cep: string;
+  numero: string;
+  complemento: string;
   logradouro: string;
   bairro: string;
   cidade: string;

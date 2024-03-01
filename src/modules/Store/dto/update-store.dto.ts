@@ -36,6 +36,14 @@ export class EditUserStoreBodyDTO {
   @IsOptional()
   @IsNumberString()
   newCEP?: string;
+  
+  @IsOptional()
+  @IsNumberString()
+  newNumero?: string;
+  
+  @IsOptional()
+  @IsString()
+  newComplemento?: string;
 }
 
 export class EditUserStoreQuery {

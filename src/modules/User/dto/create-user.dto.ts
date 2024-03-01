@@ -2,6 +2,7 @@ import {
   IsDateString,
   IsEmail,
   IsNumberString,
+  IsOptional,
   IsPhoneNumber,
   IsString,
   IsStrongPassword,
@@ -30,6 +31,17 @@ export class CreateUserDTO {
   @IsNumberString()
   cep: string;
 
-  @IsPhoneNumber('BR')
-  phone: string;
+  @IsNumberString()
+  numero: string
+
+  @IsString()
+  @IsOptional()
+  complemento: string
+
+  @IsPhoneNumber()
+  mobile_phone: string;
+
+  @IsPhoneNumber()
+  @IsOptional()
+  home_phone?: string;
 }

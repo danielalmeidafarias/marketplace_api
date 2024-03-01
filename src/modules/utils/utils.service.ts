@@ -1,15 +1,18 @@
 import { StoreRepository } from '../Store/repository/store.repository';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import axios from 'axios';
-import { phone } from 'phone';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from 'src/modules/User/repository/user.repository';
+import parsePhoneNumber from 'libphonenumber-js';
+import { Phone } from '../Pagarme/class/Phones.class';
+import { Address } from '../Pagarme/class/Address.class';
 export interface VerifyCepResponse {
   cep: any;
   logradouro: any;
   bairro: any;
   cidade: any;
   uf: any;
+  addressObject: Address;
 }
 
 @Injectable()
@@ -19,16 +22,32 @@ export class UtilsService {
     private storeRepository: StoreRepository,
   ) {}
 
-  async verifyCEP(cep: string): Promise<VerifyCepResponse> {
+  async verifyCEP(
+    cep: string,
+    numero: string,
+    complemento?: string,
+    costumerId?: string,
+  ): Promise<VerifyCepResponse> {
     try {
       const data = (await axios.get(`https://viacep.com.br/ws/${cep}/json/`))
         .data;
+
+      const addressObject = new Address(
+        `${numero}, ${data.logradouro}, ${data.bairro}`,
+        data.cep,
+        data.localidade,
+        data.uf,
+        'BR',
+        complemento,
+        costumerId,
+      );
       return {
         cep: data.cep,
         logradouro: data.logradouro,
         bairro: data.bairro,
         cidade: data.localidade,
         uf: data.uf,
+        addressObject,
       };
     } catch {
       throw new HttpException(
@@ -77,17 +96,30 @@ export class UtilsService {
     }
   }
 
-  async verifyPhoneNumber(phoneNumber: string) {
-    const validPhone = phone(phoneNumber, { country: 'BR' });
+  async verifyPhoneNumber(incomingPhone: string) {
+    const parsedPhoneNumber = parsePhoneNumber(incomingPhone);
 
-    if (!validPhone.isValid) {
+    const phoneNumber = parsedPhoneNumber.formatInternational();
+
+    if (!parsedPhoneNumber.isValid()) {
       throw new HttpException(
         'O numero de telefone fornecido não é válido',
         HttpStatus.BAD_REQUEST,
       );
     }
 
-    return validPhone.phoneNumber;
+    const phoneArray = phoneNumber.split(' ');
+
+    const phoneObject = new Phone(
+      parsedPhoneNumber.countryCallingCode,
+      phoneArray[1],
+      phoneArray[2] + phoneArray[3],
+    );
+
+    return {
+      phoneNumber,
+      phoneObject,
+    };
   }
 
   async hashPassword(password: string): Promise<string> {

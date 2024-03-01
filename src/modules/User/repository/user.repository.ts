@@ -11,25 +11,67 @@ export class UserRepository {
     private dataSource: DataSource,
   ) {}
 
-  async createUser(user: User) {
+  async createUser({
+    name,
+    email,
+    bairro,
+    cep,
+    numero,
+    complemento,
+    cidade,
+    cpf,
+    dataNascimento,
+    home_phone,
+    lastName,
+    logradouro,
+    mobile_phone,
+    password,
+    uf,
+  }: User, costumerId: string) {
     const queryRunner = this.dataSource.createQueryRunner();
-
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
     try {
-      await queryRunner.manager.save(user);
-      await queryRunner.commitTransaction();
+      this.dataSource.getRepository(User).createQueryBuilder().insert().values({
+        name,
+        email,
+        bairro,
+        cep,
+        numero,
+        complemento,
+        cidade,
+        cpf,
+        dataNascimento,
+        home_phone,
+        lastName,
+        logradouro,
+        mobile_phone,
+        password,
+        uf,
+        costumerId,
+      }).execute();
     } catch (err) {
-      await queryRunner.rollbackTransaction();
       console.error(err);
       throw new HttpException(
         'Ocorreu um erro ao criar o usuário, tente novamente mais tarde',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-    } finally {
-      queryRunner.release();
     }
+
+    // await queryRunner.connect();
+    // await queryRunner.startTransaction();
+
+    // try {
+    //   await queryRunner.manager.save(user);
+    //   await queryRunner.commitTransaction();
+    // } catch (err) {
+    //   await queryRunner.rollbackTransaction();
+    //   console.error(err);
+    //   throw new HttpException(
+    //     'Ocorreu um erro ao criar o usuário, tente novamente mais tarde',
+    //     HttpStatus.INTERNAL_SERVER_ERROR,
+    //   );
+    // } finally {
+    //   queryRunner.release();
+    // }
   }
 
   async getUserInfo(id: UUID) {
@@ -59,15 +101,18 @@ export class UserRepository {
         .update(User)
         .set({
           email: user.email,
+          costumerId: user.costumerId,
           password: user.password,
           name: user.name,
           lastName: user.lastName,
           cep: user.cep,
+          numero: user.numero,
+          complemento: user.complemento,
           logradouro: user.logradouro,
           bairro: user.bairro,
           cidade: user.cidade,
           uf: user.uf,
-          phone: user.phone,
+          phone: user.mobile_phone,
         })
         .where('id = :id', { id: user.id })
         .execute();
@@ -127,11 +172,11 @@ export class UserRepository {
     return user;
   }
 
-  private async findUserByPhone(phone: string): Promise<User> {
+  private async findUserByPhone(mobile_phone: string): Promise<User> {
     const user = await this.dataSource
       .getRepository(User)
       .createQueryBuilder('user')
-      .where('user.phone = :phone', { phone })
+      .where('user.mobile_phone = :mobile_phone', { mobile_phone })
       .getOne();
 
     return user;

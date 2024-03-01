@@ -10,16 +10,22 @@ import {
 } from 'src/modules/utils/utils.service';
 import { StoreRepository } from '../Store/repository/store.repository';
 import { ProductRepository } from '../Product/repository/product.repository';
+import { PagarmeModule } from '../Pagarme/pagarme.module';
+import { PagarmeService } from '../Pagarme/pagarme.service';
+import { Phones } from '../Pagarme/class/Phones.class';
 
 export interface ICreateUser {
   email: string;
   password: string;
   incomingCep: string;
+  numero: string;
+  complemento: string;
   incomingCpf: string;
   dataNascimento: Date;
   name: string;
   lastName: string;
-  incomingPhone: string;
+  incomingMobilePhone: string;
+  incomingHomePhone: string;
 }
 
 export interface IUpdateUser {
@@ -29,6 +35,8 @@ export interface IUpdateUser {
   newPassword: string;
   newEmail: string;
   newCEP: string;
+  newNumero: string;
+  newComplemento: string;
   newName: string;
   newLastName: string;
   newPhone: string;
@@ -53,28 +61,33 @@ export class UserService {
     private utilsService: UtilsService,
     private storeRepository: StoreRepository,
     private productRepository: ProductRepository,
+    private pagarmeService: PagarmeService,
   ) {}
 
   async createUser({
     email,
     password,
     incomingCep,
+    numero,
+    complemento,
     incomingCpf,
     dataNascimento,
     name,
     lastName,
-    incomingPhone,
+    incomingMobilePhone,
+    incomingHomePhone,
   }: ICreateUser) {
-    await this.utilsService.verifyIsMaiorDeIdade(dataNascimento)
+    await this.utilsService.verifyIsMaiorDeIdade(dataNascimento);
 
     const cpf = await this.utilsService.verifyCPF(incomingCpf);
 
-    const phone = await this.utilsService.verifyPhoneNumber(incomingPhone);
+    const phone =
+      await this.utilsService.verifyPhoneNumber(incomingMobilePhone);
 
-    const { cep, logradouro, bairro, cidade, uf } =
-      await this.utilsService.verifyCEP(incomingCep);
+    const { cep, logradouro, bairro, cidade, uf, addressObject } =
+      await this.utilsService.verifyCEP(incomingCep, numero, complemento);
 
-    const hashedPassword = await this.utilsService.hashPassword(password);
+      const hashedPassword = await this.utilsService.hashPassword(password);
 
     await this.storeRepository.verifyThereIsNoStoreWithEmail(email);
 
@@ -82,9 +95,9 @@ export class UserService {
 
     await this.userRepository.verifyThereIsNoUserWithCPF(cpf);
 
-    await this.storeRepository.verifyThereIsNoStoreWithPhone(phone);
+    await this.storeRepository.verifyThereIsNoStoreWithPhone(phone.phoneNumber);
 
-    await this.userRepository.verifyThereIsNoUserWithPhone(phone);
+    await this.userRepository.verifyThereIsNoUserWithPhone(phone.phoneNumber);
 
     const user = new User(
       email,
@@ -94,14 +107,25 @@ export class UserService {
       dataNascimento,
       cpf,
       cep,
+      numero,
+      complemento,
       logradouro,
       bairro,
       cidade,
       uf,
-      phone,
+      phone.phoneNumber,
     );
 
-    await this.userRepository.createUser(user);
+    const costumerId = await this.pagarmeService.createCostumer(
+      user,
+      {
+        mobile_phone: phone.phoneObject,
+        home_phone: null,
+      },
+      addressObject,
+    );
+
+    await this.userRepository.createUser(user, costumerId);
 
     const { access_token, refresh_token } = await this.authService.signIn(user);
 
@@ -148,6 +172,8 @@ export class UserService {
     newPassword,
     newEmail,
     newCEP,
+    newNumero,
+    newComplemento,
     newName,
     newLastName,
     newPhone,
@@ -160,10 +186,12 @@ export class UserService {
     const user = await this.userRepository.verifyExistingUserById(id);
 
     const phone: string | undefined =
-      newPhone && (await this.utilsService.verifyPhoneNumber(newPhone));
+      newPhone &&
+      (await this.utilsService.verifyPhoneNumber(newPhone)).phoneNumber;
 
     const address: VerifyCepResponse | undefined =
-      newCEP && (await this.utilsService.verifyCEP(newCEP));
+      newCEP &&
+      (await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento));
 
     await this.authService.verifyTokenId(newAccess_token, user.id);
 
@@ -193,11 +221,13 @@ export class UserService {
       user.dataNascimento,
       user.cpf,
       newCEP ? address.cep : user.cep,
+      newCEP ? newNumero : user.numero,
+      newCEP ? newComplemento : user.complemento,
       newCEP ? address.logradouro : user.logradouro,
       newCEP ? address.bairro : user.bairro,
       newCEP ? address.cidade : user.cidade,
       newCEP ? address.uf : user.uf,
-      newPhone ? phone : user.phone,
+      newPhone ? phone : user.mobile_phone,
     );
 
     if (
@@ -206,7 +236,7 @@ export class UserService {
       editedUser.cep === user.cep &&
       editedUser.name === user.name &&
       editedUser.lastName === user.lastName &&
-      editedUser.phone === user.phone
+      editedUser.mobile_phone === user.mobile_phone
     ) {
       throw new HttpException(
         'Nenhuma mudança foi requerida',

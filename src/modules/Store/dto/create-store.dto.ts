@@ -28,6 +28,12 @@ export class CreateStoreDTO {
 
   @IsNumberString()
   cep: string;
+
+  @IsNumberString()
+  numero: string
+
+  @IsString()
+  complemento: string
 }
 
 export class CreateUserStoreDTO {
@@ -55,7 +61,13 @@ export class CreateUserStoreDTO {
   @IsOptional()
   phone: string;
 
-  @IsPostalCode('BR')
   @IsOptional()
   cep: string;
+
+  @IsNumberString()
+  numero: string
+  
+  @IsString()
+  @IsOptional()
+  complemento: string
 }

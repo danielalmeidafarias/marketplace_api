@@ -37,10 +37,12 @@ export class StoreController {
   @Post('/store/create')
   async createStore(
     @Body()
-    { cep, cnpj, email, name, password, phone }: CreateStoreDTO,
+    { cep, numero, complemento, cnpj, email, name, password, phone }: CreateStoreDTO,
   ) {
     return await this.storeService.createStore({
       cep,
+      numero,
+      complemento,
       cnpj,
       email,
       name,
@@ -56,7 +58,9 @@ export class StoreController {
     {
       access_token,
       refresh_token,
-      cep,
+      cep, 
+      numero,
+      complemento,
       email,
       name,
       phone,
@@ -71,6 +75,8 @@ export class StoreController {
       phone,
       cnpj,
       cep,
+      numero,
+      complemento,
     });
   }
 
@@ -110,6 +116,8 @@ export class StoreController {
       refresh_token,
       password,
       newCEP,
+      newNumero,
+      newComplemento,
       newEmail,
       newName,
       newPassword,
@@ -121,6 +129,8 @@ export class StoreController {
       refresh_token,
       password,
       newCEP,
+      newNumero,
+      newComplemento,
       newEmail,
       newName,
       newPassword,
@@ -137,6 +147,8 @@ export class StoreController {
       refresh_token,
       password,
       newCEP,
+      newNumero,
+      newComplemento,
       newEmail,
       newName,
       newPhone,
@@ -149,6 +161,8 @@ export class StoreController {
       password,
       storeId,
       newCEP,
+      newNumero,
+      newComplemento,
       newEmail,
       newName,
       newPhone,

@@ -32,6 +32,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.4",
+    "libphonenumber-js": "^1.10.57",
     "mysql2": "^3.9.1",
     "pg": "^8.11.3",
     "phone": "^3.1.42",

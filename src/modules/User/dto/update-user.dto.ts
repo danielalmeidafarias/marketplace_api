@@ -42,4 +42,12 @@ export class UpdateUserDTO {
   @IsOptional()
   @IsNumberString()
   newCEP?: string;
+
+  @IsNumberString()
+  @IsOptional()
+  newNumero: string
+
+  @IsString()
+  @IsOptional()
+  newComplemento: string
 }

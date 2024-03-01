@@ -1,11 +1,3 @@
-# Adicionar rotas de search
-
-# Rotas Main
-  - pesquisa lojas
-  - pesquisa produtos
-  - destaques
-  - recomendacoes
-
 # Quando for criado os pedidos, uma loja não poderá ser excluida com pedidos pendentes.
 
 # Integração API Page.me

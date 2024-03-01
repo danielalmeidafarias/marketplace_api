@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Generated,
   PrimaryColumn,
   PrimaryGeneratedColumn,
   Unique,
@@ -21,28 +22,40 @@ export class User {
     dataNascimento: Date,
     cpf: string,
     cep: string,
+    numero: string,
+    complemento: string,
     logradouro: string,
     bairro: string,
     cidade: string,
     uf: string,
-    phone: string,
+    mobile_phone: string,
+    home_phone?: string,
   ) {
     this.email = email;
     this.password = password;
     this.name = name;
     this.bairro = bairro;
     this.cep = cep;
+    this.numero = numero;
+    this.complemento = complemento;
     this.cidade = cidade;
     this.cpf = cpf;
     this.logradouro = logradouro;
-    this.phone = phone;
+    this.mobile_phone = mobile_phone;
     this.uf = uf;
     this.lastName = lastName;
     this.dataNascimento = dataNascimento;
+
+    if (home_phone) {
+      this.home_phone = home_phone;
+    }
   }
 
   @PrimaryGeneratedColumn('uuid')
   id?: UUID;
+
+  @PrimaryColumn()
+  costumerId?: string;
 
   @PrimaryColumn()
   email: string;
@@ -63,6 +76,12 @@ export class User {
   cep: string;
 
   @Column()
+  numero: string;
+
+  @Column({ nullable: true })
+  complemento: string;
+
+  @Column()
   logradouro: string;
 
   @Column()
@@ -79,7 +98,10 @@ export class User {
 
   @Column()
   @PrimaryColumn()
-  phone: string;
+  mobile_phone: string;
+
+  @Column({ nullable: true })
+  home_phone: string;
 
   @CreateDateColumn()
   created_at?: Date;
