@@ -12,6 +12,7 @@ export class UserRepository {
   ) {}
 
   async createUser({
+    costumerId,
     name,
     email,
     bairro,
@@ -20,14 +21,13 @@ export class UserRepository {
     complemento,
     cidade,
     cpf,
-    dataNascimento,
+    birthdate,
     home_phone,
-    lastName,
     logradouro,
     mobile_phone,
     password,
     uf,
-  }: User, costumerId: string) {
+  }: User) {
     const queryRunner = this.dataSource.createQueryRunner();
     try {
       this.dataSource.getRepository(User).createQueryBuilder().insert().values({
@@ -39,9 +39,8 @@ export class UserRepository {
         complemento,
         cidade,
         cpf,
-        dataNascimento,
+        birthdate,
         home_phone,
-        lastName,
         logradouro,
         mobile_phone,
         password,
@@ -104,7 +103,6 @@ export class UserRepository {
           costumerId: user.costumerId,
           password: user.password,
           name: user.name,
-          lastName: user.lastName,
           cep: user.cep,
           numero: user.numero,
           complemento: user.complemento,

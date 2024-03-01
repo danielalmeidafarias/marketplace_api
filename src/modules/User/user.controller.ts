@@ -32,12 +32,11 @@ export class UserController {
       email,
       password,
       name,
-      lastName,
       cep,
       numero,
       complemento,
       cpf,
-      dataNascimento,
+      birthdate,
       mobile_phone,
       home_phone
     }: CreateUserDTO,
@@ -46,12 +45,11 @@ export class UserController {
       email,
       password,
       name,
-      lastName,
       incomingCep: cep,
       numero,
       complemento,
       incomingCpf: cpf,
-      dataNascimento,
+      birthdate,
       incomingMobilePhone: mobile_phone,
       incomingHomePhone: home_phone
     });
@@ -85,8 +83,8 @@ export class UserController {
       newNumero,
       newComplemento,
       newName,
-      newLastName,
-      newPhone,
+      newMobilePhone,
+      newHomePhone
     }: UpdateUserDTO,
   ) {
     return await this.userService.updateUser({
@@ -99,8 +97,8 @@ export class UserController {
       newNumero,
       newComplemento,
       newName,
-      newLastName,
-      newPhone,
+      newMobilePhone,
+      newHomePhone
     });
   }
 

@@ -6,7 +6,6 @@ export class Costumer {
   constructor(
     name: string,
     email: string,
-    code: UUID,
     document: string,
     document_type: 'CPF' | 'CNPJ' | 'PASSPORT',
     type: 'individual' | 'company',
@@ -17,7 +16,6 @@ export class Costumer {
   ) {
     this.name = name;
     this.email = email;
-    this.code = code;
     this.document = document;
     this.document_type = document_type;
     this.type = type;
@@ -33,7 +31,6 @@ export class Costumer {
   costumer_Id: string;
   name: string;
   email: string;
-  code: UUID;
   document: string;
   document_type: 'CPF' | 'CNPJ' | 'PASSPORT';
   type: 'individual' | 'company';

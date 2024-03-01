@@ -18,10 +18,13 @@ export class StoreRepository {
         .createQueryBuilder()
         .insert()
         .values({
+          costumerId: store.costumerId,
+          birthdate: store.birthdate,
           email: store.email,
           password: store.password,
           name: store.name,
-          phone: store.phone,
+          mobile_phone: store.mobile_phone,
+          home_phone: store.home_phone,
           cnpj: store.cnpj,
           cpf: store.cpf,
           cep: store.cep,
@@ -96,7 +99,8 @@ export class StoreRepository {
         .set({
           name: store.name,
           email: store.email,
-          phone: store.phone,
+          mobile_phone: store.mobile_phone,
+          home_phone: store.home_phone,
           password: store.password,
           cep: store.cep,
           numero: store.numero,
@@ -185,11 +189,11 @@ export class StoreRepository {
     return store;
   }
 
-  async findStoreByPhone(phone: string) {
+  async findStoreByPhone(mobile_phone: string) {
     const store = await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')
-      .where('store.phone = :phone', { phone })
+      .where('store.mobile_phone = :mobile_phone', { mobile_phone })
       .getOne();
 
     return store;
@@ -325,11 +329,11 @@ export class StoreRepository {
   }
 
   async verifyThereIsNoStoreWithPhone(
-    phone: string,
+    mobile_phone: string,
     message?: string,
     status?: HttpStatus,
   ) {
-    const store = await this.findStoreByPhone(phone);
+    const store = await this.findStoreByPhone(mobile_phone);
     if (store) {
       throw new HttpException(
         message

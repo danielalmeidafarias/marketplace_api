@@ -12,7 +12,8 @@ import { StoreRepository } from '../Store/repository/store.repository';
 import { ProductRepository } from '../Product/repository/product.repository';
 import { PagarmeModule } from '../Pagarme/pagarme.module';
 import { PagarmeService } from '../Pagarme/pagarme.service';
-import { Phones } from '../Pagarme/class/Phones.class';
+import { Phone, Phones } from '../Pagarme/class/Phones.class';
+import { Costumer } from '../Pagarme/class/Costumer.class';
 
 export interface ICreateUser {
   email: string;
@@ -21,9 +22,8 @@ export interface ICreateUser {
   numero: string;
   complemento: string;
   incomingCpf: string;
-  dataNascimento: Date;
+  birthdate: Date;
   name: string;
-  lastName: string;
   incomingMobilePhone: string;
   incomingHomePhone: string;
 }
@@ -38,8 +38,8 @@ export interface IUpdateUser {
   newNumero: string;
   newComplemento: string;
   newName: string;
-  newLastName: string;
-  newPhone: string;
+  newMobilePhone: string;
+  newHomePhone: string;
 }
 
 export interface IDeleteUser {
@@ -71,23 +71,26 @@ export class UserService {
     numero,
     complemento,
     incomingCpf,
-    dataNascimento,
+    birthdate,
     name,
-    lastName,
     incomingMobilePhone,
     incomingHomePhone,
   }: ICreateUser) {
-    await this.utilsService.verifyIsMaiorDeIdade(dataNascimento);
+    await this.utilsService.verifyIsMaiorDeIdade(birthdate);
 
     const cpf = await this.utilsService.verifyCPF(incomingCpf);
 
-    const phone =
+    const mobile_phone =
       await this.utilsService.verifyPhoneNumber(incomingMobilePhone);
+
+    const home_phone = incomingHomePhone
+      ? await this.utilsService.verifyPhoneNumber(incomingHomePhone)
+      : null;
 
     const { cep, logradouro, bairro, cidade, uf, addressObject } =
       await this.utilsService.verifyCEP(incomingCep, numero, complemento);
 
-      const hashedPassword = await this.utilsService.hashPassword(password);
+    const hashedPassword = await this.utilsService.hashPassword(password);
 
     await this.storeRepository.verifyThereIsNoStoreWithEmail(email);
 
@@ -95,16 +98,38 @@ export class UserService {
 
     await this.userRepository.verifyThereIsNoUserWithCPF(cpf);
 
-    await this.storeRepository.verifyThereIsNoStoreWithPhone(phone.phoneNumber);
+    await this.storeRepository.verifyThereIsNoStoreWithPhone(
+      mobile_phone.phoneNumber,
+    );
 
-    await this.userRepository.verifyThereIsNoUserWithPhone(phone.phoneNumber);
+    await this.userRepository.verifyThereIsNoUserWithPhone(
+      mobile_phone.phoneNumber,
+    );
+
+    const phonesObject = new Phones(
+      mobile_phone.phoneObject,
+      incomingHomePhone ? home_phone.phoneObject : null,
+    );
+
+    const costumer = new Costumer(
+      name,
+      email,
+      incomingCpf,
+      'CPF',
+      'individual',
+      addressObject,
+      phonesObject,
+      birthdate,
+    );
+
+    const { costumerId } = await this.pagarmeService.createCostumer(costumer);
 
     const user = new User(
+      costumerId,
       email,
       hashedPassword,
       name.toUpperCase(),
-      lastName.toUpperCase(),
-      dataNascimento,
+      birthdate,
       cpf,
       cep,
       numero,
@@ -113,19 +138,10 @@ export class UserService {
       bairro,
       cidade,
       uf,
-      phone.phoneNumber,
+      mobile_phone.phoneNumber,
     );
 
-    const costumerId = await this.pagarmeService.createCostumer(
-      user,
-      {
-        mobile_phone: phone.phoneObject,
-        home_phone: null,
-      },
-      addressObject,
-    );
-
-    await this.userRepository.createUser(user, costumerId);
+    await this.userRepository.createUser(user);
 
     const { access_token, refresh_token } = await this.authService.signIn(user);
 
@@ -175,8 +191,8 @@ export class UserService {
     newNumero,
     newComplemento,
     newName,
-    newLastName,
-    newPhone,
+    newMobilePhone,
+    newHomePhone,
   }: IUpdateUser) {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
@@ -185,9 +201,13 @@ export class UserService {
 
     const user = await this.userRepository.verifyExistingUserById(id);
 
-    const phone: string | undefined =
-      newPhone &&
-      (await this.utilsService.verifyPhoneNumber(newPhone)).phoneNumber;
+    const mobile_phone =
+      newMobilePhone ?
+      (await this.utilsService.verifyPhoneNumber(newMobilePhone)) : null
+
+      const home_phone =
+      newMobilePhone ?
+      (await this.utilsService.verifyPhoneNumber(newHomePhone)) : null
 
     const address: VerifyCepResponse | undefined =
       newCEP &&
@@ -208,17 +228,17 @@ export class UserService {
       await this.userRepository.verifyThereIsNoUserWithEmail(newEmail);
     }
 
-    if (newPhone) {
-      await this.storeRepository.verifyThereIsNoStoreWithPhone(phone);
-      await this.userRepository.verifyThereIsNoUserWithPhone(newPhone);
+    if (newMobilePhone) {
+      await this.storeRepository.verifyThereIsNoStoreWithPhone(mobile_phone.phoneNumber);
+      await this.userRepository.verifyThereIsNoUserWithPhone(mobile_phone.phoneNumber);
     }
 
     const editedUser = new User(
+      user.costumerId,
       newEmail ? newEmail : user.email,
       newPassword ? bcrypt.hashSync(newPassword, 10) : password,
       newName ? newName.toUpperCase() : user.name,
-      newLastName ? newLastName.toUpperCase() : user.lastName,
-      user.dataNascimento,
+      user.birthdate,
       user.cpf,
       newCEP ? address.cep : user.cep,
       newCEP ? newNumero : user.numero,
@@ -227,7 +247,8 @@ export class UserService {
       newCEP ? address.bairro : user.bairro,
       newCEP ? address.cidade : user.cidade,
       newCEP ? address.uf : user.uf,
-      newPhone ? phone : user.mobile_phone,
+      newMobilePhone ? mobile_phone.phoneNumber : user.mobile_phone,
+      newHomePhone ? home_phone.phoneNumber : user.home_phone,
     );
 
     if (
@@ -235,7 +256,6 @@ export class UserService {
       editedUser.password === user.password &&
       editedUser.cep === user.cep &&
       editedUser.name === user.name &&
-      editedUser.lastName === user.lastName &&
       editedUser.mobile_phone === user.mobile_phone
     ) {
       throw new HttpException(

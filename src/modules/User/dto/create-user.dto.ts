@@ -18,14 +18,11 @@ export class CreateUserDTO {
   @IsString()
   name: string;
 
-  @IsString()
-  lastName: string;
-
   @IsNumberString()
   cpf: string;
 
   @IsDateString()
-  dataNascimento: Date;
+  birthdate: Date;
 
   // @IsPostalCode('BR')
   @IsNumberString()

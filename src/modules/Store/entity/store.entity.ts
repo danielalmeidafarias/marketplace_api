@@ -14,8 +14,10 @@ import {
 @Entity()
 export class Store {
   constructor(
+    costumerId: string,
     email: string,
     name: string,
+    birthdate: Date,
     password: string,
     cep: string,
     numero: string,
@@ -24,7 +26,8 @@ export class Store {
     bairro: string,
     cidade: string,
     uf: string,
-    phone: string,
+    mobile_phone: string,
+    home_phone: string | null,
     cnpj: string,
     storeId?: UUID,
   ) {
@@ -32,10 +35,12 @@ export class Store {
       this.id = storeId;
     }
 
+    this.costumerId = costumerId
     this.cnpj = cnpj;
     this.password = password;
     this.email = email;
     this.name = name;
+    this.birthdate = birthdate;
     this.cep = cep;
     this.numero = numero;
     this.complemento = complemento;
@@ -43,17 +48,24 @@ export class Store {
     this.bairro = bairro;
     this.cidade = cidade;
     this.uf = uf;
-    this.phone = phone;
+    this.mobile_phone = mobile_phone;
+    this.home_phone = home_phone
   }
 
   @PrimaryGeneratedColumn('uuid')
   id: UUID;
 
   @PrimaryColumn()
+  costumerId?: string;
+
+  @PrimaryColumn()
   email: string;
 
   @PrimaryColumn()
   name: string;
+
+  @Column()
+  birthdate: Date;
 
   @Column({ nullable: true })
   cnpj: string;
@@ -91,8 +103,12 @@ export class Store {
   @Column()
   uf: string;
 
+  @Column()
   @PrimaryColumn()
-  phone: string;
+  mobile_phone: string;
+
+  @Column({ nullable: true })
+  home_phone: string;
 
   @CreateDateColumn()
   created_at: Date;
@@ -106,10 +122,12 @@ export class Store {
 
 export class UserStore implements Store {
   constructor(
+    costumerId: string,
     userId: UUID,
     user: User,
     email: string,
     name: string,
+    birthdate: Date,
     cep: string,
     numero: string,
     complemento: string,
@@ -117,7 +135,8 @@ export class UserStore implements Store {
     bairro: string,
     cidade: string,
     uf: string,
-    phone: string,
+    mobile_phone: string,
+    home_phone: string | null,
     cpf: string,
     cnpj?: string,
     storeId?: UUID,
@@ -130,11 +149,13 @@ export class UserStore implements Store {
       this.cnpj = cnpj;
     }
 
+    this.costumerId = costumerId
     this.userId = userId;
     this.user = user;
     this.cpf = cpf;
     this.email = email;
     this.name = name;
+    this.birthdate = birthdate;
     this.cep = cep;
     this.numero = numero;
     this.complemento = complemento;
@@ -142,12 +163,15 @@ export class UserStore implements Store {
     this.bairro = bairro;
     this.cidade = cidade;
     this.uf = uf;
-    this.phone = phone;
+    this.mobile_phone = mobile_phone;
+    this.home_phone = home_phone;
   }
 
   id: UUID;
+  costumerId?: string;
   email: string;
   name: string;
+  birthdate: Date;
   cnpj: string;
   cpf: string;
   password: string;
@@ -160,7 +184,8 @@ export class UserStore implements Store {
   bairro: string;
   cidade: string;
   uf: string;
-  phone: string;
+  mobile_phone: string
+  home_phone: string
   created_at: Date;
   updated_at: Date;
   deleted_at: Date;

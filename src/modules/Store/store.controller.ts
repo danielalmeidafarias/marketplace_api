@@ -37,7 +37,18 @@ export class StoreController {
   @Post('/store/create')
   async createStore(
     @Body()
-    { cep, numero, complemento, cnpj, email, name, password, phone }: CreateStoreDTO,
+    {
+      cep,
+      numero,
+      complemento,
+      cnpj,
+      email,
+      name,
+      password,
+      mobile_phone,
+      home_phone,
+      birthdate,
+    }: CreateStoreDTO,
   ) {
     return await this.storeService.createStore({
       cep,
@@ -47,7 +58,9 @@ export class StoreController {
       email,
       name,
       password,
-      phone,
+      mobile_phone,
+      home_phone,
+      birthdate,
     });
   }
 
@@ -58,13 +71,15 @@ export class StoreController {
     {
       access_token,
       refresh_token,
-      cep, 
+      cep,
       numero,
       complemento,
       email,
       name,
-      phone,
+      mobile_phone,
+      home_phone,
       cnpj,
+      birthdate,
     }: CreateUserStoreDTO,
   ) {
     return await this.storeService.createStoreByUser({
@@ -72,11 +87,13 @@ export class StoreController {
       refresh_token,
       name,
       email,
-      phone,
+      mobile_phone,
+      home_phone,
       cnpj,
       cep,
       numero,
       complemento,
+      birthdate,
     });
   }
 
@@ -121,7 +138,8 @@ export class StoreController {
       newEmail,
       newName,
       newPassword,
-      newPhone,
+      newHomePhone, 
+      newMobilePhone
     }: UpdateStoreDTO,
   ) {
     return await this.storeService.updateStore({
@@ -134,7 +152,8 @@ export class StoreController {
       newEmail,
       newName,
       newPassword,
-      newPhone,
+      newHomePhone, 
+      newMobilePhone
     });
   }
 
@@ -151,7 +170,8 @@ export class StoreController {
       newComplemento,
       newEmail,
       newName,
-      newPhone,
+      newMobilePhone,
+      newHomePhone
     }: UpdateStoreDTO,
     @Query() { storeId }: UpdateProductUserQuery,
   ) {
@@ -165,7 +185,8 @@ export class StoreController {
       newComplemento,
       newEmail,
       newName,
-      newPhone,
+      newMobilePhone,
+      newHomePhone
     });
   }
 
@@ -202,9 +223,9 @@ export class StoreController {
 
   @Get('/store/:id/products')
   async searchStoreProduct(
-    @Param('id', new ParseUUIDPipe()) id ,
+    @Param('id', new ParseUUIDPipe()) id,
     @Query() { name, productId }: SearchStoreProductDTOQuery,
   ) {
-    return await this.storeService.searchProducts(id, name, productId)
+    return await this.storeService.searchProducts(id, name, productId);
   }
 }

@@ -83,9 +83,9 @@ export class UtilsService {
     }
   }
 
-  async verifyIsMaiorDeIdade(dataNascimento: Date) {
+  async verifyIsMaiorDeIdade(birthdate: Date) {
     const todaysDate = new Date();
-    const birthDate = new Date(dataNascimento);
+    const birthDate = new Date(birthdate);
     const idade = (todaysDate.getTime() - birthDate.getTime()) / 31536000000;
 
     if (idade < 18) {

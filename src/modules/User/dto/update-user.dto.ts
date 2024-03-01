@@ -32,12 +32,12 @@ export class UpdateUserDTO {
   newName?: string;
 
   @IsOptional()
-  @IsString()
-  newLastName?: string;
+  @IsPhoneNumber('BR')
+  newMobilePhone?: string;
 
   @IsOptional()
   @IsPhoneNumber('BR')
-  newPhone?: string;
+  newHomePhone?: string;
 
   @IsOptional()
   @IsNumberString()

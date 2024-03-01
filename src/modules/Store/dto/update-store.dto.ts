@@ -29,9 +29,14 @@ export class EditUserStoreBodyDTO {
   @IsString()
   newName?: string;
 
-  @IsOptional()
+
   @IsPhoneNumber('BR')
-  newPhone?: string;
+  @IsOptional()
+  newMobilePhone: string;
+
+  @IsPhoneNumber('BR')
+  @IsOptional()
+  newHomePhone: string;
 
   @IsOptional()
   @IsNumberString()

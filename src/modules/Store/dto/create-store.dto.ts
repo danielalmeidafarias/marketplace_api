@@ -1,4 +1,5 @@
 import {
+  IsDateString,
   IsEmail,
   IsJWT,
   IsNumber,
@@ -14,6 +15,9 @@ export class CreateStoreDTO {
   @IsString()
   name: string;
 
+  @IsDateString()
+  birthdate: Date;
+
   @IsEmail()
   email: string;
 
@@ -24,7 +28,12 @@ export class CreateStoreDTO {
   cnpj: string;
 
   @IsPhoneNumber('BR')
-  phone: string;
+  @IsOptional()
+  mobile_phone: string;
+
+  @IsPhoneNumber('BR')
+  @IsOptional()
+  home_phone: string;
 
   @IsNumberString()
   cep: string;
@@ -33,6 +42,7 @@ export class CreateStoreDTO {
   numero: string
 
   @IsString()
+  @IsOptional()
   complemento: string
 }
 
@@ -49,21 +59,29 @@ export class CreateUserStoreDTO {
   @IsOptional()
   name: string;
 
+  @IsDateString()
+  @IsOptional()
+  birthdate: Date;
+
   @IsEmail()
   @IsOptional()
   email: string;
 
-  @IsNumber()
-  @IsOptional()
-  cnpj?: string;
+  @IsNumberString()
+  cnpj: string;
 
   @IsPhoneNumber('BR')
   @IsOptional()
-  phone: string;
+  mobile_phone: string;
+
+  @IsPhoneNumber('BR')
+  @IsOptional()
+  home_phone: string;
 
   @IsOptional()
   cep: string;
 
+  @IsOptional()
   @IsNumberString()
   numero: string
   
