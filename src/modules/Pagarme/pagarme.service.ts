@@ -3,6 +3,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import pagarmeAuthConfig from 'src/config/pagarme-auth.config';
 import { Costumer } from './class/Costumer.class';
+import { Recipient } from './class/Recipient.class';
 @Injectable()
 export class PagarmeService {
   constructor() {}
@@ -33,8 +34,7 @@ export class PagarmeService {
       );
       return { costumerId: response.data.id };
     } catch (err) {
-      // console.error(err.response.data);
-      console.error("erro pagarme");
+      console.error(err.response.data);
       throw new HttpException(
         'Ocorreu um erro ao tentar cria o costumer',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -50,10 +50,10 @@ export class PagarmeService {
     type,
     birthdate,
     phones,
-    costumer_Id
+    costumer_Id,
   }: Costumer) {
     try {
-      console.log(document)
+      console.log(document);
       const response = await axios.put(
         `https://api.pagar.me/core/v5/customers/${costumer_Id}`,
         {
@@ -68,11 +68,36 @@ export class PagarmeService {
         { headers: pagarmeAuthConfig },
       );
 
-      console.log(response)
+      console.log(response);
     } catch (err) {
       console.error(err.response.data);
       throw new HttpException(
         'Ocorreu um erro ao tentar atualizar o costumer',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async createRecipient({
+    default_bank_account,
+    register_information,
+    // transfer_settings,
+  }: Recipient) {
+    try {
+      const response = await axios.post(
+        'https://api.pagar.me/core/v5/recipients',
+        {
+          register_information,
+          default_bank_account,
+          // transfer_settings,
+        },
+        { headers: pagarmeAuthConfig },
+      );
+      return { recipientId: response.data.id };
+    } catch (err) {
+      console.error(err.response.data);
+      throw new HttpException(
+        'Ocorreu um erro ao tentar criar o recipient na API Pagar.me, por favor tente novamente',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

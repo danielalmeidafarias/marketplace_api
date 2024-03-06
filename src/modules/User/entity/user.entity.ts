@@ -24,6 +24,7 @@ export class User {
     cep: string,
     numero: string,
     complemento: string,
+    ponto_referencia: string,
     logradouro: string,
     bairro: string,
     cidade: string,
@@ -40,6 +41,7 @@ export class User {
     this.cep = cep;
     this.numero = numero;
     this.complemento = complemento;
+    this.ponto_referencia = ponto_referencia
     this.cidade = cidade;
     this.cpf = cpf;
     this.logradouro = logradouro;
@@ -79,6 +81,9 @@ export class User {
 
   @Column({ nullable: true })
   complemento: string;
+
+  @Column()
+  ponto_referencia: string
 
   @Column()
   logradouro: string;

@@ -4,7 +4,7 @@ import { Store, UserStore } from '../entity/store.entity';
 import { DataSource } from 'typeorm';
 import { ProductRepository } from 'src/modules/Product/repository/product.repository';
 
-@Injectable() 
+@Injectable()
 export class StoreRepository {
   constructor(
     private dataSource: DataSource,
@@ -18,6 +18,7 @@ export class StoreRepository {
         .createQueryBuilder()
         .insert()
         .values({
+          recipientId: store.recipientId,
           costumerId: store.costumerId,
           birthdate: store.birthdate,
           email: store.email,
@@ -137,13 +138,10 @@ export class StoreRepository {
     }
   }
 
-  async deleteUserStores(userId: UUID) {
+  async deleteUserStore(userId: UUID) {
     try {
-      const userStores = await this.findManyByUserId(userId);
-
-      userStores.forEach(async (store) => {
-        await this.deleteStore(store.id);
-      });
+      const userStore = await this.findByUserId(userId);
+      await this.deleteStore(userStore.id);
     } catch (err) {
       console.error(err);
       throw new HttpException(
@@ -153,20 +151,20 @@ export class StoreRepository {
     }
   }
 
-  async findManyByUserId(userId: UUID) {
+  async findByUserId(userId: UUID) {
     return await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')
       .where('store.userId = :userId', { userId })
-      .getMany();
+      .getOne();
   }
 
   async searchManyByName(name: string) {
     return await this.dataSource
-    .getRepository(Store)
-    .createQueryBuilder('store')
-    .where(`store.name ~* :name`, { name })
-    .getMany();
+      .getRepository(Store)
+      .createQueryBuilder('store')
+      .where(`store.name ~* :name`, { name })
+      .getMany();
   }
 
   async findStoreByEmail(email: string) {

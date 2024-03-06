@@ -18,8 +18,7 @@ import {
   GetUserStoreInfoQueryDTO,
 } from './dto/get-store-info.dto';
 import { CreateStoreDTO, CreateUserStoreDTO } from './dto/create-store.dto';
-import { EditUserStoreBodyDTO, EditUserStoreQuery, UpdateStoreDTO } from './dto/update-store.dto';
-import { UpdateProductUserQuery } from '../Product/dto/update-product.dto';
+import { UpdateStoreDTO } from './dto/update-store.dto';
 import {
   DeleteStoreBodyDTO,
   DeleteUserStoreQueryDTO,
@@ -27,9 +26,7 @@ import {
 import { SearchStoreDTO } from './dto/search-store.dto';
 import {
   SearchStoreProductDTOQuery,
-  SearchStoreProductParamDTO,
 } from './dto/search-store-product.dto';
-import { GetStoreProductsDTO } from '../User/dto/get-store-products.dto';
 @Controller()
 export class StoreController {
   constructor(private storeService: StoreService) {}
@@ -48,12 +45,22 @@ export class StoreController {
       mobile_phone,
       home_phone,
       birthdate,
+      account_check_digit,
+      account_number,
+      account_type,
+      annual_revenue,
+      bank_digit,
+      branch_check_digit,
+      branch_number,
+      ponto_referencia,
+      tranding_name
     }: CreateStoreDTO,
   ) {
     return await this.storeService.createStore({
       cep,
       numero,
       complemento,
+      ponto_referencia,
       cnpj,
       email,
       name,
@@ -61,6 +68,14 @@ export class StoreController {
       mobile_phone,
       home_phone,
       birthdate,
+      bank_digit,
+      branch_number,
+      branch_check_digit,
+      account_number,
+      account_check_digit,
+      account_type,
+      annual_revenue,
+      tranding_name
     });
   }
 
@@ -71,29 +86,27 @@ export class StoreController {
     {
       access_token,
       refresh_token,
-      cep,
-      numero,
-      complemento,
-      email,
-      name,
-      mobile_phone,
-      home_phone,
-      cnpj,
-      birthdate,
+      monthly_income,
+      professional_occupation,
+      bank_digit,
+      branch_number,
+      branch_check_digit,
+      account_number,
+      account_check_digit,
+      account_type
     }: CreateUserStoreDTO,
   ) {
     return await this.storeService.createStoreByUser({
       access_token,
       refresh_token,
-      name,
-      email,
-      mobile_phone,
-      home_phone,
-      cnpj,
-      cep,
-      numero,
-      complemento,
-      birthdate,
+      monthly_income,
+      professional_occupation,
+      bank_digit,
+      branch_number,
+      branch_check_digit,
+      account_number,
+      account_check_digit,
+      account_type
     });
   }
 
@@ -154,39 +167,6 @@ export class StoreController {
       newPassword,
       newHomePhone, 
       newMobilePhone
-    });
-  }
-
-  @UseGuards(AuthGuard)
-  @Put('/user/store/update')
-  async updateUserStore(
-    @Body()
-    {
-      access_token,
-      refresh_token,
-      password,
-      newCEP,
-      newNumero,
-      newComplemento,
-      newEmail,
-      newName,
-      newMobilePhone,
-      newHomePhone
-    }: EditUserStoreBodyDTO,
-    @Query() { storeId }: EditUserStoreQuery,
-  ) {
-    return this.storeService.updateUserStore({
-      access_token,
-      refresh_token,
-      password,
-      storeId,
-      newCEP,
-      newNumero,
-      newComplemento,
-      newEmail,
-      newName,
-      newMobilePhone,
-      newHomePhone
     });
   }
 

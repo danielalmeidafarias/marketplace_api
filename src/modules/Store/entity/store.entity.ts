@@ -14,6 +14,7 @@ import {
 @Entity()
 export class Store {
   constructor(
+    recipientId: string,
     costumerId: string,
     email: string,
     name: string,
@@ -28,14 +29,15 @@ export class Store {
     uf: string,
     mobile_phone: string,
     home_phone: string | null,
-    cnpj: string,
+    cnpj: string | null,
     storeId?: UUID,
   ) {
     if (storeId) {
       this.id = storeId;
     }
 
-    this.costumerId = costumerId
+    this.recipientId = recipientId
+    this.costumerId = costumerId;
     this.cnpj = cnpj;
     this.password = password;
     this.email = email;
@@ -49,14 +51,17 @@ export class Store {
     this.cidade = cidade;
     this.uf = uf;
     this.mobile_phone = mobile_phone;
-    this.home_phone = home_phone
+    this.home_phone = home_phone;
   }
 
   @PrimaryGeneratedColumn('uuid')
   id: UUID;
 
-  @PrimaryColumn()
+  @Column({ nullable: true })
   costumerId?: string;
+
+  @PrimaryColumn()
+  recipientId: string;
 
   @PrimaryColumn()
   email: string;
@@ -122,7 +127,7 @@ export class Store {
 
 export class UserStore implements Store {
   constructor(
-    costumerId: string,
+    recipientId: string,
     userId: UUID,
     user: User,
     email: string,
@@ -138,18 +143,13 @@ export class UserStore implements Store {
     mobile_phone: string,
     home_phone: string | null,
     cpf: string,
-    cnpj?: string,
     storeId?: UUID,
   ) {
     if (storeId) {
       this.id = storeId;
     }
 
-    if (cnpj) {
-      this.cnpj = cnpj;
-    }
-
-    this.costumerId = costumerId
+    this.recipientId = recipientId
     this.userId = userId;
     this.user = user;
     this.cpf = cpf;
@@ -168,6 +168,7 @@ export class UserStore implements Store {
   }
 
   id: UUID;
+  recipientId: string
   costumerId?: string;
   email: string;
   name: string;
@@ -184,8 +185,8 @@ export class UserStore implements Store {
   bairro: string;
   cidade: string;
   uf: string;
-  mobile_phone: string
-  home_phone: string
+  mobile_phone: string;
+  home_phone: string;
   created_at: Date;
   updated_at: Date;
   deleted_at: Date;

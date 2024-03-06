@@ -1,6 +1,7 @@
 import {
   IsDateString,
   IsEmail,
+  IsIn,
   IsJWT,
   IsNumber,
   IsNumberString,
@@ -9,6 +10,7 @@ import {
   IsPostalCode,
   IsString,
   IsStrongPassword,
+  Length,
 } from 'class-validator';
 
 export class CreateStoreDTO {
@@ -39,53 +41,79 @@ export class CreateStoreDTO {
   cep: string;
 
   @IsNumberString()
-  numero: string
+  numero: string;
 
   @IsString()
-  @IsOptional()
-  complemento: string
+  complemento: string;
+
+  @IsString()
+  ponto_referencia: string
+
+  @IsNumberString()
+  @Length(3)
+  bank_digit: string;
+
+  @IsNumberString()
+  @Length(4)
+  branch_number: string;
+
+  @IsNumberString()
+  @Length(1)
+  branch_check_digit: string;
+
+  @IsNumberString()
+  @Length(5, 13)
+  account_number: string;
+
+  @IsNumberString()
+  @Length(1)
+  account_check_digit: string;
+
+  @IsString()
+  @IsIn(['checking', 'savings'])
+  account_type: 'checking' | 'savings';
+
+  @IsNumber()
+  annual_revenue: number
+
+  @IsString()
+  tranding_name: string
 }
 
 export class CreateUserStoreDTO {
   @IsJWT()
-  @IsOptional()
   access_token: string;
 
-  @IsOptional()
   @IsJWT()
   refresh_token: string;
 
   @IsString()
-  @IsOptional()
-  name: string;
+  professional_occupation: string;
 
-  @IsDateString()
-  @IsOptional()
-  birthdate: Date;
-
-  @IsEmail()
-  @IsOptional()
-  email: string;
+  @IsNumber()
+  monthly_income: number;
 
   @IsNumberString()
-  cnpj: string;
+  @Length(3)
+  bank_digit: string;
 
-  @IsPhoneNumber('BR')
-  @IsOptional()
-  mobile_phone: string;
-
-  @IsPhoneNumber('BR')
-  @IsOptional()
-  home_phone: string;
-
-  @IsOptional()
-  cep: string;
-
-  @IsOptional()
   @IsNumberString()
-  numero: string
-  
+  @Length(4)
+  branch_number: string;
+
+  @IsNumberString()
+  @Length(1)
+  branch_check_digit: string;
+
+  @IsNumberString()
+  @Length(5, 13)
+  account_number: string;
+
+  @IsNumberString()
+  @Length(1)
+  account_check_digit: string;
+
   @IsString()
-  @IsOptional()
-  complemento: string
+  @IsIn(['checking', 'savings'])
+  account_type: 'checking' | 'savings';
 }

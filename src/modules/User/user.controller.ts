@@ -38,7 +38,8 @@ export class UserController {
       cpf,
       birthdate,
       mobile_phone,
-      home_phone
+      home_phone,
+      ponto_referencia
     }: CreateUserDTO,
   ) {
     return await this.userService.createUser({
@@ -51,7 +52,8 @@ export class UserController {
       incomingCpf: cpf,
       birthdate,
       incomingMobilePhone: mobile_phone,
-      incomingHomePhone: home_phone
+      incomingHomePhone: home_phone,
+      ponto_referencia
     });
   }
 

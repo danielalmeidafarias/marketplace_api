@@ -14,6 +14,7 @@ import { PagarmeModule } from '../Pagarme/pagarme.module';
 import { PagarmeService } from '../Pagarme/pagarme.service';
 import { Phone, Phones } from '../Pagarme/class/Phones.class';
 import { Costumer } from '../Pagarme/class/Costumer.class';
+import { UserStore } from '../Store/entity/store.entity';
 
 export interface ICreateUser {
   email: string;
@@ -26,6 +27,7 @@ export interface ICreateUser {
   name: string;
   incomingMobilePhone: string;
   incomingHomePhone: string;
+  ponto_referencia: string,
 }
 
 export interface IUpdateUser {
@@ -75,6 +77,7 @@ export class UserService {
     name,
     incomingMobilePhone,
     incomingHomePhone,
+    ponto_referencia
   }: ICreateUser) {
     await this.utilsService.verifyIsMaiorDeIdade(birthdate);
 
@@ -134,12 +137,13 @@ export class UserService {
       cep,
       numero,
       complemento,
+      ponto_referencia,
       logradouro,
       bairro,
       cidade,
       uf,
       mobile_phone.phoneNumber,
-      home_phone ? home_phone.phoneNumber : null
+      home_phone ? home_phone.phoneNumber : null,
     );
 
     await this.userRepository.createUser(user);
@@ -214,7 +218,11 @@ export class UserService {
 
     const address: VerifyCepResponse | undefined = newCEP
       ? await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento)
-      : await this.utilsService.verifyCEP(user.cep, user.numero, user.complemento);
+      : await this.utilsService.verifyCEP(
+          user.cep,
+          user.numero,
+          user.complemento,
+        );
 
     await this.authService.verifyTokenId(newAccess_token, user.id);
 
@@ -256,7 +264,7 @@ export class UserService {
       newCEP ? address.uf : user.uf,
       newMobilePhone ? mobile_phone.phoneNumber : user.mobile_phone,
       newHomePhone ? home_phone.phoneNumber : user.home_phone,
-      user.id
+      user.id,
     );
 
     if (
@@ -270,6 +278,32 @@ export class UserService {
         'Nenhuma mudança foi requerida',
         HttpStatus.BAD_REQUEST,
       );
+    }
+
+    const userStore = await this.storeRepository.findByUserId(user.id);
+
+    if (userStore) {
+      const editedUserStore = new UserStore(
+        userStore.recipientId,
+        user.id,
+        editedUser,
+        editedUser.email,
+        editedUser.name,
+        editedUser.birthdate,
+        editedUser.cep,
+        editedUser.numero,
+        editedUser.complemento,
+        editedUser.logradouro,
+        editedUser.bairro,
+        editedUser.cidade,
+        editedUser.uf,
+        editedUser.mobile_phone,
+        editedUser.home_phone,
+        editedUser.cpf,
+        userStore.id,
+      );
+
+      await this.storeRepository.updateStore(editedUserStore);
     }
 
     const phonesObject = new Phones(
@@ -289,7 +323,7 @@ export class UserService {
       editedUser.costumerId,
     );
 
-    await this.pagarmeService.updateCostumer(editedCostumer)
+    await this.pagarmeService.updateCostumer(editedCostumer);
 
     await this.userRepository.updateUser(editedUser);
 
@@ -313,7 +347,7 @@ export class UserService {
 
     await this.authService.verifyTokenId(newAccess_token, user.id);
 
-    await this.storeRepository.deleteUserStores(user.id);
+    await this.storeRepository.deleteUserStore(user.id);
 
     await this.productRepository.deleteUserProducts(user.id);
 

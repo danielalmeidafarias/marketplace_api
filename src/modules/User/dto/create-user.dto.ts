@@ -32,8 +32,10 @@ export class CreateUserDTO {
   numero: string
 
   @IsString()
-  @IsOptional()
   complemento: string
+  
+  @IsString()
+  ponto_referencia: string
 
   @IsPhoneNumber()
   mobile_phone: string;

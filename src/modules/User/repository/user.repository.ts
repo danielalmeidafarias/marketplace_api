@@ -19,6 +19,7 @@ export class UserRepository {
     cep,
     numero,
     complemento,
+    ponto_referencia,
     cidade,
     cpf,
     birthdate,
@@ -28,7 +29,6 @@ export class UserRepository {
     password,
     uf,
   }: User) {
-    const queryRunner = this.dataSource.createQueryRunner();
     try {
       this.dataSource.getRepository(User).createQueryBuilder().insert().values({
         name,
@@ -37,6 +37,7 @@ export class UserRepository {
         cep,
         numero,
         complemento,
+        ponto_referencia,
         cidade,
         cpf,
         birthdate,
@@ -105,6 +106,7 @@ export class UserRepository {
           cep: user.cep,
           numero: user.numero,
           complemento: user.complemento,
+          ponto_referencia: user.ponto_referencia,
           logradouro: user.logradouro,
           bairro: user.bairro,
           cidade: user.cidade,
