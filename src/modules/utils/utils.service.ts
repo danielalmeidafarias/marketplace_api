@@ -4,17 +4,14 @@ import axios from 'axios';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from 'src/modules/User/repository/user.repository';
 import parsePhoneNumber from 'libphonenumber-js';
-import { Phone } from '../Pagarme/class/Phones.class';
-import { Address } from '../Pagarme/class/Address.class';
-export interface VerifyCepResponse {
-  cep: any;
-  logradouro: any;
-  bairro: any;
-  cidade: any;
-  uf: any;
-  addressObject: Address;
-}
-
+import {
+  ICostumerAddress,
+  ICostumerPhone,
+} from '../Pagarme/interfaces/Costumer.interface';
+import {
+  IRecipientAddress,
+  IRecipientPhone,
+} from '../Pagarme/interfaces/Recipient.interface';
 @Injectable()
 export class UtilsService {
   constructor(
@@ -27,33 +24,74 @@ export class UtilsService {
     numero: string,
     complemento?: string,
     costumerId?: string,
-  ): Promise<VerifyCepResponse> {
+  ) {
     try {
       const data = (await axios.get(`https://viacep.com.br/ws/${cep}/json/`))
         .data;
 
-      const addressObject = new Address(
-        `${numero}, ${data.logradouro}, ${data.bairro}`,
-        data.cep,
-        data.localidade,
-        data.uf,
-        'BR',
-        complemento,
-        costumerId,
-      );
       return {
         cep: data.cep,
         logradouro: data.logradouro,
         bairro: data.bairro,
         cidade: data.localidade,
         uf: data.uf,
-        addressObject,
       };
     } catch {
       throw new HttpException(
         'O cep digitado é inválido',
         HttpStatus.BAD_REQUEST,
       );
+    }
+  }
+
+  async transformCostumerAddress(
+    cep: string,
+    numero: string,
+    complemento: string,
+  ) {
+    try {
+      const data = (await axios.get(`https://viacep.com.br/ws/${cep}/json/`))
+        .data;
+
+      const addressObject: ICostumerAddress = {
+        line_1: `${numero}, ${data.logradouro}, ${data.bairro}`,
+        line_2: complemento,
+        city: data.localidade,
+        zip_code: data.cep,
+        state: data.uf,
+        country: 'BR',
+      };
+
+      return addressObject;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async transformRecipientAddress(
+    cep: string,
+    numero: string,
+    complemento: string,
+    ponto_referencia: string,
+  ) {
+    try {
+      const data = (await axios.get(`https://viacep.com.br/ws/${cep}/json/`))
+        .data;
+
+      const addressObject: IRecipientAddress = {
+        street: data.logradouro,
+        street_number: numero,
+        neighboorhood: data.bairro,
+        complementary: complemento,
+        reference_point: ponto_referencia,
+        city: data.localidade,
+        zip_code: data.cep,
+        state: data.uf,
+      };
+
+      return addressObject;
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -104,18 +142,52 @@ export class UtilsService {
       );
     }
 
+    return phoneNumber;
+  }
+
+  async transformCostumerPhone(incomingPhone: string) {
+    const parsedPhoneNumber = parsePhoneNumber(incomingPhone);
+
+    const phoneNumber = parsedPhoneNumber.formatInternational();
+
     const phoneArray = phoneNumber.split(' ');
 
-    const phoneObject = new Phone(
-      parsedPhoneNumber.countryCallingCode,
-      phoneArray[1],
-      phoneArray[2] + phoneArray[3],
-    );
-
-    return {
-      phoneNumber,
-      phoneObject,
+    const phoneObject: ICostumerPhone = {
+      country_code: parsedPhoneNumber.countryCallingCode,
+      area_code: phoneArray[1],
+      number: phoneArray[2] + phoneArray[3],
     };
+
+    return phoneObject;
+  }
+
+  async transformRecipientPhone(
+    mobile_phone: string,
+    home_phone: string | null,
+  ) {
+    const parsedMobilePhoneNumber = parsePhoneNumber(mobile_phone);
+    const mobilePhoneNumber = parsedMobilePhoneNumber.formatInternational();
+    const mobilePhoneArray = mobilePhoneNumber.split(' ');
+
+    const mobilePhoneObject: IRecipientPhone = {
+      ddd: mobilePhoneArray[1],
+      number: mobilePhoneArray[2] + mobilePhoneArray[3],
+      type: 'mobile',
+    };
+
+    const parsedHomePhoneNumber = parsePhoneNumber(home_phone);
+    const homePhoneNumber = parsedHomePhoneNumber.formatInternational();
+    const homePhoneArray = homePhoneNumber.split(' ');
+
+    const homePhoneObject: IRecipientPhone | null = {
+      ddd: homePhoneArray[1],
+      number: homePhoneArray[2] + homePhoneArray[3],
+      type: 'home',
+    };
+
+    return homePhoneObject
+      ? [mobilePhoneObject, homePhoneObject]
+      : [mobilePhoneObject];
   }
 
   async hashPassword(password: string): Promise<string> {

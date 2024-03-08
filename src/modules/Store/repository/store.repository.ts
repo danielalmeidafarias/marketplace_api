@@ -20,7 +20,6 @@ export class StoreRepository {
         .values({
           recipientId: store.recipientId,
           costumerId: store.costumerId,
-          birthdate: store.birthdate,
           email: store.email,
           password: store.password,
           name: store.name,

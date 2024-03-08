@@ -1,4 +1,8 @@
+import { Type } from 'class-transformer';
 import {
+  ArrayNotEmpty,
+  IsArray,
+  IsBoolean,
   IsDateString,
   IsEmail,
   IsIn,
@@ -7,18 +11,15 @@ import {
   IsNumberString,
   IsOptional,
   IsPhoneNumber,
-  IsPostalCode,
   IsString,
   IsStrongPassword,
   Length,
+  ValidateNested,
 } from 'class-validator';
 
 export class CreateStoreDTO {
   @IsString()
   name: string;
-
-  @IsDateString()
-  birthdate: Date;
 
   @IsEmail()
   email: string;
@@ -30,7 +31,6 @@ export class CreateStoreDTO {
   cnpj: string;
 
   @IsPhoneNumber('BR')
-  @IsOptional()
   mobile_phone: string;
 
   @IsPhoneNumber('BR')
@@ -47,7 +47,7 @@ export class CreateStoreDTO {
   complemento: string;
 
   @IsString()
-  ponto_referencia: string
+  ponto_referencia: string;
 
   @IsNumberString()
   @Length(3)
@@ -74,10 +74,16 @@ export class CreateStoreDTO {
   account_type: 'checking' | 'savings';
 
   @IsNumber()
-  annual_revenue: number
+  annual_revenue: number;
 
   @IsString()
-  tranding_name: string
+  tranding_name: string;
+
+  @IsArray()
+  @ArrayNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => ManagingPartner)
+  managing_partners: ManagingPartner[];
 }
 
 export class CreateUserStoreDTO {
@@ -117,3 +123,48 @@ export class CreateUserStoreDTO {
   @IsIn(['checking', 'savings'])
   account_type: 'checking' | 'savings';
 }
+
+export class ManagingPartner {
+  @IsString()
+  name: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsNumberString()
+  @Length(11, 11)
+  cpf: string;
+
+  @IsDateString()
+  birthdate: Date;
+
+  @IsNumber()
+  monthly_income: number;
+
+  @IsString()
+  professional_occupation: string;
+
+  @IsBoolean()
+  self_declared_legal_representative: boolean;
+
+  @IsNumberString()
+  cep: string;
+
+  @IsNumberString()
+  numero: string;
+
+  @IsString()
+  complemento: string;
+
+  @IsString()
+  ponto_referencia: string;
+
+  @IsPhoneNumber('BR')
+  mobile_phone: string;
+
+  @IsPhoneNumber('BR')
+  @IsOptional()
+  home_phone: string;
+}
+
+export interface IManagingPartner extends ManagingPartner {}

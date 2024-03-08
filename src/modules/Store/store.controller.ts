@@ -44,7 +44,6 @@ export class StoreController {
       password,
       mobile_phone,
       home_phone,
-      birthdate,
       account_check_digit,
       account_number,
       account_type,
@@ -53,7 +52,8 @@ export class StoreController {
       branch_check_digit,
       branch_number,
       ponto_referencia,
-      tranding_name
+      tranding_name,
+      managing_partners
     }: CreateStoreDTO,
   ) {
     return await this.storeService.createStore({
@@ -67,7 +67,6 @@ export class StoreController {
       password,
       mobile_phone,
       home_phone,
-      birthdate,
       bank_digit,
       branch_number,
       branch_check_digit,
@@ -75,7 +74,8 @@ export class StoreController {
       account_check_digit,
       account_type,
       annual_revenue,
-      tranding_name
+      tranding_name,
+      managing_partners
     });
   }
 

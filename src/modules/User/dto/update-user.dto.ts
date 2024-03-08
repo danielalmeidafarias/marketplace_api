@@ -6,6 +6,7 @@ import {
   IsPhoneNumber,
   IsString,
   IsStrongPassword,
+  Length,
 } from 'class-validator';
 
 export class UpdateUserDTO {
@@ -41,6 +42,7 @@ export class UpdateUserDTO {
 
   @IsOptional()
   @IsNumberString()
+  @Length(8, 8)
   newCEP?: string;
 
   @IsNumberString()

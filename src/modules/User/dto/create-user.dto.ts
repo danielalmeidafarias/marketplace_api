@@ -6,6 +6,7 @@ import {
   IsPhoneNumber,
   IsString,
   IsStrongPassword,
+  Length,
 } from 'class-validator';
 
 export class CreateUserDTO {
@@ -19,23 +20,24 @@ export class CreateUserDTO {
   name: string;
 
   @IsNumberString()
+  @Length(11, 11)
   cpf: string;
 
   @IsDateString()
   birthdate: Date;
 
-  // @IsPostalCode('BR')
   @IsNumberString()
+  @Length(8, 8)
   cep: string;
 
   @IsNumberString()
-  numero: string
+  numero: string;
 
   @IsString()
-  complemento: string
-  
+  complemento: string;
+
   @IsString()
-  ponto_referencia: string
+  ponto_referencia: string;
 
   @IsPhoneNumber()
   mobile_phone: string;

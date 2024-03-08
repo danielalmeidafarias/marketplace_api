@@ -6,14 +6,10 @@ import { AuthService } from '../auth/auth.service';
 import { LoginUserDTO } from './dto/login-user.dto';
 import {
   UtilsService,
-  VerifyCepResponse,
 } from 'src/modules/utils/utils.service';
 import { StoreRepository } from '../Store/repository/store.repository';
 import { ProductRepository } from '../Product/repository/product.repository';
-import { PagarmeModule } from '../Pagarme/pagarme.module';
 import { PagarmeService } from '../Pagarme/pagarme.service';
-import { Phone, Phones } from '../Pagarme/class/Phones.class';
-import { Costumer } from '../Pagarme/class/Costumer.class';
 import { UserStore } from '../Store/entity/store.entity';
 
 export interface ICreateUser {
@@ -27,7 +23,7 @@ export interface ICreateUser {
   name: string;
   incomingMobilePhone: string;
   incomingHomePhone: string;
-  ponto_referencia: string,
+  ponto_referencia: string;
 }
 
 export interface IUpdateUser {
@@ -77,20 +73,19 @@ export class UserService {
     name,
     incomingMobilePhone,
     incomingHomePhone,
-    ponto_referencia
+    ponto_referencia,
   }: ICreateUser) {
     await this.utilsService.verifyIsMaiorDeIdade(birthdate);
 
     const cpf = await this.utilsService.verifyCPF(incomingCpf);
 
-    const mobile_phone =
-      await this.utilsService.verifyPhoneNumber(incomingMobilePhone);
+    const mobile_phone = await this.utilsService.verifyPhoneNumber(incomingMobilePhone);
 
     const home_phone = incomingHomePhone
       ? await this.utilsService.verifyPhoneNumber(incomingHomePhone)
       : null;
 
-    const { cep, logradouro, bairro, cidade, uf, addressObject } =
+    const { cep, logradouro, bairro, cidade, uf } =
       await this.utilsService.verifyCEP(incomingCep, numero, complemento);
 
     const hashedPassword = await this.utilsService.hashPassword(password);
@@ -101,31 +96,21 @@ export class UserService {
 
     await this.userRepository.verifyThereIsNoUserWithCPF(cpf);
 
-    await this.storeRepository.verifyThereIsNoStoreWithPhone(
-      mobile_phone.phoneNumber,
-    );
+    await this.storeRepository.verifyThereIsNoStoreWithPhone(mobile_phone);
 
-    await this.userRepository.verifyThereIsNoUserWithPhone(
-      mobile_phone.phoneNumber,
-    );
+    await this.userRepository.verifyThereIsNoUserWithPhone(mobile_phone);
 
-    const phonesObject = new Phones(
-      mobile_phone.phoneObject,
-      incomingHomePhone ? home_phone.phoneObject : null,
-    );
-
-    const costumer = new Costumer(
-      name.toUpperCase(),
+    const { costumerId } = await this.pagarmeService.createUserCostumer(
+      name,
       email,
-      incomingCpf,
-      'CPF',
-      'individual',
-      addressObject,
-      phonesObject,
+      cpf,
       birthdate,
+      mobile_phone,
+      home_phone,
+      cep,
+      numero,
+      complemento
     );
-
-    const { costumerId } = await this.pagarmeService.createCostumer(costumer);
 
     const user = new User(
       costumerId,
@@ -142,8 +127,8 @@ export class UserService {
       bairro,
       cidade,
       uf,
-      mobile_phone.phoneNumber,
-      home_phone ? home_phone.phoneNumber : null,
+      mobile_phone,
+      home_phone ? home_phone : null,
     );
 
     await this.userRepository.createUser(user);
@@ -216,7 +201,7 @@ export class UserService {
         ? await this.utilsService.verifyPhoneNumber(user.home_phone)
         : null;
 
-    const address: VerifyCepResponse | undefined = newCEP
+    const address= newCEP
       ? await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento)
       : await this.utilsService.verifyCEP(
           user.cep,
@@ -241,10 +226,10 @@ export class UserService {
 
     if (newMobilePhone) {
       await this.storeRepository.verifyThereIsNoStoreWithPhone(
-        mobile_phone.phoneNumber,
+        mobile_phone,
       );
       await this.userRepository.verifyThereIsNoUserWithPhone(
-        mobile_phone.phoneNumber,
+        mobile_phone,
       );
     }
 
@@ -262,8 +247,8 @@ export class UserService {
       newCEP ? address.bairro : user.bairro,
       newCEP ? address.cidade : user.cidade,
       newCEP ? address.uf : user.uf,
-      newMobilePhone ? mobile_phone.phoneNumber : user.mobile_phone,
-      newHomePhone ? home_phone.phoneNumber : user.home_phone,
+      newMobilePhone ? mobile_phone : user.mobile_phone,
+      newHomePhone ? home_phone : user.home_phone,
       user.id,
     );
 
@@ -306,24 +291,18 @@ export class UserService {
       await this.storeRepository.updateStore(editedUserStore);
     }
 
-    const phonesObject = new Phones(
-      mobile_phone.phoneObject,
-      home_phone ? home_phone.phoneObject : null,
-    );
-
-    const editedCostumer = new Costumer(
+    await this.pagarmeService.updateUserCostumer(
       editedUser.name,
-      editedUser.email,
+      editedUser.email, 
       editedUser.cpf,
-      'CPF',
-      'individual',
-      address.addressObject,
-      phonesObject,
       editedUser.birthdate,
-      editedUser.costumerId,
-    );
-
-    await this.pagarmeService.updateCostumer(editedCostumer);
+      editedUser.mobile_phone,
+      editedUser.home_phone,
+      editedUser.cep,
+      editedUser.numero,
+      editedUser.complemento,
+      editedUser.costumerId
+      );
 
     await this.userRepository.updateUser(editedUser);
 

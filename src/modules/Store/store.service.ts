@@ -2,34 +2,21 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { StoreRepository } from './repository/store.repository';
 import { AuthService } from '../auth/auth.service';
 import { UserRepository } from '../User/repository/user.repository';
-import {
-  UtilsService,
-  VerifyCepResponse,
-} from 'src/modules/utils/utils.service';
+import { UtilsService } from 'src/modules/utils/utils.service';
 import { LoginStoreDTO } from './dto/login-store.dto';
 import { UUID } from 'crypto';
 import { Store, UserStore } from './entity/store.entity';
 import { ProductRepository } from '../Product/repository/product.repository';
-import { Phones } from '../Pagarme/class/Phones.class';
-import { Costumer } from '../Pagarme/class/Costumer.class';
 import { PagarmeService } from '../Pagarme/pagarme.service';
-import {
-  BankAccount,
-  Recipient,
-  RegisterInformationAddress,
-  RegisterInformationPF,
-  RegisterInformationPJ,
-  RegisterInformationPhone,
-} from '../Pagarme/class/Recipient.class';
+import { IManagingPartner } from './dto/create-store.dto';
 
 interface ICreateStore {
   cep: string;
   numero: string;
   complemento: string;
-  ponto_referencia: string
+  ponto_referencia: string;
   email: string;
   name: string;
-  birthdate: Date;
   password?: string;
   mobile_phone: string;
   home_phone?: string;
@@ -42,8 +29,9 @@ interface ICreateStore {
   account_number: string;
   account_check_digit: string;
   account_type: 'checking' | 'savings';
-  tranding_name: string
-  annual_revenue: number
+  tranding_name: string;
+  annual_revenue: number;
+  managing_partners: IManagingPartner[];
 }
 
 interface ICreateUserStore {
@@ -109,7 +97,6 @@ export class StoreService {
     mobile_phone: incomingMobilePhone,
     home_phone: incomingHomePhone,
     cnpj: incomingCnpj,
-    birthdate,
     bank_digit,
     branch_number,
     branch_check_digit,
@@ -117,32 +104,35 @@ export class StoreService {
     account_check_digit,
     account_type,
     annual_revenue,
-    tranding_name
+    tranding_name,
+    managing_partners,
   }: ICreateStore) {
-    await this.utilsService.verifyIsMaiorDeIdade(birthdate);
+    const legal_representative = managing_partners.find(
+      (partner) => partner.self_declared_legal_representative === true,
+    );
+
+    if (!legal_representative) {
+      throw new HttpException(
+        'Pelo menos um dos representantes deve ser o representante legal do cnpj',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.utilsService.verifyIsMaiorDeIdade(
+      legal_representative.birthdate,
+    );
 
     const cnpj = await this.utilsService.verifyCNPJ(incomingCnpj);
 
-    const { phoneNumber: mobilePhoneNumber, phoneObject: mobilePhoneObject } =
+    const mobilePhoneNumber =
       await this.utilsService.verifyPhoneNumber(incomingMobilePhone);
 
-    const homePhone =
-      incomingHomePhone
-        ? await this.utilsService.verifyPhoneNumber(incomingHomePhone)
-        : null;
+    const homePhone = incomingHomePhone
+      ? await this.utilsService.verifyPhoneNumber(incomingHomePhone)
+      : null;
 
-    const {
-      cep,
-      logradouro,
-      bairro,
-      cidade,
-      uf,
-      addressObject,
-    }: VerifyCepResponse = await this.utilsService.verifyCEP(
-      incomingCep,
-      numero,
-      complemento,
-    );
+    const { cep, logradouro, bairro, cidade, uf } =
+      await this.utilsService.verifyCEP(incomingCep, numero, complemento);
 
     const hashedPassword = await this.utilsService.hashPassword(password);
 
@@ -154,110 +144,51 @@ export class StoreService {
 
     await this.userRepository.verifyThereIsNoUserWithEmail(email);
 
-    await this.storeRepository.verifyThereIsNoStoreWithPhone(
-      mobilePhoneNumber,
-    );
+    await this.storeRepository.verifyThereIsNoStoreWithPhone(mobilePhoneNumber);
 
-    await this.userRepository.verifyThereIsNoUserWithPhone(
-      mobilePhoneNumber,
-    );
+    await this.userRepository.verifyThereIsNoUserWithPhone(mobilePhoneNumber);
 
     await this.storeRepository.verifyThereIsNoStoreWithCnpj(cnpj);
 
-    const default_bank_account = new BankAccount(
+    const { costumerId } = await this.pagarmeService.createStoreCostumer(
       name,
-      'company',
+      email,
       cnpj,
-      bank_digit,
-      branch_number,
-      branch_check_digit,
-      account_number,
-      account_check_digit,
-      account_type,
-    );
-
-    const register_information_address = new RegisterInformationAddress(
-      logradouro,
-      complemento,
-      numero,
-      bairro,
-      cidade,
-      uf,
+      legal_representative.birthdate,
+      mobilePhoneNumber,
+      homePhone,
       cep,
-      ponto_referencia,
+      numero,
+      complemento,
     );
 
-    const register_information_number = homePhone
-      ? [
-          new RegisterInformationPhone(
-            mobilePhoneObject.area_code,
-            mobilePhoneObject.number,
-            'mobile',
-          ),
-
-          new RegisterInformationPhone(
-            homePhone.phoneObject.area_code,
-            homePhone.phoneObject.number,
-            'home',
-          ),
-        ]
-      : [
-          new RegisterInformationPhone(
-            mobilePhoneObject.area_code,
-            mobilePhoneObject.number,
-            'mobile',
-          ),
-        ];
-
-        // company_name: string;
-        // trading_name: string;
-        // email: string;
-        // document: string;
-        // annual_revenue: number;
-        // main_address: Address;
-        // phone_numbers: string[];
-
-    const register_information = new RegisterInformationPJ(
+    const { recipientId } = await this.pagarmeService.createStoreRecipient(
       name,
       tranding_name,
       email,
       cnpj,
       annual_revenue,
-      register_information_address,
-      register_information_number
+      mobilePhoneNumber,
+      homePhone,
+      cep,
+      numero,
+      complemento,
+      ponto_referencia,
+      bank_digit,
+      branch_check_digit,
+      branch_number,
+      account_number,
+      account_check_digit,
+      account_type,
+      managing_partners,
     );
-
-    const recipient = new Recipient(register_information, default_bank_account);
-
-
-
-    const phonesObject = new Phones(
-      mobilePhoneObject,
-      incomingHomePhone ? homePhone.phoneObject : null,
-    );
-
-    const costumer = new Costumer(
-      name,
-      email,
-      incomingCnpj,
-      'CNPJ',
-      'company',
-      addressObject,
-      phonesObject,
-      birthdate,
-    );
-
-    const { costumerId } = await this.pagarmeService.createCostumer(costumer);
-
-    const { recipientId } =
-    await this.pagarmeService.createRecipient(recipient);
 
     const store = new Store(
       recipientId,
       costumerId,
       email,
       name,
-      birthdate,
+      legal_representative.birthdate,
       hashedPassword,
       cep,
       numero,
@@ -267,7 +198,7 @@ export class StoreService {
       cidade,
       uf,
       mobilePhoneNumber,
-      homePhone ? homePhone.phoneNumber : null,
+      homePhone ? homePhone : null,
       cnpj,
     );
 
@@ -305,73 +236,26 @@ export class StoreService {
 
     await this.storeRepository.verifyThereIsNoStoreWithPhone(user.mobile_phone);
 
-    const { phoneObject: mobilePhoneObject } =
-      await this.utilsService.verifyPhoneNumber(user.mobile_phone);
-
-    const homePhone = user.home_phone
-      ? await this.utilsService.verifyPhoneNumber(user.home_phone)
-      : null;
-
-    const default_bank_account = new BankAccount(
+    const { recipientId } = await this.pagarmeService.createUserRecipient(
       user.name,
-      'individual',
+      user.email,
       user.cpf,
+      user.birthdate,
+      monthly_income,
+      professional_occupation,
+      user.mobile_phone,
+      user.home_phone,
+      user.cep,
+      user.numero,
+      user.complemento,
+      user.ponto_referencia,
       bank,
-      branch_number,
       branch_check_digit,
+      branch_number,
       account_number,
       account_check_digit,
       type,
     );
-
-    const register_information_address = new RegisterInformationAddress(
-      user.logradouro,
-      user.complemento,
-      user.numero,
-      user.bairro,
-      user.cidade,
-      user.uf,
-      user.cep,
-      user.ponto_referencia,
-    );
-
-    const register_information_number = homePhone
-      ? [
-          new RegisterInformationPhone(
-            mobilePhoneObject.area_code,
-            mobilePhoneObject.number,
-            'mobile',
-          ),
-
-          new RegisterInformationPhone(
-            homePhone.phoneObject.area_code,
-            homePhone.phoneObject.number,
-            'home',
-          ),
-        ]
-      : [
-          new RegisterInformationPhone(
-            mobilePhoneObject.area_code,
-            mobilePhoneObject.number,
-            'mobile',
-          ),
-        ];
-
-    const register_information = new RegisterInformationPF(
-      user.name,
-      user.email,
-      user.cpf,
-      `${user.birthdate.toLocaleDateString('BR').toString()}`,
-      monthly_income,
-      professional_occupation,
-      register_information_address,
-      register_information_number,
-    );
-
-    const recipient = new Recipient(register_information, default_bank_account);
-
-    const { recipientId } =
-      await this.pagarmeService.createRecipient(recipient);
 
     const store = new UserStore(
       recipientId,
@@ -489,7 +373,7 @@ export class StoreService {
 
     const store = await this.storeRepository.verifyExistingStoreById(id);
 
-    const address: VerifyCepResponse | undefined = newCEP
+    const address = newCEP
       ? await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento)
       : await this.utilsService.verifyCEP(
           store.cep,
@@ -529,13 +413,9 @@ export class StoreService {
       await this.userRepository.verifyThereIsNoUserWithEmail(newEmail);
     }
 
-    if (newMobilePhone && mobile_phone.phoneNumber !== store.mobile_phone) {
-      await this.storeRepository.verifyThereIsNoStoreWithPhone(
-        mobile_phone.phoneNumber,
-      );
-      await this.userRepository.verifyThereIsNoUserWithPhone(
-        mobile_phone.phoneNumber,
-      );
+    if (newMobilePhone && mobile_phone !== store.mobile_phone) {
+      await this.storeRepository.verifyThereIsNoStoreWithPhone(mobile_phone);
+      await this.userRepository.verifyThereIsNoUserWithPhone(mobile_phone);
     }
 
     const editedStore = new Store(
@@ -552,8 +432,8 @@ export class StoreService {
       newCEP ? address.bairro : store.bairro,
       newCEP ? address.cidade : store.cidade,
       newCEP ? address.uf : store.uf,
-      newMobilePhone ? mobile_phone.phoneNumber : store.mobile_phone,
-      newHomePhone ? home_phone.phoneNumber : store.home_phone,
+      newMobilePhone ? mobile_phone : store.mobile_phone,
+      newHomePhone ? home_phone : store.home_phone,
       store.cnpj,
       store.id,
     );
@@ -572,24 +452,18 @@ export class StoreService {
       );
     }
 
-    const phonesObject = new Phones(
-      mobile_phone.phoneObject,
-      home_phone ? home_phone.phoneObject : null,
-    );
-
-    const editedCostumer = new Costumer(
+    await this.pagarmeService.updateStoreCostumer(
       editedStore.name,
       editedStore.email,
       editedStore.cnpj,
-      'CNPJ',
-      'company',
-      address.addressObject,
-      phonesObject,
-      store.birthdate,
-      store.costumerId,
+      editedStore.birthdate,
+      editedStore.mobile_phone,
+      editedStore.home_phone,
+      editedStore.cep,
+      editedStore.numero,
+      editedStore.complemento,
+      editedStore.costumerId
     );
-
-    await this.pagarmeService.updateCostumer(editedCostumer);
 
     await this.storeRepository.updateStore(editedStore);
 
