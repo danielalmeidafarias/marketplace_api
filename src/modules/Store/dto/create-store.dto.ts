@@ -77,7 +77,7 @@ export class CreateStoreDTO {
   annual_revenue: number;
 
   @IsString()
-  tranding_name: string;
+  trading_name: string;
 
   @IsArray()
   @ArrayNotEmpty()

@@ -133,11 +133,7 @@ export class UserService {
 
     await this.userRepository.createUser(user);
 
-    const { access_token, refresh_token } = await this.authService.signIn(user);
-
     return {
-      access_token,
-      refresh_token,
       user,
     };
   }

@@ -23,6 +23,7 @@ export class StoreRepository {
           email: store.email,
           password: store.password,
           name: store.name,
+          birthdate: store.birthdate,
           mobile_phone: store.mobile_phone,
           home_phone: store.home_phone,
           cnpj: store.cnpj,

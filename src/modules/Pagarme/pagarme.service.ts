@@ -28,8 +28,7 @@ export class PagarmeService {
     const mobile_phone =
       await this.utilsService.transformCostumerPhone(incomingMobilePhone);
 
-    const home_phone =
-      await this.utilsService.transformCostumerPhone(incomingHomePhone);
+    const home_phone = incomingHomePhone ? await this.utilsService.transformCostumerPhone(incomingHomePhone) : null
 
     const address = await this.utilsService.transformCostumerAddress(
       cep,
@@ -81,14 +80,15 @@ export class PagarmeService {
     const mobile_phone =
       await this.utilsService.transformCostumerPhone(incomingMobilePhone);
 
-    const home_phone =
-      await this.utilsService.transformCostumerPhone(incomingHomePhone);
-
+    const home_phone = incomingHomePhone ? await this.utilsService.transformCostumerPhone(incomingHomePhone) : null
+    
     const address = await this.utilsService.transformCostumerAddress(
       cep,
       numero,
       complemento,
     );
+
+    console.log(birthdate)
 
     const costumer: ICostumer = {
       document_type: 'CNPJ',
@@ -236,7 +236,7 @@ export class PagarmeService {
     name: string,
     email: string,
     document: string,
-    birthdate: Date,
+    incomingBirthdate: Date,
     monthly_income: number,
     professional_occupation: string,
     mobile_phone: string,
@@ -254,6 +254,7 @@ export class PagarmeService {
   ) {
     const phone_numbers = await this.utilsService.transformRecipientPhone(mobile_phone, home_phone);
     const address = await this.utilsService.transformRecipientAddress(cep, numero, complemento, ponto_referencia)
+    const birthdate = incomingBirthdate.toLocaleDateString('BR')
     
     const default_bank_account: IBankAccount = {
       bank,
@@ -280,12 +281,12 @@ export class PagarmeService {
         birthdate,
       },
       default_bank_account,
-      transfer_settings: {
-        transfer_enabled: true,
-      },
-      automatic_anticipation_settings: {
-        enabled: true,
-      },
+      // transfer_settings: {
+      //   transfer_enabled: true,
+      // },
+      // automatic_anticipation_settings: {
+      //   enabled: true,
+      // },
     };
     try {
       const response = await axios.post(
@@ -323,7 +324,7 @@ export class PagarmeService {
     type: "checking" | "savings",
     incoming_managing_partners: IManagingPartner[]
   ) {
-    const phone_numbers = await this.utilsService.transformRecipientPhone(mobile_phone, home_phone);
+    const phone_numbers = home_phone ? await this.utilsService.transformRecipientPhone(mobile_phone, home_phone) : await this.utilsService.transformRecipientPhone(mobile_phone)
     const main_address = await this.utilsService.transformRecipientAddress(cep, numero, complemento, ponto_referencia)
     
     const default_bank_account: IBankAccount = {
@@ -345,6 +346,7 @@ export class PagarmeService {
       const address = await this.utilsService.transformRecipientAddress(cep, numero, complemento, ponto_referencia)
       
       const managing_partner: IManagingPartners = {
+        self_declared_legal_representative: incoming_managing_partners[i].self_declared_legal_representative,
         name: incoming_managing_partners[i].name,
         email: incoming_managing_partners[i].email,
         address,
@@ -372,12 +374,12 @@ export class PagarmeService {
         managing_partners
       },
       default_bank_account,
-      transfer_settings: {
-        transfer_enabled: true,
-      },
-      automatic_anticipation_settings: {
-        enabled: true,
-      },
+      // transfer_settings: {
+      //   transfer_enabled: true,
+      // },
+      // automatic_anticipation_settings: {
+      //   enabled: true,
+      // },
     };
     try {
       const response = await axios.post(

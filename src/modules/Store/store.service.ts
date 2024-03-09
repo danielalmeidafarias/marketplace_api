@@ -29,7 +29,7 @@ interface ICreateStore {
   account_number: string;
   account_check_digit: string;
   account_type: 'checking' | 'savings';
-  tranding_name: string;
+  trading_name: string;
   annual_revenue: number;
   managing_partners: IManagingPartner[];
 }
@@ -104,7 +104,7 @@ export class StoreService {
     account_check_digit,
     account_type,
     annual_revenue,
-    tranding_name,
+    trading_name,
     managing_partners,
   }: ICreateStore) {
     const legal_representative = managing_partners.find(
@@ -164,7 +164,7 @@ export class StoreService {
 
     const { recipientId } = await this.pagarmeService.createStoreRecipient(
       name,
-      tranding_name,
+      trading_name,
       email,
       cnpj,
       annual_revenue,
@@ -204,12 +204,7 @@ export class StoreService {
 
     await this.storeRepository.create(store);
 
-    const { access_token, refresh_token } =
-      await this.authService.signIn(store);
-
     return {
-      access_token,
-      refresh_token,
       store,
     };
   }

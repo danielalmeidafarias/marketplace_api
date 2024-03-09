@@ -52,7 +52,7 @@ export class StoreController {
       branch_check_digit,
       branch_number,
       ponto_referencia,
-      tranding_name,
+      trading_name,
       managing_partners
     }: CreateStoreDTO,
   ) {
@@ -74,7 +74,7 @@ export class StoreController {
       account_check_digit,
       account_type,
       annual_revenue,
-      tranding_name,
+      trading_name,
       managing_partners
     });
   }

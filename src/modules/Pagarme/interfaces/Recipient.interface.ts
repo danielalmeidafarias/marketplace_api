@@ -1,12 +1,12 @@
 export class IRecipient {
   register_information: IRegisterInformationPF | IRegisterInformationPJ;
   default_bank_account: IBankAccount;
-  transfer_settings: {
-    transfer_enabled: true;
-  };
-  automatic_anticipation_settings: {
-    enabled: true,
-  }
+  // transfer_settings: {
+  //   transfer_enabled: true;
+  // };
+  // automatic_anticipation_settings: {
+  //   enabled: true,
+  // }
 }
 
 export interface IRegisterInformationPJ {
@@ -26,7 +26,7 @@ export interface IRegisterInformationPF {
   email: string;
   document: string;
   type: 'individual';
-  birthdate: Date;
+  birthdate: string;
   monthly_income: number;
   professional_occupation: string;
   address: IRecipientAddress;
@@ -37,7 +37,7 @@ export interface IRecipientAddress {
   street: string
   complementary: string
   street_number: string
-  neighboorhood: string
+  neighborhood: string
   city: string
   state: string
   zip_code: string
@@ -59,7 +59,8 @@ export interface IManagingPartners {
   monthly_income: number;
   professional_occupation: string;
   address: IRecipientAddress;
-  phone_numbers: IRecipientPhone[]
+  phone_numbers: IRecipientPhone[];
+  self_declared_legal_representative: boolean
 }
 
 export interface IBankAccount {

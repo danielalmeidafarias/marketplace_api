@@ -81,7 +81,7 @@ export class UtilsService {
       const addressObject: IRecipientAddress = {
         street: data.logradouro,
         street_number: numero,
-        neighboorhood: data.bairro,
+        neighborhood: data.bairro,
         complementary: complemento,
         reference_point: ponto_referencia,
         city: data.localidade,
@@ -163,31 +163,46 @@ export class UtilsService {
 
   async transformRecipientPhone(
     mobile_phone: string,
-    home_phone: string | null,
+    home_phone?: string,
   ) {
-    const parsedMobilePhoneNumber = parsePhoneNumber(mobile_phone);
-    const mobilePhoneNumber = parsedMobilePhoneNumber.formatInternational();
-    const mobilePhoneArray = mobilePhoneNumber.split(' ');
+    if(home_phone) {
+      const parsedMobilePhoneNumber = parsePhoneNumber(mobile_phone);
+      const mobilePhoneNumber = parsedMobilePhoneNumber.formatInternational();
+      const mobilePhoneArray = mobilePhoneNumber.split(' ');
+  
+      const mobilePhoneObject: IRecipientPhone = {
+        ddd: mobilePhoneArray[1],
+        number: mobilePhoneArray[2] + mobilePhoneArray[3],
+        type: 'mobile',
+      };
+  
+      const parsedHomePhoneNumber = parsePhoneNumber(home_phone);
+      const homePhoneNumber = parsedHomePhoneNumber.formatInternational();
+      const homePhoneArray = homePhoneNumber.split(' ');
+  
+      const homePhoneObject: IRecipientPhone | null = {
+        ddd: homePhoneArray[1],
+        number: homePhoneArray[2] + homePhoneArray[3],
+        type: 'home',
+      };
+  
+      return homePhoneObject
+        ? [mobilePhoneObject, homePhoneObject]
+        : [mobilePhoneObject];
+    } else {
+      const parsedMobilePhoneNumber = parsePhoneNumber(mobile_phone);
+      const mobilePhoneNumber = parsedMobilePhoneNumber.formatInternational();
+      const mobilePhoneArray = mobilePhoneNumber.split(' ');
+  
+      const mobilePhoneObject: IRecipientPhone = {
+        ddd: mobilePhoneArray[1],
+        number: mobilePhoneArray[2] + mobilePhoneArray[3],
+        type: 'mobile',
+      };
+  
+      return [mobilePhoneObject];
+    }
 
-    const mobilePhoneObject: IRecipientPhone = {
-      ddd: mobilePhoneArray[1],
-      number: mobilePhoneArray[2] + mobilePhoneArray[3],
-      type: 'mobile',
-    };
-
-    const parsedHomePhoneNumber = parsePhoneNumber(home_phone);
-    const homePhoneNumber = parsedHomePhoneNumber.formatInternational();
-    const homePhoneArray = homePhoneNumber.split(' ');
-
-    const homePhoneObject: IRecipientPhone | null = {
-      ddd: homePhoneArray[1],
-      number: homePhoneArray[2] + homePhoneArray[3],
-      type: 'home',
-    };
-
-    return homePhoneObject
-      ? [mobilePhoneObject, homePhoneObject]
-      : [mobilePhoneObject];
   }
 
   async hashPassword(password: string): Promise<string> {
@@ -205,4 +220,12 @@ export class UtilsService {
       );
     }
   }
+
+  // async transformUserRecipientBirthdate(incomingBirthdate: Date) {
+
+  //   const day = incomingBirthdate.getDay()
+
+  //   const month = inc
+
+  // }
 }
