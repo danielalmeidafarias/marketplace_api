@@ -17,7 +17,7 @@ export class ProductRepository {
   constructor(
     @InjectRepository(Product) private productRepository: Repository<Product>,
     private dataSource: DataSource,
-  ) {}
+  ) { }
 
   async createProduct(product: Product | UserStoreProduct) {
     try {
@@ -118,11 +118,18 @@ export class ProductRepository {
   }
 
   async findOneById(id: UUID) {
-    return await this.dataSource
-      .getRepository(Product)
-      .createQueryBuilder('product')
-      .where('id = :id', { id })
-      .getOne();
+    try {
+      return await this.dataSource
+        .getRepository(Product)
+        .createQueryBuilder('product')
+        .where('id = :id', { id })
+        .getOne();
+    }
+    catch (err) {
+      console.error(err)
+      throw new HttpException(`Não foi encontrado nenhm produto com o id ${id}`, HttpStatus.BAD_REQUEST)
+    }
+
   }
 
   async findOneInStoreById(productId: UUID, storeId: UUID) {

@@ -56,7 +56,7 @@ export class PagarmeService {
         costumer,
         { headers: pagarmeAuthConfig },
       );
-      return { costumerId: response.data.id };
+      return { costumerId: response.data.id, addressId: response.data.address.id };
     } catch (err) {
       console.error(err.response.data);
       throw new HttpException(
@@ -87,9 +87,6 @@ export class PagarmeService {
       numero,
       complemento,
     );
-
-    console.log(birthdate)
-
     const costumer: ICostumer = {
       document_type: 'CNPJ',
       type: 'company',
@@ -165,8 +162,6 @@ export class PagarmeService {
         costumer,
         { headers: pagarmeAuthConfig },
       );
-
-      console.log(response);
     } catch (err) {
       console.error(err.response.data);
       throw new HttpException(
@@ -221,8 +216,6 @@ export class PagarmeService {
         costumer,
         { headers: pagarmeAuthConfig },
       );
-
-      console.log(response);
     } catch (err) {
       console.error(err.response.data);
       throw new HttpException(

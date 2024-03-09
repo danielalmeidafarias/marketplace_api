@@ -1,10 +1,13 @@
 import { UUID } from 'crypto';
+import { Cart } from 'src/modules/Cart/entitie/cart.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
   Generated,
+  JoinColumn,
+  OneToOne,
   PrimaryColumn,
   PrimaryGeneratedColumn,
   Unique,
@@ -16,6 +19,7 @@ import {
 export class User {
   constructor(
     costumerId: string,
+    cartId: UUID,
     email: string,
     password: string,
     name: string,
@@ -34,6 +38,7 @@ export class User {
     userId?: UUID
   ) {
     this.costumerId = costumerId
+    this.cartId = cartId
     this.email = email;
     this.password = password;
     this.name = name;
@@ -58,8 +63,12 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id?: UUID;
 
-  @PrimaryColumn()
-  costumerId?: string;
+  @Column()
+  costumerId: string;
+
+  @OneToOne(() => Cart, cart => cart.id)
+  @Column()
+  cartId: UUID
 
   @PrimaryColumn()
   email: string;

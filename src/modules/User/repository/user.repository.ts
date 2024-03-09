@@ -9,10 +9,11 @@ export class UserRepository {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private dataSource: DataSource,
-  ) {}
+  ) { }
 
   async createUser({
     costumerId,
+    cartId,
     name,
     email,
     bairro,
@@ -30,7 +31,7 @@ export class UserRepository {
     uf,
   }: User) {
     try {
-      this.dataSource.getRepository(User).createQueryBuilder().insert().values({
+      const user = await this.dataSource.getRepository(User).createQueryBuilder().insert().values({
         name,
         email,
         bairro,
@@ -47,7 +48,10 @@ export class UserRepository {
         password,
         uf,
         costumerId,
+        cartId
       }).execute();
+
+      return { userId: user.identifiers[0].id }
     } catch (err) {
       console.error(err);
       throw new HttpException(

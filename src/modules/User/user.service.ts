@@ -11,6 +11,7 @@ import { StoreRepository } from '../Store/repository/store.repository';
 import { ProductRepository } from '../Product/repository/product.repository';
 import { PagarmeService } from '../Pagarme/pagarme.service';
 import { UserStore } from '../Store/entity/store.entity';
+import { CartService } from '../Cart/cart.service';
 
 export interface ICreateUser {
   email: string;
@@ -60,7 +61,8 @@ export class UserService {
     private storeRepository: StoreRepository,
     private productRepository: ProductRepository,
     private pagarmeService: PagarmeService,
-  ) {}
+    private cartService: CartService
+  ) { }
 
   async createUser({
     email,
@@ -112,8 +114,11 @@ export class UserService {
       complemento
     );
 
+    const { cartId } = await this.cartService.createCart()
+
     const user = new User(
       costumerId,
+      cartId,
       email,
       hashedPassword,
       name.toUpperCase(),
@@ -131,10 +136,12 @@ export class UserService {
       home_phone ? home_phone : null,
     );
 
-    await this.userRepository.createUser(user);
+    const { userId } = await this.userRepository.createUser(user);
+
 
     return {
-      user,
+      userId,
+      user
     };
   }
 
@@ -197,13 +204,13 @@ export class UserService {
         ? await this.utilsService.verifyPhoneNumber(user.home_phone)
         : null;
 
-    const address= newCEP
+    const address = newCEP
       ? await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento)
       : await this.utilsService.verifyCEP(
-          user.cep,
-          user.numero,
-          user.complemento,
-        );
+        user.cep,
+        user.numero,
+        user.complemento,
+      );
 
     await this.authService.verifyTokenId(newAccess_token, user.id);
 
@@ -231,6 +238,7 @@ export class UserService {
 
     const editedUser = new User(
       user.costumerId,
+      user.cartId,
       newEmail ? newEmail : user.email,
       newPassword ? bcrypt.hashSync(newPassword, 10) : password,
       newName ? newName.toUpperCase() : user.name,
@@ -289,7 +297,7 @@ export class UserService {
 
     await this.pagarmeService.updateUserCostumer(
       editedUser.name,
-      editedUser.email, 
+      editedUser.email,
       editedUser.cpf,
       editedUser.birthdate,
       editedUser.mobile_phone,
@@ -298,7 +306,7 @@ export class UserService {
       editedUser.numero,
       editedUser.complemento,
       editedUser.costumerId
-      );
+    );
 
     await this.userRepository.updateUser(editedUser);
 

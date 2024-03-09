@@ -10,6 +10,7 @@ import { ProductModule } from '../Product/product.module';
 import { StoreModule } from '../Store/store.module';
 import { UtilsModule } from 'src/modules/utils/utils.module';
 import { PagarmeModule } from '../Pagarme/pagarme.module';
+import { CartModule } from '../Cart/cart.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { PagarmeModule } from '../Pagarme/pagarme.module';
     forwardRef(() => ProductModule),
     forwardRef(() => StoreModule),
     UtilsModule,
-    PagarmeModule
+    PagarmeModule,
+    CartModule
   ],
   controllers: [UserController],
   providers: [UserService, UserRepository, JwtService],
