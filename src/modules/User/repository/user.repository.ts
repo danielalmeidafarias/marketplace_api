@@ -13,7 +13,7 @@ export class UserRepository {
 
   async createUser({
     costumerId,
-    cartId,
+    // cartId,
     name,
     email,
     bairro,
@@ -48,7 +48,7 @@ export class UserRepository {
         password,
         uf,
         costumerId,
-        cartId
+        // cartId
       }).execute();
 
       return { userId: user.identifiers[0].id }

@@ -2,7 +2,7 @@ import { Module, forwardRef } from "@nestjs/common";
 import { CartService } from "./cart.service";
 import { CartRepository } from "./repository/cart.repository";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { Cart } from "./entitie/cart.entity";
+import { Cart } from "./entity/cart.entity";
 import { CartController } from "./cart.controller";
 import { AuthModule } from "../auth/auth.module";
 import { UserModule } from "../User/user.module";

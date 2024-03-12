@@ -114,11 +114,10 @@ export class UserService {
       complemento
     );
 
-    const { cartId } = await this.cartService.createCart()
 
     const user = new User(
       costumerId,
-      cartId,
+      // cartId,
       email,
       hashedPassword,
       name.toUpperCase(),
@@ -137,6 +136,9 @@ export class UserService {
     );
 
     const { userId } = await this.userRepository.createUser(user);
+
+    await this.cartService.createCart(userId)
+
 
 
     return {
@@ -238,7 +240,7 @@ export class UserService {
 
     const editedUser = new User(
       user.costumerId,
-      user.cartId,
+      // user.cartId,
       newEmail ? newEmail : user.email,
       newPassword ? bcrypt.hashSync(newPassword, 10) : password,
       newName ? newName.toUpperCase() : user.name,

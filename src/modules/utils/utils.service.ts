@@ -36,7 +36,8 @@ export class UtilsService {
         cidade: data.localidade,
         uf: data.uf,
       };
-    } catch {
+    } catch(err) {
+      console.error(err)
       throw new HttpException(
         'O cep digitado é inválido',
         HttpStatus.BAD_REQUEST,

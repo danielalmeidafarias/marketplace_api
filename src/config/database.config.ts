@@ -3,7 +3,7 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Product } from 'src/modules/Product/entity/product.entity';
 import { User } from 'src/modules/User/entity/user.entity';
 import { Store } from 'src/modules/Store/entity/store.entity';
-import { Cart } from 'src/modules/Cart/entitie/cart.entity';
+import { Cart } from 'src/modules/Cart/entity/cart.entity';
 
 export const databaseConfig: TypeOrmModuleOptions = {
   type: 'postgres',

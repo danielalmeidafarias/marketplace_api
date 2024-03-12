@@ -1,7 +1,7 @@
 import { IsInt, IsJWT, IsOptional, IsUUID } from 'class-validator';
 import { UUID } from 'crypto';
 
-export class AddProductBodyDTO {
+export class DecrementProductDTO {
   @IsJWT()
   access_token: string;
 
