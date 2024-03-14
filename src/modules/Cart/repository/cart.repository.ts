@@ -44,6 +44,7 @@ export class CartRepository {
   }
 
   async update(userId: UUID, products: CartProduct[]) {
+    console.log("update")
     try {
       await this.dataSource
         .getRepository(Cart)

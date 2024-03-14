@@ -3,7 +3,6 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  OnApplicationShutdown,
 } from '@nestjs/common';
 import { CartRepository } from './repository/cart.repository';
 import { UUID } from 'crypto';
@@ -26,7 +25,7 @@ export class CartService implements BeforeApplicationShutdown {
     private schedulerRegistry: SchedulerRegistry,
   ) {}
 
-  async beforeApplicationShutdown(signal?: string) {
+  async beforeApplicationShutdown() {
     await this.cartRepository.clearAllCarts();
   }
 
@@ -39,6 +38,8 @@ export class CartService implements BeforeApplicationShutdown {
     productId: UUID,
     quantity?: number,
   ) {
+    await this.verifyProductIsAvailable(productId, quantity);
+
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
@@ -57,7 +58,7 @@ export class CartService implements BeforeApplicationShutdown {
       (product) => product.productId === productId,
     );
 
-    if (alreadyAddedIndex > 0) {
+    if (alreadyAddedIndex >= 0) {
       quantity
         ? (cartProducts[alreadyAddedIndex].quantity =
             cartProducts[alreadyAddedIndex].quantity + quantity)
@@ -115,30 +116,48 @@ export class CartService implements BeforeApplicationShutdown {
     const cartProducts = (await this.cartRepository.getCart(accountId))
       .products;
 
+    if (cartProducts.length < 1) {
+      throw new HttpException(
+        'O carrinho já está vazio',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     const isAddedIndex = cartProducts.findIndex(
       (product) => product.productId === productId,
     );
 
-    if (!isAddedIndex) {
+    if (isAddedIndex < 0) {
       throw new HttpException(
-        `O produto com id ${productId} não está adicionado no carrino`,
+        `O produto com id ${productId} não está adicionado no carrinho`,
         HttpStatus.BAD_REQUEST,
       );
     } else {
-      quantity
-        ? (cartProducts[isAddedIndex].quantity =
-            cartProducts[isAddedIndex].quantity - quantity)
-        : (cartProducts[isAddedIndex].quantity =
-            cartProducts[isAddedIndex].quantity - 1);
+      if (
+        quantity === cartProducts[isAddedIndex].quantity ||
+        quantity > cartProducts[isAddedIndex].quantity
+      ) {
+        await this.removeProductFromDatabase(
+          productId,
+          accountId,
+          cartProducts,
+        );
+      } else {
+        quantity
+          ? (cartProducts[isAddedIndex].quantity =
+              cartProducts[isAddedIndex].quantity - quantity)
+          : (cartProducts[isAddedIndex].quantity =
+              cartProducts[isAddedIndex].quantity - 1);
 
-      await this.addCartCron(accountId);
+        await this.addCartCron(accountId);
 
-      await this.cartRepository.update(accountId, cartProducts);
+        await this.cartRepository.update(accountId, cartProducts);
 
-      await this.productRepository.decrementProductFromCart(
-        productId,
-        quantity,
-      );
+        await this.productRepository.decrementProductFromCart(
+          productId,
+          quantity,
+        );
+      }
 
       return {
         access_token: newAccess_token,
@@ -163,13 +182,34 @@ export class CartService implements BeforeApplicationShutdown {
     const cartProducts = (await this.cartRepository.getCart(accountId))
       .products;
 
+    if (cartProducts.length < 1) {
+      throw new HttpException(
+        'O carrinho já está vazio',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.removeProductFromDatabase(productId, accountId, cartProducts);
+
+    return {
+      access_token: newAccess_token,
+      refresh_token: newRefresh_token,
+      cart: await this.cartRepository.getCart(accountId),
+    };
+  }
+
+  private async removeProductFromDatabase(
+    productId: UUID,
+    accountId: UUID,
+    cartProducts: CartProduct[],
+  ) {
     const isAdded = cartProducts.find(
       (product) => product.productId === productId,
     );
 
     if (!isAdded) {
       throw new HttpException(
-        `O produto com id ${productId} não está adicionado no carrino`,
+        `O produto com id ${productId} não está adicionado no carrinho`,
         HttpStatus.BAD_REQUEST,
       );
     } else {
@@ -185,12 +225,6 @@ export class CartService implements BeforeApplicationShutdown {
         productId,
         isAdded.quantity,
       );
-
-      return {
-        access_token: newAccess_token,
-        refresh_token: newRefresh_token,
-        cart: await this.cartRepository.getCart(accountId),
-      };
     }
   }
 
@@ -204,16 +238,6 @@ export class CartService implements BeforeApplicationShutdown {
 
     await this.authService.verifyTokenId(access_token, accountId);
 
-    const cart = await this.cartRepository.getCart(accountId);
-
-    for (let i = 0; i < cart.products.length; i++) {
-      const product = cart.products[i];
-      await this.productRepository.decrementProductFromCart(
-        product.productId,
-        product.quantity,
-      );
-    }
-
     await this.cartRepository.update(accountId, []);
 
     this.schedulerRegistry.deleteCronJob(accountId);
@@ -221,30 +245,19 @@ export class CartService implements BeforeApplicationShutdown {
     return {
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
-      message: 'Carrinho vazio',
+      cart: await this.cartRepository.getCart(accountId),
     };
   }
 
   private async cronClearCart(accountId: UUID) {
     await this.utilsService.verifyExistingAccount(accountId);
 
-    const cart = await this.cartRepository.getCart(accountId);
-
-    for (let i = 0; i < cart.products.length; i++) {
-      const product = cart.products[i];
-      await this.productRepository.decrementProductFromCart(
-        product.productId,
-        product.quantity,
-      );
-    }
-
     await this.cartRepository.update(accountId, []);
 
-    console.log("cronClearCart")
     this.schedulerRegistry.deleteCronJob(accountId);
   }
 
-  async addCartCron(accountId: UUID) {
+  private async addCartCron(accountId: UUID) {
     try {
       const cronJob = this.schedulerRegistry.getCronJob(accountId);
 
@@ -267,6 +280,13 @@ export class CartService implements BeforeApplicationShutdown {
       this.schedulerRegistry.addCronJob(accountId, cron);
 
       cron.start();
+    }
+  }
+
+  private async verifyProductIsAvailable(productId: UUID, quantity?: number) {
+    const product = await this.productRepository.findOneById(productId);
+    if (product.available < 1 || quantity > product.available) {
+      throw new HttpException('Quantidade indisponível', HttpStatus.CONFLICT);
     }
   }
 }

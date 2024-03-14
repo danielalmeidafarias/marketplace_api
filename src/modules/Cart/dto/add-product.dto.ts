@@ -1,4 +1,4 @@
-import { IsInt, IsJWT, IsOptional, IsUUID } from 'class-validator';
+import { IsInt, IsJWT, IsOptional, IsPositive, IsUUID } from 'class-validator';
 import { UUID } from 'crypto';
 
 export class AddProductBodyDTO {
@@ -12,6 +12,7 @@ export class AddProductBodyDTO {
   productId: UUID;
 
   @IsInt()
+  @IsPositive()
   @IsOptional()
   quantity?: number;
 }
