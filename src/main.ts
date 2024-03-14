@@ -9,6 +9,8 @@ async function bootstrap() {
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
   );
 
+  app.enableShutdownHooks()
+
   await app.listen(3000);
 }
 bootstrap();

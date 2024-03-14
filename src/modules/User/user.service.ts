@@ -12,6 +12,7 @@ import { ProductRepository } from '../Product/repository/product.repository';
 import { PagarmeService } from '../Pagarme/pagarme.service';
 import { UserStore } from '../Store/entity/store.entity';
 import { CartService } from '../Cart/cart.service';
+import { CartRepository } from '../Cart/repository/cart.repository';
 
 export interface ICreateUser {
   email: string;
@@ -61,7 +62,8 @@ export class UserService {
     private storeRepository: StoreRepository,
     private productRepository: ProductRepository,
     private pagarmeService: PagarmeService,
-    private cartService: CartService
+    private cartService: CartService,
+    private cartRepository: CartRepository
   ) { }
 
   async createUser({
@@ -117,7 +119,6 @@ export class UserService {
 
     const user = new User(
       costumerId,
-      // cartId,
       email,
       hashedPassword,
       name.toUpperCase(),
@@ -138,8 +139,6 @@ export class UserService {
     const { userId } = await this.userRepository.createUser(user);
 
     await this.cartService.createCart(userId)
-
-
 
     return {
       userId,
@@ -335,6 +334,8 @@ export class UserService {
     await this.storeRepository.deleteUserStore(user.id);
 
     await this.productRepository.deleteUserProducts(user.id);
+
+    await this.cartRepository.delete(user.id)
 
     await this.userRepository.deleteUser(user.id);
 

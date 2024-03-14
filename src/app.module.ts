@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import 'dotenv/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { databaseConfig } from './config/database.config';
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     StoreModule,
@@ -12,18 +13,7 @@ import { databaseConfig } from './config/database.config';
     AuthModule,
     StoreModule,
     TypeOrmModule.forRoot(databaseConfig),
+    ScheduleModule.forRoot()
   ],
-  // providers: [
-  //   {
-  //     provide: APP_PIPE,
-  //     useClass: ValidationPipe,
-  //     useFactory(...args) {
-  //       new ValidationPipe({
-  //         whitelist: true,
-  //         forbidNonWhitelisted: true
-  //       })
-  //     },
-  //   },
-  // ],
 })
 export class AppModule {}

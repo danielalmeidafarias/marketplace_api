@@ -1,3 +1,4 @@
+import { CartService } from './../Cart/cart.service';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { StoreRepository } from './repository/store.repository';
 import { AuthService } from '../auth/auth.service';
@@ -9,6 +10,7 @@ import { Store, UserStore } from './entity/store.entity';
 import { ProductRepository } from '../Product/repository/product.repository';
 import { PagarmeService } from '../Pagarme/pagarme.service';
 import { IManagingPartner } from './dto/create-store.dto';
+import { CartRepository } from '../Cart/repository/cart.repository';
 
 interface ICreateStore {
   cep: string;
@@ -84,6 +86,8 @@ export class StoreService {
     private userRepository: UserRepository,
     private utilsService: UtilsService,
     private pagarmeService: PagarmeService,
+    private cartService: CartService,
+    private cartRepository: CartRepository,
   ) {}
 
   async createStore({
@@ -202,7 +206,9 @@ export class StoreService {
       cnpj,
     );
 
-    await this.storeRepository.create(store);
+    const { storeId } = await this.storeRepository.create(store);
+
+    await this.cartService.createCart(storeId);
 
     return {
       store,
@@ -457,7 +463,7 @@ export class StoreService {
       editedStore.cep,
       editedStore.numero,
       editedStore.complemento,
-      editedStore.costumerId
+      editedStore.costumerId,
     );
 
     await this.storeRepository.updateStore(editedStore);
@@ -483,6 +489,10 @@ export class StoreService {
     await this.productRepository.deleteStoreProducts(store.id);
 
     await this.storeRepository.deleteStore(id);
+
+    await this.cartRepository.delete(store.id);
+
+    await this.storeRepository.deleteStore(store.id);
 
     return {
       message: `${store.name} deletado com sucesso`,

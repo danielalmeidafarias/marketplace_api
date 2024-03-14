@@ -61,4 +61,31 @@ export class CartRepository {
       );
     }
   }
+
+  async delete(userId: UUID) {
+    try {
+      await this.dataSource
+        .getRepository(Cart)
+        .createQueryBuilder()
+        .delete()
+        .where('userId = :userId', { userId })
+        .execute();
+    } catch (err) {
+      console.error(err);
+      throw new HttpException(
+        'Ocorreu um erro ao tentar excluir o carrinho, tente novamete mais tarde',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async clearAllCarts() {
+    await this.dataSource
+      .getRepository(Cart)
+      .createQueryBuilder()
+      .update({
+        products: [],
+      })
+      .execute();
+  }
 }

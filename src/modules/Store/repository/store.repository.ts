@@ -11,33 +11,54 @@ export class StoreRepository {
     private productRepository: ProductRepository,
   ) {}
 
-  async create(store: Store | UserStore) {
+  async create({
+    recipientId,
+    costumerId,
+    email,
+    password,
+    name,
+    birthdate,
+    mobile_phone,
+    home_phone,
+    cnpj,
+    cpf,
+    cep,
+    numero,
+    complemento,
+    logradouro,
+    bairro,
+    cidade,
+    uf,
+    userId,
+  }: Store | UserStore) {
     try {
-      await this.dataSource
+      const store = await this.dataSource
         .getRepository(Store)
         .createQueryBuilder()
         .insert()
         .values({
-          recipientId: store.recipientId,
-          costumerId: store.costumerId,
-          email: store.email,
-          password: store.password,
-          name: store.name,
-          birthdate: store.birthdate,
-          mobile_phone: store.mobile_phone,
-          home_phone: store.home_phone,
-          cnpj: store.cnpj,
-          cpf: store.cpf,
-          cep: store.cep,
-          numero: store.numero,
-          complemento: store.complemento,
-          logradouro: store.logradouro,
-          bairro: store.bairro,
-          cidade: store.cidade,
-          uf: store.uf,
-          userId: store.userId,
+          recipientId,
+          costumerId,
+          email,
+          password,
+          name,
+          birthdate,
+          mobile_phone,
+          home_phone,
+          cnpj,
+          cpf,
+          cep,
+          numero,
+          complemento,
+          logradouro,
+          bairro,
+          cidade,
+          uf,
+          userId,
         })
         .execute();
+
+      return { storeId: store.identifiers[0].id };
     } catch (err) {
       console.error(err);
       throw new HttpException(
@@ -141,7 +162,10 @@ export class StoreRepository {
   async deleteUserStore(userId: UUID) {
     try {
       const userStore = await this.findByUserId(userId);
-      await this.deleteStore(userStore.id);
+
+      if (userStore) {
+        await this.deleteStore(userStore.id);
+      }
     } catch (err) {
       console.error(err);
       throw new HttpException(

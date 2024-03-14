@@ -4,6 +4,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  OnApplicationBootstrap,
   UseGuards,
 } from '@nestjs/common';
 import { ProductRepository } from './repository/product.repository';
@@ -42,13 +43,17 @@ export interface IDeleteProduct {
 
 @Injectable()
 @UseGuards(AuthGuard)
-export class ProductService {
+export class ProductService implements OnApplicationBootstrap {
   constructor(
     private productRepository: ProductRepository,
     private authService: AuthService,
     private userRepository: UserRepository,
     private storeRepository: StoreRepository,
   ) {}
+
+  async onApplicationBootstrap() {
+    await this.productRepository.turnProductStockToAvailable();
+  }
 
   async createProduct({
     name: incomingName,

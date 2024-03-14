@@ -4,6 +4,7 @@ import { CartService } from './cart.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { DecrementProductDTO } from './dto/decrement-product.dto';
 import { RemoveProductDTO } from './dto/remove-product.dto';
+import { ClearCartDTO } from './dto/clear-cart.dto';
 
 @Controller()
 export class CartController {
@@ -34,5 +35,14 @@ export class CartController {
     { productId, access_token, refresh_token }: RemoveProductDTO,
   ) {
     return this.cartService.removeProduct(access_token, productId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('/user/cart/clear')
+  async clearCart(
+    @Body()
+    { access_token, refresh_token }: ClearCartDTO,
+  ) {
+    return this.cartService.clearCart(access_token);
   }
 }

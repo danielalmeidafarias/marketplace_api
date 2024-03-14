@@ -12,12 +12,33 @@ import {
   IRecipientAddress,
   IRecipientPhone,
 } from '../Pagarme/interfaces/Recipient.interface';
+import { UUID } from 'crypto';
 @Injectable()
 export class UtilsService {
   constructor(
     private userRepository: UserRepository,
     private storeRepository: StoreRepository,
   ) {}
+
+  async verifyExistingAccount(accountId: UUID) {
+    try {
+      const account =
+        await this.userRepository.verifyExistingUserById(accountId);
+      return { id: account.id };
+    } catch {
+      try {
+        const account =
+          await this.storeRepository.verifyExistingStoreById(accountId);
+        return { id: account.id };
+      } catch (err) {
+        console.error(err);
+        throw new HttpException(
+          'Não foi encontrad nenhuma conta com o id fornecido',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+  }
 
   async verifyCEP(
     cep: string,
@@ -36,8 +57,8 @@ export class UtilsService {
         cidade: data.localidade,
         uf: data.uf,
       };
-    } catch(err) {
-      console.error(err)
+    } catch (err) {
+      console.error(err);
       throw new HttpException(
         'O cep digitado é inválido',
         HttpStatus.BAD_REQUEST,
@@ -162,31 +183,28 @@ export class UtilsService {
     return phoneObject;
   }
 
-  async transformRecipientPhone(
-    mobile_phone: string,
-    home_phone?: string,
-  ) {
-    if(home_phone) {
+  async transformRecipientPhone(mobile_phone: string, home_phone?: string) {
+    if (home_phone) {
       const parsedMobilePhoneNumber = parsePhoneNumber(mobile_phone);
       const mobilePhoneNumber = parsedMobilePhoneNumber.formatInternational();
       const mobilePhoneArray = mobilePhoneNumber.split(' ');
-  
+
       const mobilePhoneObject: IRecipientPhone = {
         ddd: mobilePhoneArray[1],
         number: mobilePhoneArray[2] + mobilePhoneArray[3],
         type: 'mobile',
       };
-  
+
       const parsedHomePhoneNumber = parsePhoneNumber(home_phone);
       const homePhoneNumber = parsedHomePhoneNumber.formatInternational();
       const homePhoneArray = homePhoneNumber.split(' ');
-  
+
       const homePhoneObject: IRecipientPhone | null = {
         ddd: homePhoneArray[1],
         number: homePhoneArray[2] + homePhoneArray[3],
         type: 'home',
       };
-  
+
       return homePhoneObject
         ? [mobilePhoneObject, homePhoneObject]
         : [mobilePhoneObject];
@@ -194,16 +212,15 @@ export class UtilsService {
       const parsedMobilePhoneNumber = parsePhoneNumber(mobile_phone);
       const mobilePhoneNumber = parsedMobilePhoneNumber.formatInternational();
       const mobilePhoneArray = mobilePhoneNumber.split(' ');
-  
+
       const mobilePhoneObject: IRecipientPhone = {
         ddd: mobilePhoneArray[1],
         number: mobilePhoneArray[2] + mobilePhoneArray[3],
         type: 'mobile',
       };
-  
+
       return [mobilePhoneObject];
     }
-
   }
 
   async hashPassword(password: string): Promise<string> {

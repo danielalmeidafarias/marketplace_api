@@ -48,7 +48,6 @@ export class UserRepository {
         password,
         uf,
         costumerId,
-        // cartId
       }).execute();
 
       return { userId: user.identifiers[0].id }
@@ -59,23 +58,6 @@ export class UserRepository {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
-    // await queryRunner.connect();
-    // await queryRunner.startTransaction();
-
-    // try {
-    //   await queryRunner.manager.save(user);
-    //   await queryRunner.commitTransaction();
-    // } catch (err) {
-    //   await queryRunner.rollbackTransaction();
-    //   console.error(err);
-    //   throw new HttpException(
-    //     'Ocorreu um erro ao criar o usuário, tente novamente mais tarde',
-    //     HttpStatus.INTERNAL_SERVER_ERROR,
-    //   );
-    // } finally {
-    //   queryRunner.release();
-    // }
   }
 
   async getUserInfo(id: UUID) {

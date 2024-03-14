@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  OnApplicationBootstrap,
+} from '@nestjs/common';
 import { Product, UserStoreProduct } from '../entity/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -17,7 +22,23 @@ export class ProductRepository {
   constructor(
     @InjectRepository(Product) private productRepository: Repository<Product>,
     private dataSource: DataSource,
-  ) { }
+  ) {}
+
+  async turnProductStockToAvailable() {
+    const allProducts = await this.dataSource
+      .getRepository(Product)
+      .createQueryBuilder('products')
+      .getMany();
+    allProducts.forEach(async (product) => {
+      await this.dataSource
+        .getRepository(Product)
+        .createQueryBuilder('product')
+        .update({
+          available: product.quantity,
+        })
+        .execute();
+    });
+  }
 
   async createProduct(product: Product | UserStoreProduct) {
     try {
@@ -105,9 +126,11 @@ export class ProductRepository {
     try {
       const products = await this.findManyByUserId(id);
 
-      products.forEach(async (product) => {
-        await this.deleteProduct(product.id);
-      });
+      if (products.length > 0) {
+        products.forEach(async (product) => {
+          await this.deleteProduct(product.id);
+        });
+      }
     } catch (err) {
       console.error(err);
       throw new HttpException(
@@ -124,12 +147,13 @@ export class ProductRepository {
         .createQueryBuilder('product')
         .where('id = :id', { id })
         .getOne();
+    } catch (err) {
+      console.error(err);
+      throw new HttpException(
+        `Não foi encontrado nenhm produto com o id ${id}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
-    catch (err) {
-      console.error(err)
-      throw new HttpException(`Não foi encontrado nenhm produto com o id ${id}`, HttpStatus.BAD_REQUEST)
-    }
-
   }
 
   async findOneInStoreById(productId: UUID, storeId: UUID) {
@@ -274,6 +298,42 @@ export class ProductRepository {
         'Ocorreu um erro, por favor tente novamente',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  async addProductToCart(id: UUID, quantity?: number) {
+    try {
+      await this.dataSource
+        .getRepository(Product)
+        .createQueryBuilder()
+        .where('id = :id', { id })
+        .update(Product)
+        .set({
+          available: quantity
+            ? () => `available - ${quantity}`
+            : () => `available - 1`,
+        })
+        .execute();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async decrementProductFromCart(id: UUID, quantity?: number) {
+    try {
+      await this.dataSource
+        .getRepository(Product)
+        .createQueryBuilder()
+        .where('id = :id', { id })
+        .update(Product)
+        .set({
+          available: quantity
+            ? () => `available + ${quantity}`
+            : () => `available + 1`,
+        })
+        .execute();
+    } catch (err) {
+      console.error(err);
     }
   }
 }
