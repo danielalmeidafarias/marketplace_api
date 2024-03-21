@@ -24,12 +24,12 @@ export class UtilsService {
     try {
       const account =
         await this.userRepository.verifyExistingUserById(accountId);
-      return { id: account.id };
+      return account;
     } catch {
       try {
         const account =
           await this.storeRepository.verifyExistingStoreById(accountId);
-        return { id: account.id };
+        return account;
       } catch (err) {
         console.error(err);
         throw new HttpException(
@@ -89,6 +89,8 @@ export class UtilsService {
       console.error(err);
     }
   }
+
+  transformBillingAddress = this.transformCostumerAddress;
 
   async transformRecipientAddress(
     cep: string,
@@ -238,12 +240,4 @@ export class UtilsService {
       );
     }
   }
-
-  // async transformUserRecipientBirthdate(incomingBirthdate: Date) {
-
-  //   const day = incomingBirthdate.getDay()
-
-  //   const month = inc
-
-  // }
 }

@@ -11,6 +11,7 @@ import { ProductRepository } from '../Product/repository/product.repository';
 import { PagarmeService } from '../Pagarme/pagarme.service';
 import { IManagingPartner } from './dto/create-store.dto';
 import { CartRepository } from '../Cart/repository/cart.repository';
+import { WalletRepository } from '../Wallet/repository/wallet.repository';
 
 interface ICreateStore {
   cep: string;
@@ -86,8 +87,8 @@ export class StoreService {
     private userRepository: UserRepository,
     private utilsService: UtilsService,
     private pagarmeService: PagarmeService,
-    private cartService: CartService,
     private cartRepository: CartRepository,
+    private walletRepository: WalletRepository
   ) {}
 
   async createStore({
@@ -208,7 +209,9 @@ export class StoreService {
 
     const { storeId } = await this.storeRepository.create(store);
 
-    await this.cartService.createCart(storeId);
+    await this.cartRepository.create(storeId);
+    
+    await this.walletRepository.createWallet(storeId)
 
     return {
       store,
@@ -491,6 +494,8 @@ export class StoreService {
     await this.storeRepository.deleteStore(id);
 
     await this.cartRepository.delete(store.id);
+
+    await this.walletRepository.deleteWallet(store.id)
 
     await this.storeRepository.deleteStore(store.id);
 

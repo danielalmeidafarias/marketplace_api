@@ -29,10 +29,6 @@ export class CartService implements BeforeApplicationShutdown {
     await this.cartRepository.clearAllCarts();
   }
 
-  async createCart(userId: UUID) {
-    return await this.cartRepository.create(userId);
-  }
-
   async addCartProduct(
     access_token: string,
     productId: UUID,
@@ -49,7 +45,8 @@ export class CartService implements BeforeApplicationShutdown {
 
     await this.authService.verifyTokenId(access_token, account.id);
 
-    await this.productRepository.verifyExistingProductById(productId);
+    const product =
+      await this.productRepository.verifyExistingProductById(productId);
 
     const cartProducts = (await this.cartRepository.getCart(accountId))
       .products;
@@ -77,11 +74,16 @@ export class CartService implements BeforeApplicationShutdown {
         cart: await this.cartRepository.getCart(accountId),
       };
     } else {
-      const product = quantity
-        ? new CartProduct(productId, quantity)
-        : new CartProduct(productId, 1);
+      const newCartProduct = quantity
+        ? new CartProduct(
+            productId,
+            quantity,
+            product.price,
+            product.description,
+          )
+        : new CartProduct(productId, 1, product.price, product.description);
 
-      const products = [...cartProducts, product];
+      const products = [...cartProducts, newCartProduct];
 
       await this.cartRepository.update(accountId, products);
 

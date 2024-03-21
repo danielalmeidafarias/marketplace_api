@@ -1,12 +1,11 @@
+import { WalletRepository } from './../Wallet/repository/wallet.repository';
 import { UserRepository } from './repository/user.repository';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './entity/user.entity';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from '../auth/auth.service';
 import { LoginUserDTO } from './dto/login-user.dto';
-import {
-  UtilsService,
-} from 'src/modules/utils/utils.service';
+import { UtilsService } from 'src/modules/utils/utils.service';
 import { StoreRepository } from '../Store/repository/store.repository';
 import { ProductRepository } from '../Product/repository/product.repository';
 import { PagarmeService } from '../Pagarme/pagarme.service';
@@ -62,9 +61,9 @@ export class UserService {
     private storeRepository: StoreRepository,
     private productRepository: ProductRepository,
     private pagarmeService: PagarmeService,
-    private cartService: CartService,
-    private cartRepository: CartRepository
-  ) { }
+    private cartRepository: CartRepository,
+    private walletRepository: WalletRepository,
+  ) {}
 
   async createUser({
     email,
@@ -83,7 +82,8 @@ export class UserService {
 
     const cpf = await this.utilsService.verifyCPF(incomingCpf);
 
-    const mobile_phone = await this.utilsService.verifyPhoneNumber(incomingMobilePhone);
+    const mobile_phone =
+      await this.utilsService.verifyPhoneNumber(incomingMobilePhone);
 
     const home_phone = incomingHomePhone
       ? await this.utilsService.verifyPhoneNumber(incomingHomePhone)
@@ -113,9 +113,8 @@ export class UserService {
       home_phone,
       cep,
       numero,
-      complemento
+      complemento,
     );
-
 
     const user = new User(
       costumerId,
@@ -138,11 +137,13 @@ export class UserService {
 
     const { userId } = await this.userRepository.createUser(user);
 
-    await this.cartService.createCart(userId)
+    await this.cartRepository.create(userId);
+
+    await this.walletRepository.createWallet(userId);
 
     return {
       userId,
-      user
+      user,
     };
   }
 
@@ -208,10 +209,10 @@ export class UserService {
     const address = newCEP
       ? await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento)
       : await this.utilsService.verifyCEP(
-        user.cep,
-        user.numero,
-        user.complemento,
-      );
+          user.cep,
+          user.numero,
+          user.complemento,
+        );
 
     await this.authService.verifyTokenId(newAccess_token, user.id);
 
@@ -229,12 +230,8 @@ export class UserService {
     }
 
     if (newMobilePhone) {
-      await this.storeRepository.verifyThereIsNoStoreWithPhone(
-        mobile_phone,
-      );
-      await this.userRepository.verifyThereIsNoUserWithPhone(
-        mobile_phone,
-      );
+      await this.storeRepository.verifyThereIsNoStoreWithPhone(mobile_phone);
+      await this.userRepository.verifyThereIsNoUserWithPhone(mobile_phone);
     }
 
     const editedUser = new User(
@@ -306,7 +303,7 @@ export class UserService {
       editedUser.cep,
       editedUser.numero,
       editedUser.complemento,
-      editedUser.costumerId
+      editedUser.costumerId,
     );
 
     await this.userRepository.updateUser(editedUser);
@@ -335,7 +332,9 @@ export class UserService {
 
     await this.productRepository.deleteUserProducts(user.id);
 
-    await this.cartRepository.delete(user.id)
+    await this.cartRepository.delete(user.id);
+
+    await this.walletRepository.deleteWallet(user.id)
 
     await this.userRepository.deleteUser(user.id);
 

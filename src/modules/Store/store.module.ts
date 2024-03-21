@@ -11,6 +11,7 @@ import { PagarmeModule } from '../Pagarme/pagarme.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Store } from './entity/store.entity';
 import { CartModule } from '../Cart/cart.module';
+import { WalletModule } from '../Wallet/wallet.module';
 
 @Module({
   controllers: [StoreController],
@@ -22,7 +23,8 @@ import { CartModule } from '../Cart/cart.module';
     ProductModule,
     PagarmeModule,
     TypeOrmModule.forFeature([Store]),
-    CartModule
+    CartModule,
+    WalletModule
   ],
   exports: [StoreService, StoreRepository],
 })

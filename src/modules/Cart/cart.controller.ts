@@ -6,12 +6,12 @@ import { DecrementProductDTO } from './dto/decrement-product.dto';
 import { RemoveProductDTO } from './dto/remove-product.dto';
 import { ClearCartDTO } from './dto/clear-cart.dto';
 
-@Controller()
+@Controller('cart')
 export class CartController {
   constructor(private cartService: CartService) {}
 
   @UseGuards(AuthGuard)
-  @Post('/user/cart/add')
+  @Post('/add')
   async addProduct(
     @Body()
     { productId, quantity, access_token, refresh_token }: AddProductBodyDTO,
@@ -20,7 +20,7 @@ export class CartController {
   }
 
   @UseGuards(AuthGuard)
-  @Post('/user/cart/decrement')
+  @Post('/decrement')
   async decrementProduct(
     @Body()
     { productId, quantity, access_token, refresh_token }: DecrementProductDTO,
@@ -29,7 +29,7 @@ export class CartController {
   }
 
   @UseGuards(AuthGuard)
-  @Post('/user/cart/remove')
+  @Post('/remove')
   async RemoveProduct(
     @Body()
     { productId, access_token, refresh_token }: RemoveProductDTO,
@@ -38,7 +38,7 @@ export class CartController {
   }
 
   @UseGuards(AuthGuard)
-  @Post('/user/cart/clear')
+  @Post('/clear')
   async clearCart(
     @Body()
     { access_token, refresh_token }: ClearCartDTO,

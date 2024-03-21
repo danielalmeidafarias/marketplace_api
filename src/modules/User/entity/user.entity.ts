@@ -65,10 +65,6 @@ export class User {
   @Column()
   costumerId: string;
 
-  // @OneToOne(() => Cart, cart => cart.id)
-  // @Column()
-  // cartId: UUID
-
   @PrimaryColumn()
   email: string;
 
@@ -124,6 +120,5 @@ export class User {
   @DeleteDateColumn()
   deleted_at?: Date;
 
-  // cart
-  // orders
+  credit_card_ids: []
 }

@@ -1,9 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Cart, CartProduct } from '../entity/cart.entity';
-import { Product } from 'src/modules/Product/entity/product.entity';
 import { UUID } from 'crypto';
-import { User } from 'src/modules/User/entity/user.entity';
 
 @Injectable()
 export class CartRepository {
@@ -44,7 +42,6 @@ export class CartRepository {
   }
 
   async update(userId: UUID, products: CartProduct[]) {
-    console.log("update")
     try {
       await this.dataSource
         .getRepository(Cart)

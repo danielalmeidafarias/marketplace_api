@@ -16,6 +16,7 @@ import { UpdateUserDTO } from './dto/update-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
 import { GetUserInfoDTO } from './dto/get-user-Info.dto';
 import { StoreService } from '../Store/store.service';
+import { CreateCreditCardBodyDTO } from '../Wallet/dto/create-credit-card.dto';
 
 @Controller('user')
 export class UserController {
@@ -39,7 +40,7 @@ export class UserController {
       birthdate,
       mobile_phone,
       home_phone,
-      ponto_referencia
+      ponto_referencia,
     }: CreateUserDTO,
   ) {
     return await this.userService.createUser({
@@ -53,7 +54,7 @@ export class UserController {
       birthdate,
       incomingMobilePhone: mobile_phone,
       incomingHomePhone: home_phone,
-      ponto_referencia
+      ponto_referencia,
     });
   }
 
@@ -86,7 +87,7 @@ export class UserController {
       newComplemento,
       newName,
       newMobilePhone,
-      newHomePhone
+      newHomePhone,
     }: UpdateUserDTO,
   ) {
     return await this.userService.updateUser({
@@ -100,17 +101,21 @@ export class UserController {
       newComplemento,
       newName,
       newMobilePhone,
-      newHomePhone
+      newHomePhone,
     });
   }
 
   @UseGuards(AuthGuard)
   @Delete('/delete')
-  delete(@Body() { access_token, refresh_token, password }: DeleteUserDTO) {
-    return this.userService.deleteUser({
+  async delete(
+    @Body() { access_token, refresh_token, password }: DeleteUserDTO,
+  ) {
+    return await this.userService.deleteUser({
       access_token,
       refresh_token,
       password,
     });
   }
+
+
 }

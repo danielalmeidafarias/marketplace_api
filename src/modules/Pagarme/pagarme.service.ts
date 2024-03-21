@@ -3,7 +3,11 @@ import 'dotenv/config.js';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import pagarmeAuthConfig from 'src/config/pagarme-auth.config';
-import { ICostumer, ICostumerAddress } from './interfaces/Costumer.interface';
+import {
+  Costumer,
+  ICostumer,
+  ICostumerAddress,
+} from './interfaces/Costumer.interface';
 import {
   IRecipient,
   IBankAccount,
@@ -11,6 +15,7 @@ import {
 } from './interfaces/Recipient.interface';
 import { UtilsService } from '../utils/utils.service';
 import { IManagingPartner } from '../Store/dto/create-store.dto';
+import { BillingAddress, CreditCard } from './interfaces/CreditCard';
 @Injectable()
 export class PagarmeService {
   constructor(private utilsService: UtilsService) {}
@@ -28,7 +33,9 @@ export class PagarmeService {
     const mobile_phone =
       await this.utilsService.transformCostumerPhone(incomingMobilePhone);
 
-    const home_phone = incomingHomePhone ? await this.utilsService.transformCostumerPhone(incomingHomePhone) : null
+    const home_phone = incomingHomePhone
+      ? await this.utilsService.transformCostumerPhone(incomingHomePhone)
+      : null;
 
     const address = await this.utilsService.transformCostumerAddress(
       cep,
@@ -36,19 +43,19 @@ export class PagarmeService {
       complemento,
     );
 
-    const costumer: ICostumer = {
-      document_type: 'CPF',
-      type: 'individual',
-      name,
-      email,
-      document: cpf,
+    const costumer = new Costumer({
+      address,
       birthdate,
+      document: cpf,
+      document_type: 'CPF',
+      email,
+      name,
       phones: {
         mobile_phone,
         home_phone,
       },
-      address,
-    };
+      type: 'individual',
+    });
 
     try {
       const response = await axios.post(
@@ -56,7 +63,10 @@ export class PagarmeService {
         costumer,
         { headers: pagarmeAuthConfig },
       );
-      return { costumerId: response.data.id, addressId: response.data.address.id };
+      return {
+        costumerId: response.data.id,
+        addressId: response.data.address.id,
+      };
     } catch (err) {
       console.error(err.response.data);
       throw new HttpException(
@@ -80,8 +90,10 @@ export class PagarmeService {
     const mobile_phone =
       await this.utilsService.transformCostumerPhone(incomingMobilePhone);
 
-    const home_phone = incomingHomePhone ? await this.utilsService.transformCostumerPhone(incomingHomePhone) : null
-    
+    const home_phone = incomingHomePhone
+      ? await this.utilsService.transformCostumerPhone(incomingHomePhone)
+      : null;
+
     const address = await this.utilsService.transformCostumerAddress(
       cep,
       numero,
@@ -181,7 +193,7 @@ export class PagarmeService {
     cep: string,
     numero: string,
     complemento: string,
-    costumer_Id: string
+    costumer_Id: string,
   ) {
     try {
       const mobile_phone =
@@ -243,12 +255,20 @@ export class PagarmeService {
     branch_number: string,
     account_number: string,
     account_check_digit: string,
-    type: "checking" | "savings"
+    type: 'checking' | 'savings',
   ) {
-    const phone_numbers = await this.utilsService.transformRecipientPhone(mobile_phone, home_phone);
-    const address = await this.utilsService.transformRecipientAddress(cep, numero, complemento, ponto_referencia)
-    const birthdate = incomingBirthdate.toLocaleDateString('BR')
-    
+    const phone_numbers = await this.utilsService.transformRecipientPhone(
+      mobile_phone,
+      home_phone,
+    );
+    const address = await this.utilsService.transformRecipientAddress(
+      cep,
+      numero,
+      complemento,
+      ponto_referencia,
+    );
+    const birthdate = incomingBirthdate.toLocaleDateString('BR');
+
     const default_bank_account: IBankAccount = {
       bank,
       branch_number,
@@ -258,8 +278,8 @@ export class PagarmeService {
       holder_document: document,
       holder_name: name,
       holder_type: 'individual',
-      type
-    }
+      type,
+    };
 
     const recipient: IRecipient = {
       register_information: {
@@ -314,12 +334,22 @@ export class PagarmeService {
     branch_number: string,
     account_number: string,
     account_check_digit: string,
-    type: "checking" | "savings",
-    incoming_managing_partners: IManagingPartner[]
+    type: 'checking' | 'savings',
+    incoming_managing_partners: IManagingPartner[],
   ) {
-    const phone_numbers = home_phone ? await this.utilsService.transformRecipientPhone(mobile_phone, home_phone) : await this.utilsService.transformRecipientPhone(mobile_phone)
-    const main_address = await this.utilsService.transformRecipientAddress(cep, numero, complemento, ponto_referencia)
-    
+    const phone_numbers = home_phone
+      ? await this.utilsService.transformRecipientPhone(
+          mobile_phone,
+          home_phone,
+        )
+      : await this.utilsService.transformRecipientPhone(mobile_phone);
+    const main_address = await this.utilsService.transformRecipientAddress(
+      cep,
+      numero,
+      complemento,
+      ponto_referencia,
+    );
+
     const default_bank_account: IBankAccount = {
       bank,
       branch_number,
@@ -329,17 +359,26 @@ export class PagarmeService {
       holder_document: document,
       holder_name: company_name,
       holder_type: 'individual',
-      type
-    }
+      type,
+    };
 
-    const managing_partners: IManagingPartners[] = []
+    const managing_partners: IManagingPartners[] = [];
 
-    for(let i = 0; i < incoming_managing_partners.length; i++) {
-      const phone_numbers = await this.utilsService.transformRecipientPhone(mobile_phone, home_phone);
-      const address = await this.utilsService.transformRecipientAddress(cep, numero, complemento, ponto_referencia)
-      
+    for (let i = 0; i < incoming_managing_partners.length; i++) {
+      const phone_numbers = await this.utilsService.transformRecipientPhone(
+        mobile_phone,
+        home_phone,
+      );
+      const address = await this.utilsService.transformRecipientAddress(
+        cep,
+        numero,
+        complemento,
+        ponto_referencia,
+      );
+
       const managing_partner: IManagingPartners = {
-        self_declared_legal_representative: incoming_managing_partners[i].self_declared_legal_representative,
+        self_declared_legal_representative:
+          incoming_managing_partners[i].self_declared_legal_representative,
         name: incoming_managing_partners[i].name,
         email: incoming_managing_partners[i].email,
         address,
@@ -347,11 +386,12 @@ export class PagarmeService {
         birthdate: incoming_managing_partners[i].birthdate,
         document,
         monthly_income: incoming_managing_partners[i].monthly_income,
-        professional_occupation: incoming_managing_partners[i].professional_occupation,
-        type: 'individual'
-      }
+        professional_occupation:
+          incoming_managing_partners[i].professional_occupation,
+        type: 'individual',
+      };
 
-      managing_partners.push(managing_partner)
+      managing_partners.push(managing_partner);
     }
 
     const recipient: IRecipient = {
@@ -364,7 +404,7 @@ export class PagarmeService {
         main_address,
         annual_revenue,
         trading_name,
-        managing_partners
+        managing_partners,
       },
       default_bank_account,
       // transfer_settings: {
@@ -385,6 +425,46 @@ export class PagarmeService {
       console.error(err.response.data);
       throw new HttpException(
         'Ocorreu um erro ao tentar criar o recipient na API Pagar.me, por favor tente novamente',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async createCreditCard(
+    customer_id: string,
+    brand: string,
+    number: string,
+    holder_name: string,
+    holder_document: string,
+    exp_month: number,
+    exp_year: number,
+    cvv: string,
+    billing_address: BillingAddress,
+  ) {
+    
+    const credit_card = new CreditCard({
+      brand,
+      number,
+      holder_document,
+      holder_name,
+      exp_month,
+      exp_year,
+      cvv,
+      billing_address,
+    });
+
+    try {
+      const response = await axios.post(
+        `https://api.pagar.me/core/v5/customers/${customer_id}/cards`,
+        credit_card,
+        { headers: pagarmeAuthConfig },
+      );
+
+      return { cardId: response.data.id };
+    } catch (err) {
+      console.error(err.response.data);
+      throw new HttpException(
+        'Ocorreu um erro ao criar o cartao de credito na Api Pagarme, tente novamente mais tarde',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

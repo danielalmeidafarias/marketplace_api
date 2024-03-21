@@ -19,10 +19,14 @@ export class Cart {
 }
 
 export class CartProduct {
-  constructor(productId: UUID, quantity: number) {
+  constructor(productId: UUID, quantity: number, amount: number, description: string) {
     this.productId = productId;
-    this.quantity = quantity;
+    this.quantity = quantity; 
+    this.description = description
+    this.amount = amount
   }
   productId: UUID;
   quantity: number;
+  amount: number
+  description: string
 }
