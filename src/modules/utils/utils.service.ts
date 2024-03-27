@@ -4,14 +4,11 @@ import axios from 'axios';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from 'src/modules/User/repository/user.repository';
 import parsePhoneNumber from 'libphonenumber-js';
+import { CostumerAddress, CostumerPhone } from '../Pagarme/interfaces/Costumer';
 import {
-  ICostumerAddress,
-  ICostumerPhone,
-} from '../Pagarme/interfaces/Costumer.interface';
-import {
-  IRecipientAddress,
-  IRecipientPhone,
-} from '../Pagarme/interfaces/Recipient.interface';
+  RecipientAddress,
+  RecipientPhone,
+} from '../Pagarme/interfaces/Recipient';
 import { UUID } from 'crypto';
 @Injectable()
 export class UtilsService {
@@ -75,14 +72,14 @@ export class UtilsService {
       const data = (await axios.get(`https://viacep.com.br/ws/${cep}/json/`))
         .data;
 
-      const addressObject: ICostumerAddress = {
+      const addressObject = new CostumerAddress({
         line_1: `${numero}, ${data.logradouro}, ${data.bairro}`,
         line_2: complemento,
         city: data.localidade,
         zip_code: data.cep,
         state: data.uf,
         country: 'BR',
-      };
+      });
 
       return addressObject;
     } catch (err) {
@@ -102,7 +99,7 @@ export class UtilsService {
       const data = (await axios.get(`https://viacep.com.br/ws/${cep}/json/`))
         .data;
 
-      const addressObject: IRecipientAddress = {
+      const addressObject = new RecipientAddress({
         street: data.logradouro,
         street_number: numero,
         neighborhood: data.bairro,
@@ -111,7 +108,7 @@ export class UtilsService {
         city: data.localidade,
         zip_code: data.cep,
         state: data.uf,
-      };
+      });
 
       return addressObject;
     } catch (err) {
@@ -176,11 +173,11 @@ export class UtilsService {
 
     const phoneArray = phoneNumber.split(' ');
 
-    const phoneObject: ICostumerPhone = {
-      country_code: parsedPhoneNumber.countryCallingCode,
+    const phoneObject = new CostumerPhone({
       area_code: phoneArray[1],
+      country_code: parsedPhoneNumber.countryCallingCode,
       number: phoneArray[2] + phoneArray[3],
-    };
+    });
 
     return phoneObject;
   }
@@ -191,21 +188,21 @@ export class UtilsService {
       const mobilePhoneNumber = parsedMobilePhoneNumber.formatInternational();
       const mobilePhoneArray = mobilePhoneNumber.split(' ');
 
-      const mobilePhoneObject: IRecipientPhone = {
+      const mobilePhoneObject = new RecipientPhone({
         ddd: mobilePhoneArray[1],
         number: mobilePhoneArray[2] + mobilePhoneArray[3],
         type: 'mobile',
-      };
+      });
 
       const parsedHomePhoneNumber = parsePhoneNumber(home_phone);
       const homePhoneNumber = parsedHomePhoneNumber.formatInternational();
       const homePhoneArray = homePhoneNumber.split(' ');
 
-      const homePhoneObject: IRecipientPhone | null = {
+      const homePhoneObject = new RecipientPhone({
         ddd: homePhoneArray[1],
         number: homePhoneArray[2] + homePhoneArray[3],
         type: 'home',
-      };
+      });
 
       return homePhoneObject
         ? [mobilePhoneObject, homePhoneObject]
@@ -215,11 +212,11 @@ export class UtilsService {
       const mobilePhoneNumber = parsedMobilePhoneNumber.formatInternational();
       const mobilePhoneArray = mobilePhoneNumber.split(' ');
 
-      const mobilePhoneObject: IRecipientPhone = {
+      const mobilePhoneObject = new RecipientPhone({
         ddd: mobilePhoneArray[1],
         number: mobilePhoneArray[2] + mobilePhoneArray[3],
         type: 'mobile',
-      };
+      });
 
       return [mobilePhoneObject];
     }

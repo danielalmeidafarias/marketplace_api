@@ -1,27 +1,23 @@
-import { ManagingPartner } from './../Store/dto/create-store.dto';
 import 'dotenv/config.js';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import pagarmeAuthConfig from 'src/config/pagarme-auth.config';
+import { Costumer } from './interfaces/Costumer';
 import {
-  Costumer,
-  ICostumer,
-  ICostumerAddress,
-} from './interfaces/Costumer.interface';
-import {
-  IRecipient,
-  IBankAccount,
-  IManagingPartners,
-} from './interfaces/Recipient.interface';
+  BankAccount,
+  ManagingPartner,
+  Recipient,
+} from './interfaces/Recipient';
 import { UtilsService } from '../utils/utils.service';
 import { IManagingPartner } from '../Store/dto/create-store.dto';
 import { BillingAddress, CreditCard } from './interfaces/CreditCard';
 import { CartProduct } from '../Cart/entity/cart.entity';
 import {
   CreditCardOrder,
-  ICreditCardPaymentObject,
-  IPixPaymentObject,
+  CreditCardPaymentObject,
+  PaymentCreditCard,
   PixOrder,
+  PixPaymentObject,
   SplitObject,
 } from './interfaces/Order';
 @Injectable()
@@ -71,7 +67,9 @@ export class PagarmeService {
         costumer,
         { headers: pagarmeAuthConfig },
       );
+
       return {
+        message: 'Costumer criado com sucesso',
         costumerId: response.data.id,
         addressId: response.data.address.id,
       };
@@ -107,7 +105,8 @@ export class PagarmeService {
       numero,
       complemento,
     );
-    const costumer: ICostumer = {
+
+    const costumer = new Costumer({
       document_type: 'CNPJ',
       type: 'company',
       name,
@@ -119,7 +118,7 @@ export class PagarmeService {
         home_phone,
       },
       address,
-    };
+    });
 
     try {
       const response = await axios.post(
@@ -127,7 +126,10 @@ export class PagarmeService {
         costumer,
         { headers: pagarmeAuthConfig },
       );
-      return { costumerId: response.data.id };
+      return {
+        message: 'Costumer criado com sucesso',
+        costumerId: response.data.id,
+      };
     } catch (err) {
       console.error(err.response.data);
       throw new HttpException(
@@ -162,7 +164,7 @@ export class PagarmeService {
         complemento,
       );
 
-      const costumer: ICostumer = {
+      const costumer = new Costumer({
         name,
         email,
         costumer_Id,
@@ -175,13 +177,18 @@ export class PagarmeService {
           home_phone,
         },
         address,
-      };
+      });
 
       const response = await axios.put(
         `https://api.pagar.me/core/v5/customers/${costumer_Id}`,
         costumer,
         { headers: pagarmeAuthConfig },
       );
+
+      return {
+        message: 'Costumer atualizado com sucesso',
+        response: response.data,
+      };
     } catch (err) {
       console.error(err.response.data);
       throw new HttpException(
@@ -216,7 +223,7 @@ export class PagarmeService {
         complemento,
       );
 
-      const costumer: ICostumer = {
+      const costumer = new Costumer({
         name,
         email,
         costumer_Id,
@@ -229,13 +236,18 @@ export class PagarmeService {
           home_phone,
         },
         address,
-      };
+      });
 
       const response = await axios.put(
         `https://api.pagar.me/core/v5/customers/${costumer_Id}`,
         costumer,
         { headers: pagarmeAuthConfig },
       );
+
+      return {
+        message: 'Costumer atualizado com sucesso',
+        response: response.data,
+      };
     } catch (err) {
       console.error(err.response.data);
       throw new HttpException(
@@ -277,7 +289,7 @@ export class PagarmeService {
     );
     const birthdate = incomingBirthdate.toLocaleDateString('BR');
 
-    const default_bank_account: IBankAccount = {
+    const default_bank_account = new BankAccount({
       bank,
       branch_number,
       branch_check_digit,
@@ -287,9 +299,9 @@ export class PagarmeService {
       holder_name: name,
       holder_type: 'individual',
       type,
-    };
+    });
 
-    const recipient: IRecipient = {
+    const recipient = new Recipient({
       register_information: {
         type: 'individual',
         name,
@@ -302,13 +314,8 @@ export class PagarmeService {
         birthdate,
       },
       default_bank_account,
-      // transfer_settings: {
-      //   transfer_enabled: true,
-      // },
-      // automatic_anticipation_settings: {
-      //   enabled: true,
-      // },
-    };
+    });
+
     try {
       const response = await axios.post(
         'https://api.pagar.me/core/v5/recipients',
@@ -358,7 +365,7 @@ export class PagarmeService {
       ponto_referencia,
     );
 
-    const default_bank_account: IBankAccount = {
+    const default_bank_account = new BankAccount({
       bank,
       branch_number,
       branch_check_digit,
@@ -368,9 +375,9 @@ export class PagarmeService {
       holder_name: company_name,
       holder_type: 'individual',
       type,
-    };
+    });
 
-    const managing_partners: IManagingPartners[] = [];
+    const managing_partners: ManagingPartner[] = [];
 
     for (let i = 0; i < incoming_managing_partners.length; i++) {
       const phone_numbers = await this.utilsService.transformRecipientPhone(
@@ -384,7 +391,7 @@ export class PagarmeService {
         ponto_referencia,
       );
 
-      const managing_partner: IManagingPartners = {
+      const managing_partner = new ManagingPartner({
         self_declared_legal_representative:
           incoming_managing_partners[i].self_declared_legal_representative,
         name: incoming_managing_partners[i].name,
@@ -396,13 +403,12 @@ export class PagarmeService {
         monthly_income: incoming_managing_partners[i].monthly_income,
         professional_occupation:
           incoming_managing_partners[i].professional_occupation,
-        type: 'individual',
-      };
+      });
 
       managing_partners.push(managing_partner);
     }
 
-    const recipient: IRecipient = {
+    const recipient = new Recipient({
       register_information: {
         type: 'corporation',
         company_name,
@@ -415,13 +421,8 @@ export class PagarmeService {
         managing_partners,
       },
       default_bank_account,
-      // transfer_settings: {
-      //   transfer_enabled: true,
-      // },
-      // automatic_anticipation_settings: {
-      //   enabled: true,
-      // },
-    };
+    });
+
     try {
       const response = await axios.post(
         'https://api.pagar.me/core/v5/recipients',
@@ -486,21 +487,22 @@ export class PagarmeService {
     cvv: string,
   ) {
     try {
-      const creditCardPaymentObject: ICreditCardPaymentObject = {
-        payment_method: 'credit_card',
-        credit_card: {
-          installments,
-          statement_descriptor: 'FreeMarket',
-          card_id,
-          card: {
-            cvv,
-          },
+      const creditCard = new PaymentCreditCard({
+        card: {
+          cvv,
         },
-      };
+        card_id,
+        installments,
+      });
 
-      const credit_card_order = new CreditCardOrder(customer_id, cart, split, [
-        creditCardPaymentObject,
-      ]);
+      const creditCardPaymentObject = new CreditCardPaymentObject(creditCard);
+
+      const credit_card_order = new CreditCardOrder({
+        customer_id,
+        cart,
+        split,
+        payments: [creditCardPaymentObject],
+      });
 
       const response = await axios.post(
         `https://api.pagar.me/core/v5/orders`,
@@ -524,16 +526,14 @@ export class PagarmeService {
     cart: CartProduct[],
     subtotal: number,
   ) {
-    const pix_payments_object: IPixPaymentObject = {
-      payment_method: 'pix',
-      pix: {
-        expires_in: 240,
-      },
-    };
+    const pix_payment_object = new PixPaymentObject();
 
-    const pix_order = new PixOrder(customer_id, cart, split, [
-      pix_payments_object,
-    ]);
+    const pix_order = new PixOrder({
+      customer_id,
+      cart,
+      split,
+      payments: [pix_payment_object],
+    });
 
     try {
       const response = await axios.post(

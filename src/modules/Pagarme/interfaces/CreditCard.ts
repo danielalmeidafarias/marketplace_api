@@ -1,3 +1,13 @@
+export interface ICreditCardConstructorParameters {
+  brand: string;
+  number: string;
+  holder_name: string;
+  holder_document: string;
+  exp_month: number;
+  exp_year: number;
+  cvv: string;
+  billing_address: BillingAddress;
+}
 export class CreditCard {
   constructor({
     brand,
@@ -8,8 +18,8 @@ export class CreditCard {
     exp_year,
     holder_document,
     holder_name,
-  }: ICreditCardConstructor) {
-    this.brand = brand
+  }: ICreditCardConstructorParameters) {
+    this.brand = brand;
     this.number = number;
     this.billing_address = billing_address;
     this.cvv = cvv;
@@ -18,7 +28,7 @@ export class CreditCard {
     this.holder_document = holder_document;
     this.holder_name = holder_name;
   }
-  brand:string
+  brand: string;
   number: string;
   holder_name: string;
   holder_document: string;
@@ -27,18 +37,14 @@ export class CreditCard {
   cvv: string;
   billing_address: BillingAddress;
 }
-
-export interface ICreditCardConstructor {
-  brand:string
-  number: string;
-  holder_name: string;
-  holder_document: string;
-  exp_month: number;
-  exp_year: number;
-  cvv: string;
-  billing_address: BillingAddress;
+export interface IBillingAddressContructorParameters {
+  line_1: string;
+  line_2: string;
+  zip_code: string;
+  city: string;
+  state: string;
+  country: string;
 }
-
 export class BillingAddress {
   constructor({
     city,
@@ -47,7 +53,7 @@ export class BillingAddress {
     line_2,
     state,
     zip_code,
-  }: IBillingAddressContructor) {
+  }: IBillingAddressContructorParameters) {
     this.city = city;
     this.state = state;
     this.country = country;
@@ -55,15 +61,6 @@ export class BillingAddress {
     this.line_2 = line_2;
     this.zip_code = zip_code;
   }
-  line_1: string;
-  line_2: string;
-  zip_code: string;
-  city: string;
-  state: string;
-  country: string;
-}
-
-export interface IBillingAddressContructor {
   line_1: string;
   line_2: string;
   zip_code: string;
