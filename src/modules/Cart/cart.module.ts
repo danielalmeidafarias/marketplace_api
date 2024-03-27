@@ -9,6 +9,7 @@ import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../User/user.module';
 import { ProductModule } from '../Product/product.module';
 import { JwtService } from '@nestjs/jwt';
+import { PagarmeModule } from '../Pagarme/pagarme.module';
 
 @Module({
   controllers: [CartController],
@@ -19,7 +20,8 @@ import { JwtService } from '@nestjs/jwt';
     AuthModule,
     forwardRef(() => UserModule),
     forwardRef(() => ProductModule),
-    UtilsModule
+    UtilsModule,
+    PagarmeModule
   ],
 })
 export class CartModule {}

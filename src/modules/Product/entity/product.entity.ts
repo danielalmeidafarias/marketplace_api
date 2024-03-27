@@ -7,6 +7,7 @@ import {
   DeleteDateColumn,
   Entity,
   ManyToOne,
+  PrimaryColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -15,7 +16,7 @@ import {
 export class Product {
   constructor(
     storeId: UUID,
-    store: Store,
+    recipient_id: string,
     name: string,
     description: string,
     price: number,
@@ -23,7 +24,7 @@ export class Product {
     productId?: UUID,
   ) {
     this.storeId = storeId;
-    this.store = store;
+    this.recipient_id = recipient_id;
     this.name = name;
     this.description = description;
     this.price = price;
@@ -37,6 +38,9 @@ export class Product {
 
   @PrimaryGeneratedColumn('uuid')
   id: UUID;
+
+  @PrimaryColumn()
+  recipient_id: string;
 
   @Column()
   name: string;
@@ -52,9 +56,6 @@ export class Product {
 
   @Column({ nullable: true })
   available: number;
-
-  @ManyToOne(() => Store, (store) => store.id)
-  store: Store;
 
   @Column()
   storeId: UUID;
@@ -77,7 +78,7 @@ export class Product {
 export class UserStoreProduct implements Product {
   constructor(
     storeId: UUID,
-    store: Store,
+    recipient_id: string,
     userId: UUID,
     user: User,
     name: string,
@@ -87,7 +88,7 @@ export class UserStoreProduct implements Product {
     productId?: UUID,
   ) {
     this.storeId = storeId;
-    this.store = store;
+    this.recipient_id = recipient_id;
     this.userId = userId;
     this.user = user;
     this.name = name;
@@ -102,7 +103,7 @@ export class UserStoreProduct implements Product {
   }
 
   storeId: UUID;
-  store: Store;
+  recipient_id: string;
   userId: UUID;
   user: User;
   id: UUID;

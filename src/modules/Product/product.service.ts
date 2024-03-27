@@ -78,7 +78,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     const product = new Product(
       storeId,
-      store,
+      store.recipientId,
       name,
       description,
       price,
@@ -123,7 +123,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     const product = new UserStoreProduct(
       storeId,
-      store,
+      store.recipientId,
       userId,
       user,
       name,
@@ -176,7 +176,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     const editedProduct = new Product(
       storeId,
-      store,
+      store.recipientId,
       newName ? name : product.name,
       newDescription ? newDescription : product.description,
       newPrice ? newPrice : product.price,
@@ -244,7 +244,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     const editedProduct = new UserStoreProduct(
       storeId,
-      store,
+      store.recipientId,
       userId,
       user,
       newName ? name : product.name,

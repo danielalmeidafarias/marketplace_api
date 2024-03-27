@@ -119,6 +119,4 @@ export class User {
 
   @DeleteDateColumn()
   deleted_at?: Date;
-
-  credit_card_ids: []
 }

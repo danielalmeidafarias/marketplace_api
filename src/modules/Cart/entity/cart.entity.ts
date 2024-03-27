@@ -1,10 +1,5 @@
 import { UUID } from 'crypto';
-import {
-  Column,
-  Entity,
-  PrimaryColumn,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Cart {
@@ -19,14 +14,22 @@ export class Cart {
 }
 
 export class CartProduct {
-  constructor(productId: UUID, quantity: number, amount: number, description: string) {
+  constructor(
+    productId: UUID,
+    recipientId: string,
+    quantity: number,
+    amount: number,
+    description: string,
+  ) {
     this.productId = productId;
-    this.quantity = quantity; 
-    this.description = description
-    this.amount = amount
+    this.recipientId = recipientId;
+    this.quantity = quantity;
+    this.description = description;
+    this.amount = amount;
   }
   productId: UUID;
+  recipientId: string;
   quantity: number;
-  amount: number
-  description: string
+  amount: number;
+  description: string;
 }

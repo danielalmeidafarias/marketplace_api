@@ -16,6 +16,14 @@ import {
 import { UtilsService } from '../utils/utils.service';
 import { IManagingPartner } from '../Store/dto/create-store.dto';
 import { BillingAddress, CreditCard } from './interfaces/CreditCard';
+import { CartProduct } from '../Cart/entity/cart.entity';
+import {
+  CreditCardOrder,
+  ICreditCardPaymentObject,
+  IPixPaymentObject,
+  PixOrder,
+  SplitObject,
+} from './interfaces/Order';
 @Injectable()
 export class PagarmeService {
   constructor(private utilsService: UtilsService) {}
@@ -441,7 +449,6 @@ export class PagarmeService {
     cvv: string,
     billing_address: BillingAddress,
   ) {
-    
     const credit_card = new CreditCard({
       brand,
       number,
@@ -465,6 +472,81 @@ export class PagarmeService {
       console.error(err.response.data);
       throw new HttpException(
         'Ocorreu um erro ao criar o cartao de credito na Api Pagarme, tente novamente mais tarde',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async creditCardOrder(
+    customer_id: string,
+    split: SplitObject[],
+    cart: CartProduct[],
+    installments: number,
+    card_id: string,
+    cvv: string,
+  ) {
+    try {
+      const creditCardPaymentObject: ICreditCardPaymentObject = {
+        payment_method: 'credit_card',
+        credit_card: {
+          installments,
+          statement_descriptor: 'FreeMarket',
+          card_id,
+          card: {
+            cvv,
+          },
+        },
+      };
+
+      const credit_card_order = new CreditCardOrder(customer_id, cart, split, [
+        creditCardPaymentObject,
+      ]);
+
+      const response = await axios.post(
+        `https://api.pagar.me/core/v5/orders`,
+        credit_card_order,
+        { headers: pagarmeAuthConfig },
+      );
+
+      return { orderId: response.data.id };
+    } catch (err) {
+      console.error(err.response.data);
+      throw new HttpException(
+        'Ocorreu um erro ao fazer o pedido na Api Pagarme, tente novamente mais tarde',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async pixOrder(
+    customer_id: string,
+    split: SplitObject[],
+    cart: CartProduct[],
+    subtotal: number,
+  ) {
+    const pix_payments_object: IPixPaymentObject = {
+      payment_method: 'pix',
+      pix: {
+        expires_in: 240,
+      },
+    };
+
+    const pix_order = new PixOrder(customer_id, cart, split, [
+      pix_payments_object,
+    ]);
+
+    try {
+      const response = await axios.post(
+        `https://api.pagar.me/core/v5/orders`,
+        pix_order,
+        { headers: pagarmeAuthConfig },
+      );
+
+      return { orderId: response.data.id };
+    } catch (err) {
+      console.error(err.response.data);
+      throw new HttpException(
+        'Ocorreu um erro ao fazer o pedido na Api Pagarme, tente novamente mais tarde',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

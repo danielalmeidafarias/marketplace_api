@@ -9,10 +9,12 @@ import { UUID } from 'crypto';
 import { AuthService } from '../auth/auth.service';
 import { UserRepository } from '../User/repository/user.repository';
 import { ProductRepository } from '../Product/repository/product.repository';
-import { CartProduct } from './entity/cart.entity';
+import { Cart, CartProduct } from './entity/cart.entity';
 import { UtilsService } from '../utils/utils.service';
 import { CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
+import { PagarmeService } from '../Pagarme/pagarme.service';
+import { SplitObject } from '../Pagarme/interfaces/Order';
 
 @Injectable()
 export class CartService implements BeforeApplicationShutdown {
@@ -23,6 +25,7 @@ export class CartService implements BeforeApplicationShutdown {
     private productRepository: ProductRepository,
     private utilsService: UtilsService,
     private schedulerRegistry: SchedulerRegistry,
+    private pagarmeService: PagarmeService,
   ) {}
 
   async beforeApplicationShutdown() {
@@ -77,11 +80,18 @@ export class CartService implements BeforeApplicationShutdown {
       const newCartProduct = quantity
         ? new CartProduct(
             productId,
+            product.recipient_id,
             quantity,
             product.price,
             product.description,
           )
-        : new CartProduct(productId, 1, product.price, product.description);
+        : new CartProduct(
+            productId,
+            product.recipient_id,
+            1,
+            product.price,
+            product.description,
+          );
 
       const products = [...cartProducts, newCartProduct];
 
@@ -200,6 +210,122 @@ export class CartService implements BeforeApplicationShutdown {
     };
   }
 
+  async clearCart(access_token: string) {
+    const { newAccess_token, newRefresh_token } =
+      await this.authService.getNewTokens(access_token);
+
+    const accountId = await this.authService.getTokenId(newAccess_token);
+
+    await this.utilsService.verifyExistingAccount(accountId);
+
+    await this.authService.verifyTokenId(access_token, accountId);
+
+    await this.cartRepository.update(accountId, []);
+
+    this.schedulerRegistry.deleteCronJob(accountId);
+
+    return {
+      access_token: newAccess_token,
+      refresh_token: newRefresh_token,
+      cart: await this.cartRepository.getCart(accountId),
+    };
+  }
+
+  async creditCardOrder(
+    access_token: string,
+    installments: number,
+    card_id: string,
+    cvv: string,
+  ) {
+    const { newAccess_token, newRefresh_token } =
+      await this.authService.getNewTokens(access_token);
+
+    const accountId = await this.authService.getTokenId(newAccess_token);
+
+    const account = await this.utilsService.verifyExistingAccount(accountId);
+
+    await this.authService.verifyTokenId(access_token, account.id);
+
+    const { cart, subtotal } = await this.getCart(accountId);
+
+    const { split } = await this.getSplitArray(cart);
+
+    const { orderId } = await this.pagarmeService.creditCardOrder(
+      account.costumerId,
+      split,
+      cart.products,
+      installments,
+      card_id,
+      cvv,
+    );
+
+    return {
+      access_token: newAccess_token,
+      refresh_token: newRefresh_token,
+      orderId,
+      subtotal,
+    };
+  }
+
+  async PixOrder(access_token: string) {
+    const { newAccess_token, newRefresh_token } =
+      await this.authService.getNewTokens(access_token);
+
+    const accountId = await this.authService.getTokenId(newAccess_token);
+
+    const account = await this.utilsService.verifyExistingAccount(accountId);
+
+    await this.authService.verifyTokenId(access_token, account.id);
+
+    const { cart, subtotal } = await this.getCart(accountId);
+
+    const { split } = await this.getSplitArray(cart);
+
+    const { orderId } = await this.pagarmeService.pixOrder(
+      account.costumerId,
+      split,
+      cart.products,
+      subtotal,
+    );
+
+    return {
+      access_token: newAccess_token,
+      refresh_token: newRefresh_token,
+      orderId,
+      subtotal,
+    };
+  }
+
+  private async getCart(accountId: UUID) {
+    const cart = await this.cartRepository.getCart(accountId);
+
+    if (cart.products.length > 0) {
+      const subtotal = Array.from(cart.products, (product) => {
+        return product.amount * product.quantity;
+      }).reduce((acc, cv) => {
+        return acc + cv;
+      });
+
+      return {
+        cart,
+        subtotal,
+      };
+    } else {
+      throw new HttpException('O carrinho está vazio', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  private async getSplitArray(cart: Cart) {
+    const split = Array.from(cart.products, (product) => {
+      return new SplitObject(
+        product.amount * product.quantity,
+        product.recipientId,
+      );
+    });
+
+    return { split };
+  }
+
   private async removeProductFromDatabase(
     productId: UUID,
     accountId: UUID,
@@ -228,27 +354,6 @@ export class CartService implements BeforeApplicationShutdown {
         isAdded.quantity,
       );
     }
-  }
-
-  async clearCart(access_token: string) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const accountId = await this.authService.getTokenId(newAccess_token);
-
-    await this.utilsService.verifyExistingAccount(accountId);
-
-    await this.authService.verifyTokenId(access_token, accountId);
-
-    await this.cartRepository.update(accountId, []);
-
-    this.schedulerRegistry.deleteCronJob(accountId);
-
-    return {
-      access_token: newAccess_token,
-      refresh_token: newRefresh_token,
-      cart: await this.cartRepository.getCart(accountId),
-    };
   }
 
   private async cronClearCart(accountId: UUID) {

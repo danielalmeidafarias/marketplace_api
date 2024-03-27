@@ -53,6 +53,7 @@ export class ProductRepository {
           quantity: product.quantity,
           available: product.quantity,
           storeId: product.storeId,
+          recipient_id: product.recipient_id,
           userId: product.userId,
         })
         .execute();

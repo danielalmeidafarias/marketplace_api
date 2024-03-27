@@ -5,6 +5,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { DecrementProductDTO } from './dto/decrement-product.dto';
 import { RemoveProductDTO } from './dto/remove-product.dto';
 import { ClearCartDTO } from './dto/clear-cart.dto';
+import { CreditCardOrderDTO, PixOrderDTO } from './dto/make-order.dto';
 
 @Controller('cart')
 export class CartController {
@@ -44,5 +45,32 @@ export class CartController {
     { access_token, refresh_token }: ClearCartDTO,
   ) {
     return this.cartService.clearCart(access_token);
+  }
+
+  @UseGuards(AuthGuard)
+  // @Post('/order?method=credit_card')
+  @Post('/order/credit_card')
+  async creditCardOrder(
+    @Body()
+    {
+      access_token,
+      refresh_token,
+      installments,
+      card_id,
+      cvv,
+    }: CreditCardOrderDTO,
+  ) {
+    return this.cartService.creditCardOrder(
+      access_token,
+      installments,
+      card_id,
+      cvv,
+    );
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('/order/pix')
+  async pixOrder(@Body() { access_token, refresh_token }: PixOrderDTO) {
+    return this.cartService.PixOrder(access_token);
   }
 }

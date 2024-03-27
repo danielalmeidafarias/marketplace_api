@@ -70,6 +70,7 @@ export class WalletService {
 
     return {
       message: 'Cartão adicionado com sucesso!',
+      cardId
     };
   }
 }
