@@ -4,9 +4,6 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  Generated,
-  JoinColumn,
-  OneToOne,
   PrimaryColumn,
   PrimaryGeneratedColumn,
   Unique,
@@ -18,7 +15,6 @@ import {
 export class User {
   constructor(
     costumerId: string,
-    // cartId: UUID,
     email: string,
     password: string,
     name: string,
@@ -37,7 +33,6 @@ export class User {
     userId?: UUID
   ) {
     this.costumerId = costumerId
-    // this.cartId = cartId
     this.email = email;
     this.password = password;
     this.name = name;

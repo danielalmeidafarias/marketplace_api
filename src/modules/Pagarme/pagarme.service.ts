@@ -2,15 +2,15 @@ import 'dotenv/config.js';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import pagarmeAuthConfig from 'src/config/pagarme-auth.config';
-import { Costumer } from './interfaces/Costumer';
+import { Costumer } from './classes/Costumer';
 import {
   BankAccount,
   ManagingPartner,
   Recipient,
-} from './interfaces/Recipient';
+} from './classes/Recipient';
 import { UtilsService } from '../utils/utils.service';
 import { IManagingPartner } from '../Store/dto/create-store.dto';
-import { BillingAddress, CreditCard } from './interfaces/CreditCard';
+import { BillingAddress, CreditCard } from './classes/CreditCard';
 import { CartProduct } from '../Cart/entity/cart.entity';
 import {
   CreditCardOrder,
@@ -19,7 +19,7 @@ import {
   PixOrder,
   PixPaymentObject,
   SplitObject,
-} from './interfaces/Order';
+} from './classes/Order';
 @Injectable()
 export class PagarmeService {
   constructor(private utilsService: UtilsService) {}

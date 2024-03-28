@@ -4,11 +4,11 @@ import axios from 'axios';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from 'src/modules/User/repository/user.repository';
 import parsePhoneNumber from 'libphonenumber-js';
-import { CostumerAddress, CostumerPhone } from '../Pagarme/interfaces/Costumer';
+import { CostumerAddress, CostumerPhone } from '../Pagarme/classes/Costumer';
 import {
   RecipientAddress,
   RecipientPhone,
-} from '../Pagarme/interfaces/Recipient';
+} from '../Pagarme/classes/Recipient';
 import { UUID } from 'crypto';
 @Injectable()
 export class UtilsService {

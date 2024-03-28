@@ -14,7 +14,7 @@ import { UtilsService } from '../utils/utils.service';
 import { CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { PagarmeService } from '../Pagarme/pagarme.service';
-import { SplitObject } from '../Pagarme/interfaces/Order';
+import { SplitObject } from '../Pagarme/classes/Order';
 
 @Injectable()
 export class CartService implements BeforeApplicationShutdown {
