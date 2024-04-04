@@ -30,7 +30,7 @@ export class UtilsService {
       } catch (err) {
         console.error(err);
         throw new HttpException(
-          'Não foi encontrad nenhuma conta com o id fornecido',
+          'Não foi encontrado nenhuma conta com o id fornecido',
           HttpStatus.BAD_REQUEST,
         );
       }

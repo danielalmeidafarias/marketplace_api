@@ -1,14 +1,16 @@
 import { WalletService } from './wallet.service';
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { CreateCreditCardBodyDTO } from './dto/create-credit-card.dto';
 import { AuthGuard } from '../auth/auth.guard';
+import { GetCreditCardsDTO } from './dto/get-credit-cards.dto';
+import { DeleteCreditCardDTO } from './dto/delete-credit-card.dto';
 
 @Controller('/wallet')
 export class WalletController {
   constructor(private walletService: WalletService) {}
 
   @UseGuards(AuthGuard)
-  @Post('/add-card')
+  @Post('/add')
   async createCreditCard(
     @Body()
     {
@@ -21,7 +23,7 @@ export class WalletController {
       exp_year,
       cvv,
       billing_address,
-      brand
+      brand,
     }: CreateCreditCardBodyDTO,
   ) {
     return await this.walletService.createCreditCard(
@@ -38,5 +40,21 @@ export class WalletController {
       billing_address.numero,
       billing_address.complemento,
     );
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/get')
+  async getCreditCards(
+    @Body() { access_token, refresh_token }: GetCreditCardsDTO,
+  ) {
+    return await this.walletService.getCreditCards(access_token);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('/delete')
+  async deleteCreditCard(
+    @Body() { access_token, refresh_token, card_id }: DeleteCreditCardDTO,
+  ) {
+    return await this.walletService.deleteCreditCard(access_token, card_id);
   }
 }

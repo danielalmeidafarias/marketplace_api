@@ -1,4 +1,3 @@
-import { WalletRepository } from './../Wallet/repository/wallet.repository';
 import { UserRepository } from './repository/user.repository';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './entity/user.entity';
@@ -62,7 +61,6 @@ export class UserService {
     private productRepository: ProductRepository,
     private pagarmeService: PagarmeService,
     private cartRepository: CartRepository,
-    private walletRepository: WalletRepository,
   ) {}
 
   async createUser({
@@ -138,8 +136,6 @@ export class UserService {
     const { userId } = await this.userRepository.createUser(user);
 
     await this.cartRepository.create(userId);
-
-    await this.walletRepository.createWallet(userId);
 
     return {
       userId,
@@ -334,7 +330,6 @@ export class UserService {
 
     await this.cartRepository.delete(user.id);
 
-    await this.walletRepository.deleteWallet(user.id)
 
     await this.userRepository.deleteUser(user.id);
 

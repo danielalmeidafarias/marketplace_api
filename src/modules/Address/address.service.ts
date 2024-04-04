@@ -1,38 +1,23 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { BillingAddress } from './dto/create-credit-card.dto';
-import { UtilsService } from '../utils/utils.service';
+import { Injectable } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
+import { UtilsService } from '../utils/utils.service';
 import { PagarmeService } from '../Pagarme/pagarme.service';
 
 @Injectable()
-export class WalletService {
+export class AddressService {
   constructor(
-    private utilsService: UtilsService,
     private authService: AuthService,
+    private utilsService: UtilsService,
     private pagarmeService: PagarmeService,
   ) {}
 
-  async createCreditCard(
+  async createAddress(
     access_token: string,
-    refresh_token: string,
-    brand: string,
-    number: string,
-    holder_name: string,
-    holder_document: string,
-    exp_month: number,
-    exp_year: number,
-    cvv: string,
     cep: string,
     numero: string,
     complemento: string,
+    ponto_referencia: string,
   ) {
-    if (holder_document.length > 11 && holder_document.length < 14) {
-      throw new HttpException(
-        'O documento deve ter 11 digitos(cpf) ou 14 digitos(cnpj)',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
@@ -42,33 +27,22 @@ export class WalletService {
 
     await this.authService.verifyTokenId(access_token, account.id);
 
-    const billing_address = await this.utilsService.transformBillingAddress(
+    const { address } = await this.pagarmeService.createAddress(
+      account.costumerId,
       cep,
       numero,
       complemento,
     );
 
-    const { card } = await this.pagarmeService.createCreditCard(
-      account.costumerId,
-      brand,
-      number,
-      holder_name,
-      holder_document,
-      exp_month,
-      exp_year,
-      cvv,
-      billing_address,
-    );
-
     return {
-      message: 'Cartão adicionado com sucesso!',
+      message: 'Endereço criado com sucesso!',
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
-      card,
+      address,
     };
   }
 
-  async deleteCreditCard(access_token: string, card_id: string) {
+  async getAddresses(access_token: string) {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
@@ -78,20 +52,18 @@ export class WalletService {
 
     await this.authService.verifyTokenId(access_token, account.id);
 
-    const { wallet } = await this.pagarmeService.deleteCreditCard(
+    const { addresses } = await this.pagarmeService.getAddresses(
       account.costumerId,
-      card_id,
     );
 
     return {
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
-      message: 'Cartao excluido com sucesso!',
-      wallet,
+      addresses,
     };
   }
 
-  async getCreditCards(access_token: string) {
+  async deleteAddress(access_token: string, address_id: string) {
     const { newAccess_token, newRefresh_token } =
       await this.authService.getNewTokens(access_token);
 
@@ -101,14 +73,16 @@ export class WalletService {
 
     await this.authService.verifyTokenId(access_token, account.id);
 
-    const { wallet } = await this.pagarmeService.getCreditCards(
+    const { addresses} = await this.pagarmeService.deleteAddress(
       account.costumerId,
+      address_id,
     );
 
     return {
+      message: "Endereço excluido com sucesso",
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
-      wallet,
-    };
+      addresses
+    }
   }
 }

@@ -1,16 +1,21 @@
+import { UtilsModule } from './../utils/utils.module';
 import { User } from 'src/modules/User/entity/user.entity';
 import {
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt/dist/jwt.service';
 import { Store } from '../Store/entity/store.entity';
+import { UtilsService } from '../utils/utils.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+  ) {}
 
   async signIn(user: User | Store) {
     const payload = { sub: user.id, email: user.email };

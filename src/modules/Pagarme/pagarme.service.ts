@@ -3,11 +3,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import pagarmeAuthConfig from 'src/config/pagarme-auth.config';
 import { Costumer } from './classes/Costumer';
-import {
-  BankAccount,
-  ManagingPartner,
-  Recipient,
-} from './classes/Recipient';
+import { BankAccount, ManagingPartner, Recipient } from './classes/Recipient';
 import { UtilsService } from '../utils/utils.service';
 import { IManagingPartner } from '../Store/dto/create-store.dto';
 import { BillingAddress, CreditCard } from './classes/CreditCard';
@@ -468,13 +464,65 @@ export class PagarmeService {
         { headers: pagarmeAuthConfig },
       );
 
-      return { cardId: response.data.id };
+      return { card: response.data };
     } catch (err) {
       console.error(err.response.data);
       throw new HttpException(
         'Ocorreu um erro ao criar o cartao de credito na Api Pagarme, tente novamente mais tarde',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  async getCreditCards(customer_id: string) {
+    try {
+      const response = await axios.get(
+        `https://api.pagar.me/core/v5/customers/${customer_id}/cards`,
+        { headers: pagarmeAuthConfig },
+      );
+
+      return {
+        wallet: response.data,
+      };
+    } catch (err) {
+      console.error(err.response.data);
+      if (err.response.status === '404') {
+        throw new HttpException(
+          'O id fornecido não corresponde a nenhum usuário cadastrado',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else {
+        throw new HttpException(
+          'Ocorreu um erro ao encontrar os cartões na API do Pagar.me, por favor tente novamente mais tarde',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+  }
+
+  async deleteCreditCard(customer_id: string, card_id: string) {
+    try {
+      const response = await axios.delete(
+        `https://api.pagar.me/core/v5/customers/${customer_id}/cards/${card_id}`,
+        { headers: pagarmeAuthConfig },
+      );
+
+      return {
+        wallet: response.data
+      }
+    } catch (err) {
+      console.error(err.response.data);
+      if (err.response.status === '404') {
+        throw new HttpException(
+          'O id fornecido não corresponde a nenhum cartão cadastrado',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else {
+        throw new HttpException(
+          'Ocorreu um erro ao encontrar os cartões na API do Pagar.me, por favor tente novamente mais tarde',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 
@@ -547,6 +595,78 @@ export class PagarmeService {
       console.error(err.response.data);
       throw new HttpException(
         'Ocorreu um erro ao fazer o pedido na Api Pagarme, tente novamente mais tarde',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async createAddress(
+    customer_id: string,
+    cep: string,
+    numero: string,
+    complemento: string,
+  ) {
+    try {
+      const address = await this.utilsService.transformCostumerAddress(
+        cep,
+        numero,
+        complemento,
+      );
+
+      const response = await axios.post(
+        `https://api.pagar.me/core/v5/customers/${customer_id}/addresses`,
+        address,
+        { headers: pagarmeAuthConfig },
+      );
+
+      return {
+        address: response.data,
+      };
+    } catch (err) {
+      console.error(err);
+      throw new HttpException(
+        'Ocorreu um erro ao criar o endereço na API Pagar.me, por favor tente mais tarde',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getAddresses(customer_id: string) {
+    try {
+      const response = await axios.get(
+        `https://api.pagar.me/core/v5/customers/${customer_id}/addresses`,
+        { headers: pagarmeAuthConfig },
+      );
+
+      return {
+        addresses: response.data,
+      };
+    } catch (err) {
+      console.error(err.response.data);
+      throw new HttpException(
+        'Ocorreu um erro ao acessar a API do Pagar.me, por favor tente novamente mais tarde',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async deleteAddress(customer_id: string, address_id: string) {
+    try {
+      const requestOptions = {
+        method: 'DELETE',
+        url: `https://api.pagar.me/core/v5/customers/${customer_id}/addresses/${address_id}`,
+        headers: { authorization: pagarmeAuthConfig.Authorization },
+      };
+
+      const response = await axios.request(requestOptions);
+
+      return {
+        addresses: response.data,
+      };
+    } catch (err) {
+      console.error(err.response.data);
+      throw new HttpException(
+        'Ocorreu um erro ao tentar excluir o endereço na API Pagar.me, por favor tente novamente mais tarde',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

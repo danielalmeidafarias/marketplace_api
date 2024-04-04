@@ -19,7 +19,7 @@ import { WalletModule } from '../Wallet/wallet.module';
     AuthModule,
     forwardRef(() => ProductModule),
     forwardRef(() => StoreModule),
-    UtilsModule,
+    forwardRef(() => UtilsModule),
     PagarmeModule,
     CartModule,
     WalletModule,

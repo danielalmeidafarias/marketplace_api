@@ -9,6 +9,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { CartModule } from './modules/Cart/cart.module';
 import { UserModule } from './modules/User/user.module';
 import { WalletModule } from './modules/Wallet/wallet.module';
+import { AddressModule } from './modules/Address/address.module';
 @Module({
   imports: [
     UserModule,
@@ -17,6 +18,7 @@ import { WalletModule } from './modules/Wallet/wallet.module';
     StoreModule,
     CartModule,
     WalletModule,
+    AddressModule,
     TypeOrmModule.forRoot(databaseConfig),
     ScheduleModule.forRoot()
   ],
