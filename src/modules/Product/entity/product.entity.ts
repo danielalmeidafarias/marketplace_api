@@ -1,5 +1,4 @@
 import { UUID } from 'crypto';
-import { Store } from 'src/modules/Store/entity/store.entity';
 import { User } from 'src/modules/User/entity/user.entity';
 import {
   Column,

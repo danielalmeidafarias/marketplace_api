@@ -1,4 +1,4 @@
-import { IsJWT, IsString } from "class-validator";
+import { IsJWT } from 'class-validator';
 
 export class GetAddressesDTO {
   @IsJWT()
@@ -6,5 +6,4 @@ export class GetAddressesDTO {
 
   @IsJWT()
   refresh_token: string;
-
 }

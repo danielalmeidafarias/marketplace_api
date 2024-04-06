@@ -20,7 +20,7 @@ import { AddressModule } from './modules/Address/address.module';
     WalletModule,
     AddressModule,
     TypeOrmModule.forRoot(databaseConfig),
-    ScheduleModule.forRoot()
+    ScheduleModule.forRoot(),
   ],
 })
 export class AppModule {}

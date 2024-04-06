@@ -1,5 +1,4 @@
 import {
-  IsIn,
   IsJWT,
   IsNumber,
   IsNumberString,

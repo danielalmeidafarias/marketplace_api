@@ -6,6 +6,6 @@ import { UtilsModule } from '../utils/utils.module';
 @Module({
   providers: [PagarmeService, Axios],
   exports: [PagarmeService],
-  imports: [forwardRef(() => UtilsModule)]
+  imports: [forwardRef(() => UtilsModule)],
 })
 export class PagarmeModule {}

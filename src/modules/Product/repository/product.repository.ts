@@ -1,12 +1,6 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  OnApplicationBootstrap,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Product, UserStoreProduct } from '../entity/product.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { UUID } from 'crypto';
 
 export interface ICreateProduct {
@@ -19,9 +13,7 @@ export interface ICreateProduct {
 
 @Injectable()
 export class ProductRepository {
-  constructor(
-    private dataSource: DataSource,
-  ) {}
+  constructor(private dataSource: DataSource) {}
 
   async turnProductStockToAvailable() {
     const allProducts = await this.dataSource

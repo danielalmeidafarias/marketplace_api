@@ -1,10 +1,8 @@
 import { UserRepository } from 'src/modules/User/repository/user.repository';
-import { UtilsModule } from './../utils/utils.module';
 import { User } from 'src/modules/User/entity/user.entity';
 import {
   HttpException,
   HttpStatus,
-  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -46,11 +44,12 @@ export class AuthService {
     }
   }
 
-  private async getNewTokens(acces_token: string) {
-    const { id, email } = await this.decodeToken(acces_token);
+  private async getNewTokens(access_token: string, refresh_token: string) {
+    await this.decodeToken(access_token);
+    const { id, email } = await this.decodeToken(refresh_token);
 
     try {
-      await this.jwtService.verify(acces_token);
+      await this.jwtService.verify(access_token);
     } catch {
       return {
         newAccess_token: this.jwtService.sign(
@@ -68,7 +67,7 @@ export class AuthService {
       };
     } finally {
       return {
-        newAccess_token: acces_token,
+        newAccess_token: access_token,
         newRefresh_token: this.jwtService.sign(
           { id, email },
           {
@@ -103,28 +102,32 @@ export class AuthService {
     }
   }
 
-  async accountVerification(access_token: string) {
-    
+  async accountVerification(access_token: string, refresh_token: string) {
     const accountId = await this.getTokenId(access_token);
 
     const account = await this.utilsService.verifyExistingAccount(accountId);
 
     await this.verifyTokenId(access_token, account.id);
 
-    const { newAccess_token, newRefresh_token } =
-      await this.getNewTokens(access_token);
+    const { newAccess_token, newRefresh_token } = await this.getNewTokens(
+      access_token,
+      refresh_token,
+    );
 
     return { account, newAccess_token, newRefresh_token };
   }
 
-  async userVerification(access_token: string) {
+  async userVerification(access_token: string, refresh_token: string) {
     const userId = await this.getTokenId(access_token);
 
     const user = await this.userRepository.verifyExistingUserById(userId);
-    
-    await this.verifyTokenId(access_token, user.id)
 
-    const { newAccess_token, newRefresh_token } = await this.getNewTokens(access_token);
+    await this.verifyTokenId(access_token, user.id);
+
+    const { newAccess_token, newRefresh_token } = await this.getNewTokens(
+      access_token,
+      refresh_token,
+    );
 
     return {
       user,
@@ -146,14 +149,17 @@ export class AuthService {
     };
   }
 
-  async storeVerification(access_token: string) {
+  async storeVerification(access_token: string, refresh_token: string) {
     const storeId: UUID = await this.getTokenId(access_token);
 
     const store = await this.storeRepository.verifyExistingStoreById(storeId);
 
-    await this.verifyTokenId(access_token, store.id)
+    await this.verifyTokenId(access_token, store.id);
 
-    const { newAccess_token, newRefresh_token } = await this.getNewTokens(access_token);
+    const { newAccess_token, newRefresh_token } = await this.getNewTokens(
+      access_token,
+      refresh_token,
+    );
 
     return {
       store,

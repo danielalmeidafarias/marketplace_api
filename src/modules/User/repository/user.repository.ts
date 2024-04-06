@@ -1,14 +1,11 @@
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { User } from '../entity/user.entity';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UUID } from 'crypto';
 
 @Injectable()
 export class UserRepository {
-  constructor(
-    private dataSource: DataSource,
-  ) { }
+  constructor(private dataSource: DataSource) {}
 
   async createUser({
     costumerId,
@@ -29,26 +26,31 @@ export class UserRepository {
     uf,
   }: User) {
     try {
-      const user = await this.dataSource.getRepository(User).createQueryBuilder().insert().values({
-        name,
-        email,
-        bairro,
-        cep,
-        numero,
-        complemento,
-        ponto_referencia,
-        cidade,
-        cpf,
-        birthdate,
-        home_phone,
-        logradouro,
-        mobile_phone,
-        password,
-        uf,
-        costumerId,
-      }).execute();
+      const user = await this.dataSource
+        .getRepository(User)
+        .createQueryBuilder()
+        .insert()
+        .values({
+          name,
+          email,
+          bairro,
+          cep,
+          numero,
+          complemento,
+          ponto_referencia,
+          cidade,
+          cpf,
+          birthdate,
+          home_phone,
+          logradouro,
+          mobile_phone,
+          password,
+          uf,
+          costumerId,
+        })
+        .execute();
 
-      return { userId: user.identifiers[0].id }
+      return { userId: user.identifiers[0].id };
     } catch (err) {
       console.error(err);
       throw new HttpException(
@@ -78,9 +80,10 @@ export class UserRepository {
   }
 
   async updateUser(user: User) {
-
     try {
-      this.dataSource.getRepository(User).createQueryBuilder()
+      this.dataSource
+        .getRepository(User)
+        .createQueryBuilder()
         .update(User)
         .set({
           email: user.email,
@@ -96,7 +99,7 @@ export class UserRepository {
           cidade: user.cidade,
           uf: user.uf,
           mobile_phone: user.mobile_phone,
-          home_phone: user.home_phone
+          home_phone: user.home_phone,
         })
         .where('id = :id', { id: user.id })
         .execute();

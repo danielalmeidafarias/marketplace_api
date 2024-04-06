@@ -19,17 +19,16 @@ import {
 } from './dto/get-store-info.dto';
 import { CreateStoreDTO, CreateUserStoreDTO } from './dto/create-store.dto';
 import { UpdateStoreDTO } from './dto/update-store.dto';
-import {
-  DeleteStoreBodyDTO,
-} from './dto/delete-store.dto';
+import { DeleteStoreBodyDTO } from './dto/delete-store.dto';
 import { SearchStoreDTO } from './dto/search-store.dto';
-import {
-  SearchStoreProductDTOQuery,
-} from './dto/search-store-product.dto';
+import { SearchStoreProductDTOQuery } from './dto/search-store-product.dto';
 import { AuthService } from '../auth/auth.service';
 @Controller()
 export class StoreController {
-  constructor(private storeService: StoreService, private authService: AuthService) {}
+  constructor(
+    private storeService: StoreService,
+    private authService: AuthService,
+  ) {}
 
   @Post('/store/create')
   async createStore(
@@ -53,7 +52,7 @@ export class StoreController {
       branch_number,
       ponto_referencia,
       trading_name,
-      managing_partners
+      managing_partners,
     }: CreateStoreDTO,
   ) {
     return await this.storeService.createStore({
@@ -75,7 +74,7 @@ export class StoreController {
       account_type,
       annual_revenue,
       trading_name,
-      managing_partners
+      managing_partners,
     });
   }
 
@@ -93,7 +92,7 @@ export class StoreController {
       branch_check_digit,
       account_number,
       account_check_digit,
-      account_type
+      account_type,
     }: CreateUserStoreDTO,
   ) {
     return await this.storeService.createStoreByUser({
@@ -106,13 +105,13 @@ export class StoreController {
       branch_check_digit,
       account_number,
       account_check_digit,
-      account_type
+      account_type,
     });
   }
 
   @Post('/store/login')
   async storeLogin(@Body() { email, password }: LoginStoreDTO) {
-    return await this.authService.storeLogin( email, password );
+    return await this.authService.storeLogin(email, password);
   }
 
   @UseGuards(AuthGuard)
@@ -151,8 +150,8 @@ export class StoreController {
       newEmail,
       newName,
       newPassword,
-      newHomePhone, 
-      newMobilePhone
+      newHomePhone,
+      newMobilePhone,
     }: UpdateStoreDTO,
   ) {
     return await this.storeService.updateStore({
@@ -165,8 +164,8 @@ export class StoreController {
       newEmail,
       newName,
       newPassword,
-      newHomePhone, 
-      newMobilePhone
+      newHomePhone,
+      newMobilePhone,
     });
   }
 

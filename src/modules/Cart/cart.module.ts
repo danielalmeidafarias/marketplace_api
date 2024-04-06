@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Cart } from './entity/cart.entity';
 import { CartController } from './cart.controller';
 import { AuthModule } from '../auth/auth.module';
-import { UserModule } from '../User/user.module';
 import { ProductModule } from '../Product/product.module';
 import { JwtService } from '@nestjs/jwt';
 import { PagarmeModule } from '../Pagarme/pagarme.module';

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
-import { UtilsService } from '../utils/utils.service';
 import { PagarmeService } from '../Pagarme/pagarme.service';
 
 @Injectable()
@@ -12,13 +11,13 @@ export class AddressService {
 
   async createAddress(
     access_token: string,
+    refresh_token: string,
     cep: string,
     numero: string,
     complemento: string,
-    ponto_referencia: string,
   ) {
     const { account, newAccess_token, newRefresh_token } =
-      await this.authService.accountVerification(access_token);
+      await this.authService.accountVerification(access_token, refresh_token);
 
     const { address } = await this.pagarmeService.createAddress(
       account.costumerId,
@@ -35,9 +34,9 @@ export class AddressService {
     };
   }
 
-  async getAddresses(access_token: string) {
+  async getAddresses(access_token: string, refresh_token: string) {
     const { account, newAccess_token, newRefresh_token } =
-    await this.authService.accountVerification(access_token);
+      await this.authService.accountVerification(access_token, refresh_token);
 
     const { addresses } = await this.pagarmeService.getAddresses(
       account.costumerId,
@@ -50,10 +49,14 @@ export class AddressService {
     };
   }
 
-  async deleteAddress(access_token: string, address_id: string) {
+  async deleteAddress(
+    access_token: string,
+    refresh_token: string,
+    address_id: string,
+  ) {
     const { account, newAccess_token, newRefresh_token } =
-      await this.authService.accountVerification(access_token);
-      
+      await this.authService.accountVerification(access_token, refresh_token);
+
     const { addresses } = await this.pagarmeService.deleteAddress(
       account.costumerId,
       address_id,

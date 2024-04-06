@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AddProductBodyDTO } from './dto/add-product.dto';
 import { CartService } from './cart.service';
 import { AuthGuard } from '../auth/auth.guard';
@@ -17,7 +17,12 @@ export class CartController {
     @Body()
     { productId, quantity, access_token, refresh_token }: AddProductBodyDTO,
   ) {
-    return this.cartService.addCartProduct(access_token, productId, quantity);
+    return this.cartService.addCartProduct(
+      access_token,
+      refresh_token,
+      productId,
+      quantity,
+    );
   }
 
   @UseGuards(AuthGuard)
@@ -26,7 +31,12 @@ export class CartController {
     @Body()
     { productId, quantity, access_token, refresh_token }: DecrementProductDTO,
   ) {
-    return this.cartService.decrementProduct(access_token, productId, quantity);
+    return this.cartService.decrementProduct(
+      access_token,
+      refresh_token,
+      productId,
+      quantity,
+    );
   }
 
   @UseGuards(AuthGuard)
@@ -35,7 +45,11 @@ export class CartController {
     @Body()
     { productId, access_token, refresh_token }: RemoveProductDTO,
   ) {
-    return this.cartService.removeProduct(access_token, productId);
+    return this.cartService.removeProduct(
+      access_token,
+      refresh_token,
+      productId,
+    );
   }
 
   @UseGuards(AuthGuard)
@@ -44,7 +58,7 @@ export class CartController {
     @Body()
     { access_token, refresh_token }: ClearCartDTO,
   ) {
-    return this.cartService.clearCart(access_token);
+    return this.cartService.clearCart(access_token, refresh_token);
   }
 
   @UseGuards(AuthGuard)
@@ -62,6 +76,7 @@ export class CartController {
   ) {
     return this.cartService.creditCardOrder(
       access_token,
+      refresh_token,
       installments,
       card_id,
       cvv,
@@ -71,6 +86,6 @@ export class CartController {
   @UseGuards(AuthGuard)
   @Post('/order/pix')
   async pixOrder(@Body() { access_token, refresh_token }: PixOrderDTO) {
-    return this.cartService.PixOrder(access_token);
+    return this.cartService.PixOrder(access_token, refresh_token);
   }
 }

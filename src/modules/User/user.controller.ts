@@ -1,5 +1,4 @@
 import { AuthService } from './../auth/auth.service';
-import { ProductService } from './../Product/product.service';
 import { AuthGuard } from './../auth/auth.guard';
 import {
   Body,
@@ -16,16 +15,11 @@ import { LoginUserDTO } from './dto/login-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
 import { GetUserInfoDTO } from './dto/get-user-Info.dto';
-import { StoreService } from '../Store/store.service';
-import { CreateCreditCardBodyDTO } from '../Wallet/dto/create-credit-card.dto';
-
 @Controller('user')
 export class UserController {
   constructor(
     private userService: UserService,
     private authService: AuthService,
-    private productService: ProductService,
-    private storeService: StoreService,
   ) {}
 
   @Post('/create')
@@ -62,7 +56,7 @@ export class UserController {
 
   @Post('/login')
   async login(@Body() { email, password }: LoginUserDTO) {
-    return await this.authService.userLogin( email, password );
+    return await this.authService.userLogin(email, password);
   }
 
   @UseGuards(AuthGuard)
@@ -118,6 +112,4 @@ export class UserController {
       password,
     });
   }
-
-
 }

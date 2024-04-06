@@ -3,13 +3,11 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './entity/user.entity';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from '../auth/auth.service';
-import { LoginUserDTO } from './dto/login-user.dto';
 import { UtilsService } from 'src/modules/utils/utils.service';
 import { StoreRepository } from '../Store/repository/store.repository';
 import { ProductRepository } from '../Product/repository/product.repository';
 import { PagarmeService } from '../Pagarme/pagarme.service';
 import { UserStore } from '../Store/entity/store.entity';
-import { CartService } from '../Cart/cart.service';
 import { CartRepository } from '../Cart/repository/cart.repository';
 
 export interface ICreateUser {
@@ -88,7 +86,7 @@ export class UserService {
       : null;
 
     const { cep, logradouro, bairro, cidade, uf } =
-      await this.utilsService.verifyCEP(incomingCep, numero, complemento);
+      await this.utilsService.verifyCEP(incomingCep);
 
     const hashedPassword = await this.utilsService.hashPassword(password);
 
@@ -143,9 +141,9 @@ export class UserService {
     };
   }
 
-  async getUser({ access_token }: IGetUserInfo) {
+  async getUser({ access_token, refresh_token }: IGetUserInfo) {
     const { user, newAccess_token, newRefresh_token } =
-      await this.authService.userVerification(access_token);
+      await this.authService.userVerification(access_token, refresh_token);
 
     return {
       user: await this.userRepository.getUserInfo(user.id),
@@ -156,6 +154,7 @@ export class UserService {
 
   async updateUser({
     access_token,
+    refresh_token,
     password,
     newPassword,
     newEmail,
@@ -167,7 +166,7 @@ export class UserService {
     newHomePhone,
   }: IUpdateUser) {
     const { user, newAccess_token, newRefresh_token } =
-      await this.authService.userVerification(access_token);
+      await this.authService.userVerification(access_token, refresh_token);
 
     const mobile_phone = newMobilePhone
       ? await this.utilsService.verifyPhoneNumber(newMobilePhone)
@@ -180,12 +179,8 @@ export class UserService {
         : null;
 
     const address = newCEP
-      ? await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento)
-      : await this.utilsService.verifyCEP(
-          user.cep,
-          user.numero,
-          user.complemento,
-        );
+      ? await this.utilsService.verifyCEP(newCEP)
+      : await this.utilsService.verifyCEP(user.cep);
 
     if (newPassword || newEmail) {
       if (!password) {
@@ -286,8 +281,11 @@ export class UserService {
     };
   }
 
-  async deleteUser({ access_token, password }: IDeleteUser) {
-    const { user } = await this.authService.userVerification(access_token);
+  async deleteUser({ access_token, refresh_token, password }: IDeleteUser) {
+    const { user } = await this.authService.userVerification(
+      access_token,
+      refresh_token,
+    );
 
     await this.authService.userLogin(user.password, password);
 

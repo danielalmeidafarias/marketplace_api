@@ -47,9 +47,9 @@ export class UpdateUserDTO {
 
   @IsNumberString()
   @IsOptional()
-  newNumero: string
+  newNumero: string;
 
   @IsString()
   @IsOptional()
-  newComplemento: string
+  newComplemento: string;
 }

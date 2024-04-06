@@ -33,7 +33,7 @@ export class WalletService {
     }
 
     const { account, newAccess_token, newRefresh_token } =
-      await this.authService.accountVerification(access_token);
+      await this.authService.accountVerification(access_token, refresh_token);
 
     const billing_address = await this.utilsService.transformBillingAddress(
       cep,
@@ -61,9 +61,13 @@ export class WalletService {
     };
   }
 
-  async deleteCreditCard(access_token: string, card_id: string) {
+  async deleteCreditCard(
+    access_token: string,
+    refresh_token: string,
+    card_id: string,
+  ) {
     const { account, newAccess_token, newRefresh_token } =
-      await this.authService.accountVerification(access_token);
+      await this.authService.accountVerification(access_token, refresh_token);
 
     const { wallet } = await this.pagarmeService.deleteCreditCard(
       account.costumerId,
@@ -78,9 +82,9 @@ export class WalletService {
     };
   }
 
-  async getCreditCards(access_token: string) {
+  async getCreditCards(access_token: string, refresh_token: string) {
     const { account, newAccess_token, newRefresh_token } =
-      await this.authService.accountVerification(access_token);
+      await this.authService.accountVerification(access_token, refresh_token);
 
     const { wallet } = await this.pagarmeService.getCreditCards(
       account.costumerId,

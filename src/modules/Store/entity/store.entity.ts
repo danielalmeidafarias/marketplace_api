@@ -36,7 +36,7 @@ export class Store {
       this.id = storeId;
     }
 
-    this.recipientId = recipientId
+    this.recipientId = recipientId;
     this.costumerId = costumerId;
     this.cnpj = cnpj;
     this.password = password;
@@ -149,7 +149,7 @@ export class UserStore implements Store {
       this.id = storeId;
     }
 
-    this.recipientId = recipientId
+    this.recipientId = recipientId;
     this.userId = userId;
     this.user = user;
     this.cpf = cpf;
@@ -168,7 +168,7 @@ export class UserStore implements Store {
   }
 
   id: UUID;
-  recipientId: string
+  recipientId: string;
   costumerId?: string;
   email: string;
   name: string;

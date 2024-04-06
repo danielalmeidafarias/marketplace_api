@@ -6,7 +6,6 @@ import { AuthModule } from '../auth/auth.module';
 import { Product } from './entity/product.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { UserModule } from '../User/user.module';
 import { StoreModule } from '../Store/store.module';
 
 @Module({

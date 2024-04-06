@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { ProductRepository } from './repository/product.repository';
 import { AuthGuard } from '../auth/auth.guard';
-import { UserRepository } from '../User/repository/user.repository';
 import { UUID } from 'crypto';
 import { Product, UserStoreProduct } from './entity/product.entity';
 
@@ -58,9 +57,10 @@ export class ProductService implements OnApplicationBootstrap {
     price,
     quantity,
     access_token,
+    refresh_token,
   }: ICreateProduct) {
     const { store, newAccess_token, newRefresh_token } =
-      await this.authService.storeVerification(access_token);
+      await this.authService.storeVerification(access_token, refresh_token);
 
     const name = incomingName.toUpperCase();
 
@@ -94,9 +94,10 @@ export class ProductService implements OnApplicationBootstrap {
     price,
     quantity,
     access_token,
+    refresh_token,
   }: ICreateProduct) {
     const { user, newAccess_token, newRefresh_token } =
-      await this.authService.userVerification(access_token);
+      await this.authService.userVerification(access_token, refresh_token);
 
     const store = await this.storeRepository.verifyExistingStoreByUserId(
       user.id,
@@ -132,6 +133,7 @@ export class ProductService implements OnApplicationBootstrap {
 
   async updateProduct({
     access_token,
+    refresh_token,
     productId,
     newName,
     newDescription,
@@ -139,7 +141,7 @@ export class ProductService implements OnApplicationBootstrap {
     newQuantity,
   }: IUpdateProduct) {
     const { store, newAccess_token, newRefresh_token } =
-      await this.authService.storeVerification(access_token);
+      await this.authService.storeVerification(access_token, refresh_token);
 
     const product =
       await this.productRepository.verifyExistingProductById(productId);
@@ -191,6 +193,7 @@ export class ProductService implements OnApplicationBootstrap {
 
   async updateUserStoreProduct({
     access_token,
+    refresh_token,
     productId,
     newName,
     newDescription,
@@ -198,7 +201,7 @@ export class ProductService implements OnApplicationBootstrap {
     newQuantity,
   }: IUpdateProduct) {
     const { user, newAccess_token, newRefresh_token } =
-      await this.authService.userVerification(access_token);
+      await this.authService.userVerification(access_token, refresh_token);
 
     const store = await this.storeRepository.verifyExistingStoreByUserId(
       user.id,
@@ -254,9 +257,13 @@ export class ProductService implements OnApplicationBootstrap {
     };
   }
 
-  async deleteProduct({ productId, access_token }: IDeleteProduct) {
+  async deleteProduct({
+    productId,
+    access_token,
+    refresh_token,
+  }: IDeleteProduct) {
     const { store, newAccess_token, newRefresh_token } =
-      await this.authService.storeVerification(access_token);
+      await this.authService.storeVerification(access_token, refresh_token);
 
     await this.productRepository.verifyExistingProductById(productId);
 
@@ -274,8 +281,13 @@ export class ProductService implements OnApplicationBootstrap {
     };
   }
 
-  async deleteUserStoreProduct({ productId, access_token }: IDeleteProduct) {
-    const { user, newAccess_token, newRefresh_token } = await this.authService.userVerification(access_token);
+  async deleteUserStoreProduct({
+    productId,
+    access_token,
+    refresh_token,
+  }: IDeleteProduct) {
+    const { user, newAccess_token, newRefresh_token } =
+      await this.authService.userVerification(access_token, refresh_token);
 
     const store = await this.storeRepository.verifyExistingStoreByUserId(
       user.id,

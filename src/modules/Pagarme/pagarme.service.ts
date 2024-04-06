@@ -594,7 +594,6 @@ export class PagarmeService {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
-
     }
   }
 
@@ -613,7 +612,7 @@ export class PagarmeService {
       };
     } catch (err) {
       console.error(err.response.data);
-      if(err.response.status === '404') {
+      if (err.response.status === '404') {
         throw new HttpException(
           'Nao foi encontrado nenhum endereco com o id fornecido na API Pagar.me, por favor tente novamente',
           HttpStatus.INTERNAL_SERVER_ERROR,
@@ -673,7 +672,6 @@ export class PagarmeService {
     customer_id: string,
     split: SplitObject[],
     cart: CartProduct[],
-    subtotal: number,
   ) {
     const pix_payment_object = new PixPaymentObject();
 

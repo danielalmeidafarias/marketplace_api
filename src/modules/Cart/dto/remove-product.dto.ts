@@ -1,4 +1,4 @@
-import { IsInt, IsJWT, IsUUID } from 'class-validator';
+import { IsJWT, IsUUID } from 'class-validator';
 import { UUID } from 'crypto';
 
 export class RemoveProductDTO {

@@ -29,7 +29,6 @@ export class EditUserStoreBodyDTO {
   @IsString()
   newName?: string;
 
-
   @IsPhoneNumber('BR')
   @IsOptional()
   newMobilePhone: string;
@@ -41,11 +40,11 @@ export class EditUserStoreBodyDTO {
   @IsOptional()
   @IsNumberString()
   newCEP?: string;
-  
+
   @IsOptional()
   @IsNumberString()
   newNumero?: string;
-  
+
   @IsOptional()
   @IsString()
   newComplemento?: string;

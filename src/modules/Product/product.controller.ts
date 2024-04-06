@@ -10,13 +10,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
-import {
-  CreateProductStoreDTO,
-} from './dto/create-product.dto';
+import { CreateProductStoreDTO } from './dto/create-product.dto';
 import {
   DeleteProductBodyDTO,
   DeleteProductStoreQueryDTO,
-  DeleteProductUserQueryDTO,
 } from './dto/delete-product.dto';
 import {
   UpdateProductBodyDTO,
@@ -42,12 +39,12 @@ export class ProductController {
     }: CreateProductStoreDTO,
   ) {
     return this.productService.createProduct({
+      access_token,
+      refresh_token,
       name,
       description,
       price,
       quantity,
-      access_token,
-      refresh_token,
     });
   }
 
@@ -111,7 +108,7 @@ export class ProductController {
       newPrice,
       newQuantity,
     }: UpdateProductBodyDTO,
-    @Query() { productId }: UpdateProductStoreQuery
+    @Query() { productId }: UpdateProductStoreQuery,
   ) {
     return this.productService.updateUserStoreProduct({
       productId,
@@ -141,7 +138,7 @@ export class ProductController {
   @Delete('/user/product/delete')
   async deleteUserStoreProduct(
     @Body() { access_token, refresh_token }: DeleteProductBodyDTO,
-    @Query() { productId, storeId }: DeleteProductUserQueryDTO,
+    @Query() { productId }: DeleteProductStoreQueryDTO,
   ) {
     return this.productService.deleteUserStoreProduct({
       productId,

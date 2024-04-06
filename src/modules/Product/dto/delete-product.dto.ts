@@ -13,8 +13,3 @@ export class DeleteProductStoreQueryDTO {
   @IsUUID()
   productId: UUID;
 }
-
-export class DeleteProductUserQueryDTO extends DeleteProductStoreQueryDTO {
-  @IsUUID()
-  storeId: UUID;
-}

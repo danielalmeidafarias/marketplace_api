@@ -1,4 +1,4 @@
-import { IsJWT } from "class-validator";
+import { IsJWT } from 'class-validator';
 
 export class ClearCartDTO {
   @IsJWT()

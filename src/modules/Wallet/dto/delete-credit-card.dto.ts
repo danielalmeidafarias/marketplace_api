@@ -1,4 +1,4 @@
-import { IsJWT, IsString, isJWT } from 'class-validator';
+import { IsJWT, IsString } from 'class-validator';
 
 export class DeleteCreditCardDTO {
   @IsJWT()

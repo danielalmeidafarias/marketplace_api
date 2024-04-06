@@ -22,7 +22,7 @@ export class UpdateProductBodyDTO {
 
   @IsOptional()
   @IsString()
-  newDescription?: string
+  newDescription?: string;
 
   @IsOptional()
   @IsNumber({

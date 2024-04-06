@@ -47,7 +47,7 @@ export class WalletController {
   async getCreditCards(
     @Body() { access_token, refresh_token }: GetCreditCardsDTO,
   ) {
-    return await this.walletService.getCreditCards(access_token);
+    return await this.walletService.getCreditCards(access_token, refresh_token);
   }
 
   @UseGuards(AuthGuard)
@@ -55,6 +55,10 @@ export class WalletController {
   async deleteCreditCard(
     @Body() { access_token, refresh_token, card_id }: DeleteCreditCardDTO,
   ) {
-    return await this.walletService.deleteCreditCard(access_token, card_id);
+    return await this.walletService.deleteCreditCard(
+      access_token,
+      refresh_token,
+      card_id,
+    );
   }
 }

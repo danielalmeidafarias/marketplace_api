@@ -5,10 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { UserRepository } from 'src/modules/User/repository/user.repository';
 import parsePhoneNumber from 'libphonenumber-js';
 import { CostumerAddress, CostumerPhone } from '../Pagarme/classes/Costumer';
-import {
-  RecipientAddress,
-  RecipientPhone,
-} from '../Pagarme/classes/Recipient';
+import { RecipientAddress, RecipientPhone } from '../Pagarme/classes/Recipient';
 import { UUID } from 'crypto';
 @Injectable()
 export class UtilsService {
@@ -19,11 +16,13 @@ export class UtilsService {
 
   async verifyExistingAccount(accountId: UUID) {
     try {
-      const account = await this.userRepository.verifyExistingUserById(accountId);
+      const account =
+        await this.userRepository.verifyExistingUserById(accountId);
       return account;
     } catch {
       try {
-        const account = await this.storeRepository.verifyExistingStoreById(accountId);
+        const account =
+          await this.storeRepository.verifyExistingStoreById(accountId);
         return account;
       } catch (err) {
         console.error(err);
@@ -35,12 +34,7 @@ export class UtilsService {
     }
   }
 
-  async verifyCEP(
-    cep: string,
-    numero: string,
-    complemento?: string,
-    costumerId?: string,
-  ) {
+  async verifyCEP(cep: string) {
     try {
       const data = (await axios.get(`https://viacep.com.br/ws/${cep}/json/`))
         .data;

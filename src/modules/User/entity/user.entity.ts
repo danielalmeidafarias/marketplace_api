@@ -30,9 +30,9 @@ export class User {
     uf: string,
     mobile_phone: string | null,
     home_phone: string | null,
-    userId?: UUID
+    userId?: UUID,
   ) {
-    this.costumerId = costumerId
+    this.costumerId = costumerId;
     this.email = email;
     this.password = password;
     this.name = name;
@@ -40,14 +40,14 @@ export class User {
     this.cep = cep;
     this.numero = numero;
     this.complemento = complemento;
-    this.ponto_referencia = ponto_referencia
+    this.ponto_referencia = ponto_referencia;
     this.cidade = cidade;
     this.cpf = cpf;
     this.logradouro = logradouro;
     this.mobile_phone = mobile_phone;
     this.uf = uf;
     this.birthdate = birthdate;
-    this.home_phone = home_phone
+    this.home_phone = home_phone;
 
     if (userId) {
       this.id = userId;
@@ -82,7 +82,7 @@ export class User {
   complemento: string;
 
   @Column()
-  ponto_referencia: string
+  ponto_referencia: string;
 
   @Column()
   logradouro: string;

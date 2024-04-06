@@ -1,5 +1,4 @@
-import { IsJWT, IsString, IsUUID } from 'class-validator';
-import { UUID } from 'crypto';
+import { IsJWT, IsString } from 'class-validator';
 
 export class DeleteStoreBodyDTO {
   @IsJWT()

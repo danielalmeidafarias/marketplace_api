@@ -7,7 +7,6 @@ import {
 import { CartRepository } from './repository/cart.repository';
 import { UUID } from 'crypto';
 import { AuthService } from '../auth/auth.service';
-import { UserRepository } from '../User/repository/user.repository';
 import { ProductRepository } from '../Product/repository/product.repository';
 import { Cart, CartProduct } from './entity/cart.entity';
 import { UtilsService } from '../utils/utils.service';
@@ -33,13 +32,14 @@ export class CartService implements BeforeApplicationShutdown {
 
   async addCartProduct(
     access_token: string,
+    refresh_token: string,
     productId: UUID,
     quantity?: number,
   ) {
     await this.verifyProductIsAvailable(productId, quantity);
 
     const { account, newAccess_token, newRefresh_token } =
-      await this.authService.accountVerification(access_token);
+      await this.authService.accountVerification(access_token, refresh_token);
 
     const product =
       await this.productRepository.verifyExistingProductById(productId);
@@ -104,11 +104,12 @@ export class CartService implements BeforeApplicationShutdown {
 
   async decrementProduct(
     access_token: string,
+    refresh_token: string,
     productId: UUID,
     quantity?: number,
   ) {
     const { account, newAccess_token, newRefresh_token } =
-      await this.authService.accountVerification(access_token);
+      await this.authService.accountVerification(access_token, refresh_token);
     await this.productRepository.verifyExistingProductById(productId);
 
     const cartProducts = (await this.cartRepository.getCart(account.id))
@@ -165,8 +166,9 @@ export class CartService implements BeforeApplicationShutdown {
     }
   }
 
-  async removeProduct(access_token: string, productId: UUID) {
-    const { account, newAccess_token, newRefresh_token } = await this.authService.accountVerification(access_token);
+  async removeProduct(access_token: string, refresh_token, productId: UUID) {
+    const { account, newAccess_token, newRefresh_token } =
+      await this.authService.accountVerification(access_token, refresh_token);
 
     await this.productRepository.verifyExistingProductById(productId);
 
@@ -191,8 +193,9 @@ export class CartService implements BeforeApplicationShutdown {
     };
   }
 
-  async clearCart(access_token: string) {
-    const { account, newAccess_token, newRefresh_token } = await this.authService.accountVerification(access_token);
+  async clearCart(access_token: string, refresh_token: string) {
+    const { account, newAccess_token, newRefresh_token } =
+      await this.authService.accountVerification(access_token, refresh_token);
 
     await this.cartRepository.update(account.id, []);
 
@@ -207,12 +210,13 @@ export class CartService implements BeforeApplicationShutdown {
 
   async creditCardOrder(
     access_token: string,
+    refresh_token: string,
     installments: number,
     card_id: string,
     cvv: string,
   ) {
-    const { account, newAccess_token, newRefresh_token } = await this.authService.accountVerification(access_token);
-
+    const { account, newAccess_token, newRefresh_token } =
+      await this.authService.accountVerification(access_token, refresh_token);
 
     const { cart, subtotal } = await this.getCart(account.id);
 
@@ -235,9 +239,9 @@ export class CartService implements BeforeApplicationShutdown {
     };
   }
 
-  async PixOrder(access_token: string) {
-    const { account, newAccess_token, newRefresh_token } = await this.authService.accountVerification(access_token);
-
+  async PixOrder(access_token: string, refresh_token: string) {
+    const { account, newAccess_token, newRefresh_token } =
+      await this.authService.accountVerification(access_token, refresh_token);
 
     const { cart, subtotal } = await this.getCart(account.id);
 
@@ -247,7 +251,6 @@ export class CartService implements BeforeApplicationShutdown {
       account.costumerId,
       split,
       cart.products,
-      subtotal,
     );
 
     return {

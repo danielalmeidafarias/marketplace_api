@@ -1,10 +1,8 @@
-import { CartService } from './../Cart/cart.service';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { StoreRepository } from './repository/store.repository';
 import { AuthService } from '../auth/auth.service';
 import { UserRepository } from '../User/repository/user.repository';
 import { UtilsService } from 'src/modules/utils/utils.service';
-import { LoginStoreDTO } from './dto/login-store.dto';
 import { UUID } from 'crypto';
 import { Store, UserStore } from './entity/store.entity';
 import { ProductRepository } from '../Product/repository/product.repository';
@@ -133,7 +131,7 @@ export class StoreService {
       : null;
 
     const { cep, logradouro, bairro, cidade, uf } =
-      await this.utilsService.verifyCEP(incomingCep, numero, complemento);
+      await this.utilsService.verifyCEP(incomingCep);
 
     const hashedPassword = await this.utilsService.hashPassword(password);
 
@@ -214,6 +212,7 @@ export class StoreService {
 
   async createStoreByUser({
     access_token,
+    refresh_token,
     bank_digit: bank,
     branch_check_digit,
     branch_number,
@@ -224,7 +223,7 @@ export class StoreService {
     professional_occupation,
   }: ICreateUserStore) {
     const { user, newAccess_token, newRefresh_token } =
-      await this.authService.userVerification(access_token);
+      await this.authService.userVerification(access_token, refresh_token);
 
     await this.storeRepository.verifyThereIsNoStoreWithEmail(user.email);
 
@@ -279,9 +278,9 @@ export class StoreService {
     };
   }
 
-  async getStoreInfo({ access_token }: IGetStoreInfo) {
+  async getStoreInfo({ access_token, refresh_token }: IGetStoreInfo) {
     const { store, newAccess_token, newRefresh_token } =
-      await this.authService.storeVerification(access_token);
+      await this.authService.storeVerification(access_token, refresh_token);
 
     return {
       store: await this.storeRepository.getStoreInfo(store.id),
@@ -290,12 +289,17 @@ export class StoreService {
     };
   }
 
-  async getUserStoreInfo({ access_token, storeId }: IGetStoreInfo) {
-    
+  async getUserStoreInfo({
+    access_token,
+    refresh_token,
+    storeId,
+  }: IGetStoreInfo) {
     const { user, newAccess_token, newRefresh_token } =
-    await this.authService.userVerification(access_token);
+      await this.authService.userVerification(access_token, refresh_token);
 
-    const store = await this.storeRepository.verifyExistingStoreByUserId(user.id)
+    const store = await this.storeRepository.verifyExistingStoreByUserId(
+      user.id,
+    );
 
     if (storeId) {
       return {
@@ -314,6 +318,7 @@ export class StoreService {
 
   async updateStore({
     access_token,
+    refresh_token,
     password,
     newCEP,
     newNumero,
@@ -325,15 +330,11 @@ export class StoreService {
     newHomePhone,
   }: IUpdateStore) {
     const { store, newAccess_token, newRefresh_token } =
-      await this.authService.storeVerification(access_token);
+      await this.authService.storeVerification(access_token, refresh_token);
 
     const address = newCEP
-      ? await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento)
-      : await this.utilsService.verifyCEP(
-          store.cep,
-          store.numero,
-          store.complemento,
-        );
+      ? await this.utilsService.verifyCEP(newCEP)
+      : await this.utilsService.verifyCEP(store.cep);
 
     const mobile_phone = newMobilePhone
       ? await this.utilsService.verifyPhoneNumber(newMobilePhone)
@@ -428,10 +429,13 @@ export class StoreService {
     };
   }
 
-  async deleteStore({ access_token, password }: IDeleteStore) {
-    const { store } = await this.authService.storeVerification(access_token);
-     
-    await this.authService.storeLogin(store.password, password)
+  async deleteStore({ access_token, refresh_token, password }: IDeleteStore) {
+    const { store } = await this.authService.storeVerification(
+      access_token,
+      refresh_token,
+    );
+
+    await this.authService.storeLogin(store.password, password);
 
     await this.authService.storeLogin(store.password, password);
 
@@ -446,10 +450,17 @@ export class StoreService {
     };
   }
 
-  async deleteUserStore({ access_token, password }: IDeleteStore) {
-    const { user, newAccess_token, newRefresh_token } = await this.authService.userVerification(access_token);
+  async deleteUserStore({
+    access_token,
+    refresh_token,
+    password,
+  }: IDeleteStore) {
+    const { user, newAccess_token, newRefresh_token } =
+      await this.authService.userVerification(access_token, refresh_token);
 
-    const store = await this.storeRepository.verifyExistingStoreByUserId(user.id);
+    const store = await this.storeRepository.verifyExistingStoreByUserId(
+      user.id,
+    );
 
     await this.authService.userLogin(user.password, password);
 

@@ -297,7 +297,9 @@ export class StoreRepository {
 
     if (!store) {
       throw new HttpException(
-        message ? message : `Não há nenhuma loja registrada com o usuario de id ${userId}`,
+        message
+          ? message
+          : `Não há nenhuma loja registrada com o usuario de id ${userId}`,
         status ? status : HttpStatus.BAD_REQUEST,
       );
     }
@@ -314,9 +316,7 @@ export class StoreRepository {
 
     if (!store) {
       throw new HttpException(
-        message
-          ? message
-          : `Não há nenhuma loja com o id de usuário ${userId}`,
+        message ? message : `Não há nenhuma loja com o id de usuário ${userId}`,
         status ? status : HttpStatus.BAD_REQUEST,
       );
     }
