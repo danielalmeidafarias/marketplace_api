@@ -67,7 +67,6 @@ interface IDeleteStore {
   access_token: string;
   refresh_token: string;
   password?: string;
-  storeId?: UUID;
 }
 
 interface IGetStoreInfo {
@@ -224,12 +223,8 @@ export class StoreService {
     monthly_income,
     professional_occupation,
   }: ICreateUserStore) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const id = await this.authService.getTokenId(newAccess_token);
-
-    const user = await this.userRepository.verifyExistingUserById(id);
+    const { user, newAccess_token, newRefresh_token } =
+      await this.authService.userVerification(access_token);
 
     await this.storeRepository.verifyThereIsNoStoreWithEmail(user.email);
 
@@ -284,37 +279,9 @@ export class StoreService {
     };
   }
 
-  async login({ email, password }: LoginStoreDTO) {
-    await this.userRepository.verifyThereIsNoUserWithEmail(
-      email,
-      `O email ${email} é vinculado a uma conta de usuario, por favor va para user/login`,
-    );
-
-    const store = await this.storeRepository.verifyExistingStoreByEmail(email);
-
-    await this.utilsService.passwordIsCorrect(store.password, password);
-
-    const { access_token, refresh_token } =
-      await this.authService.signIn(store);
-
-    return {
-      access_token,
-      refresh_token,
-    };
-  }
-
   async getStoreInfo({ access_token }: IGetStoreInfo) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const id: UUID = await this.authService.getTokenId(newAccess_token);
-
-    await this.userRepository.verifyThereIsNoUserWithId(
-      id,
-      `O id ${id} é vinculado a uma conta de usuario, por favor va para /user/store/info`,
-    );
-
-    const store = await this.storeRepository.verifyExistingStoreById(id);
+    const { store, newAccess_token, newRefresh_token } =
+      await this.authService.storeVerification(access_token);
 
     return {
       store: await this.storeRepository.getStoreInfo(store.id),
@@ -324,17 +291,11 @@ export class StoreService {
   }
 
   async getUserStoreInfo({ access_token, storeId }: IGetStoreInfo) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
+    
+    const { user, newAccess_token, newRefresh_token } =
+    await this.authService.userVerification(access_token);
 
-    const id: UUID = await this.authService.getTokenId(newAccess_token);
-
-    await this.storeRepository.verifyThereIsNoStoreWithId(id);
-
-    const user = await this.userRepository.verifyExistingUserById(
-      id,
-      `O id ${id} é vinculado a uma conta de loja, por favor va para /store/info`,
-    );
+    const store = await this.storeRepository.verifyExistingStoreByUserId(user.id)
 
     if (storeId) {
       return {
@@ -345,7 +306,7 @@ export class StoreService {
     }
 
     return {
-      stores: await this.storeRepository.getStoresInfoByUserId(user.id),
+      store,
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
     };
@@ -363,14 +324,8 @@ export class StoreService {
     newMobilePhone,
     newHomePhone,
   }: IUpdateStore) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const id: UUID = await this.authService.getTokenId(newAccess_token);
-
-    await this.userRepository.verifyThereIsNoUserWithId(id);
-
-    const store = await this.storeRepository.verifyExistingStoreById(id);
+    const { store, newAccess_token, newRefresh_token } =
+      await this.authService.storeVerification(access_token);
 
     const address = newCEP
       ? await this.utilsService.verifyCEP(newCEP, newNumero, newComplemento)
@@ -400,7 +355,7 @@ export class StoreService {
       if (!password) {
         throw new HttpException('Digite a senha', HttpStatus.UNAUTHORIZED);
       }
-      await this.utilsService.passwordIsCorrect(store.password, password);
+      await this.authService.storeLogin(store.password, password);
     }
 
     if (newName && name !== store.name) {
@@ -474,19 +429,13 @@ export class StoreService {
   }
 
   async deleteStore({ access_token, password }: IDeleteStore) {
-    const id: UUID = await this.authService.getTokenId(access_token);
+    const { store } = await this.authService.storeVerification(access_token);
+     
+    await this.authService.storeLogin(store.password, password)
 
-    await this.userRepository.verifyThereIsNoUserWithId(id);
-
-    const store = await this.storeRepository.verifyExistingStoreById(id);
-
-    await this.utilsService.passwordIsCorrect(store.password, password);
-
-    await this.authService.verifyTokenId(access_token, store.id);
+    await this.authService.storeLogin(store.password, password);
 
     await this.productRepository.deleteStoreProducts(store.id);
-
-    await this.storeRepository.deleteStore(id);
 
     await this.cartRepository.delete(store.id);
 
@@ -497,32 +446,16 @@ export class StoreService {
     };
   }
 
-  async deleteUserStore({ access_token, storeId, password }: IDeleteStore) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
+  async deleteUserStore({ access_token, password }: IDeleteStore) {
+    const { user, newAccess_token, newRefresh_token } = await this.authService.userVerification(access_token);
 
-    const id: UUID = await this.authService.getTokenId(newAccess_token);
+    const store = await this.storeRepository.verifyExistingStoreByUserId(user.id);
 
-    await this.storeRepository.verifyThereIsNoStoreWithId(id);
-
-    const user = await this.userRepository.verifyExistingUserById(id);
-
-    const store = await this.storeRepository.verifyExistingStoreById(storeId);
-
-    await this.utilsService.passwordIsCorrect(user.password, password);
-
-    if (store.userId !== user.id) {
-      throw new HttpException(
-        'O id fornecido não corresponde a nenhuma loja nesse usuário',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    await this.authService.verifyTokenId(access_token, user.id);
+    await this.authService.userLogin(user.password, password);
 
     await this.productRepository.deleteStoreProducts(store.id);
 
-    await this.storeRepository.deleteStore(storeId);
+    await this.storeRepository.deleteStore(store.id);
 
     return {
       message: `${store.name} deletado com sucesso`,

@@ -11,8 +11,3 @@ export class DeleteStoreBodyDTO {
   @IsString()
   password: string;
 }
-
-export class DeleteUserStoreQueryDTO {
-  @IsUUID()
-  storeId: UUID;
-}

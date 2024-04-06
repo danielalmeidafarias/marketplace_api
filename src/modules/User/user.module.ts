@@ -16,8 +16,8 @@ import { WalletModule } from '../Wallet/wallet.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
-    AuthModule,
-    forwardRef(() => ProductModule),
+    forwardRef(() => AuthModule),
+    ProductModule,
     forwardRef(() => StoreModule),
     forwardRef(() => UtilsModule),
     PagarmeModule,

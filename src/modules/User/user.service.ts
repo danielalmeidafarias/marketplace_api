@@ -143,31 +143,12 @@ export class UserService {
     };
   }
 
-  async loginUser({ email, password }: LoginUserDTO) {
-    const user = await this.userRepository.verifyExistingUserByEmail(email);
-
-    await this.utilsService.passwordIsCorrect(user.password, password);
-
-    const { access_token, refresh_token } = await this.authService.signIn(user);
-
-    return {
-      access_token,
-      refresh_token,
-    };
-  }
-
   async getUser({ access_token }: IGetUserInfo) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const id = await this.authService.getTokenId(newAccess_token);
-
-    const user = await this.userRepository.verifyExistingUserById(id);
-
-    await this.authService.verifyTokenId(access_token, user.id);
+    const { user, newAccess_token, newRefresh_token } =
+      await this.authService.userVerification(access_token);
 
     return {
-      user: await this.userRepository.getUserInfo(id),
+      user: await this.userRepository.getUserInfo(user.id),
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
     };
@@ -185,12 +166,8 @@ export class UserService {
     newMobilePhone,
     newHomePhone,
   }: IUpdateUser) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const id = await this.authService.getTokenId(newAccess_token);
-
-    const user = await this.userRepository.verifyExistingUserById(id);
+    const { user, newAccess_token, newRefresh_token } =
+      await this.authService.userVerification(access_token);
 
     const mobile_phone = newMobilePhone
       ? await this.utilsService.verifyPhoneNumber(newMobilePhone)
@@ -210,13 +187,11 @@ export class UserService {
           user.complemento,
         );
 
-    await this.authService.verifyTokenId(newAccess_token, user.id);
-
     if (newPassword || newEmail) {
       if (!password) {
         throw new HttpException('Digite a senha', HttpStatus.UNAUTHORIZED);
       }
-      await this.utilsService.passwordIsCorrect(user.password, password);
+      await this.authService.userLogin(user.password, password);
     }
 
     if (newEmail) {
@@ -232,7 +207,6 @@ export class UserService {
 
     const editedUser = new User(
       user.costumerId,
-      // user.cartId,
       newEmail ? newEmail : user.email,
       newPassword ? bcrypt.hashSync(newPassword, 10) : password,
       newName ? newName.toUpperCase() : user.name,
@@ -313,23 +287,15 @@ export class UserService {
   }
 
   async deleteUser({ access_token, password }: IDeleteUser) {
-    const id = await this.authService.getTokenId(access_token);
+    const { user } = await this.authService.userVerification(access_token);
 
-    const user = await this.userRepository.verifyExistingUserById(id);
-
-    await this.utilsService.passwordIsCorrect(user.password, password);
-
-    const { newAccess_token } =
-      await this.authService.getNewTokens(access_token);
-
-    await this.authService.verifyTokenId(newAccess_token, user.id);
+    await this.authService.userLogin(user.password, password);
 
     await this.storeRepository.deleteUserStore(user.id);
 
     await this.productRepository.deleteUserProducts(user.id);
 
     await this.cartRepository.delete(user.id);
-
 
     await this.userRepository.deleteUser(user.id);
 

@@ -1,3 +1,4 @@
+import { AuthService } from './../auth/auth.service';
 import { ProductService } from './../Product/product.service';
 import { AuthGuard } from './../auth/auth.guard';
 import {
@@ -22,6 +23,7 @@ import { CreateCreditCardBodyDTO } from '../Wallet/dto/create-credit-card.dto';
 export class UserController {
   constructor(
     private userService: UserService,
+    private authService: AuthService,
     private productService: ProductService,
     private storeService: StoreService,
   ) {}
@@ -60,7 +62,7 @@ export class UserController {
 
   @Post('/login')
   async login(@Body() { email, password }: LoginUserDTO) {
-    return await this.userService.loginUser({ email, password });
+    return await this.authService.userLogin( email, password );
   }
 
   @UseGuards(AuthGuard)

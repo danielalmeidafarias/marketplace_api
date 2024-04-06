@@ -20,7 +20,6 @@ export interface ICreateProduct {
   quantity: number;
   access_token: string;
   refresh_token: string;
-  storeId?: UUID;
 }
 
 export interface IUpdateProduct {
@@ -38,7 +37,6 @@ export interface IDeleteProduct {
   productId: UUID;
   access_token: string;
   refresh_token: string;
-  storeId?: UUID;
 }
 
 @Injectable()
@@ -47,7 +45,6 @@ export class ProductService implements OnApplicationBootstrap {
   constructor(
     private productRepository: ProductRepository,
     private authService: AuthService,
-    private userRepository: UserRepository,
     private storeRepository: StoreRepository,
   ) {}
 
@@ -62,22 +59,18 @@ export class ProductService implements OnApplicationBootstrap {
     quantity,
     access_token,
   }: ICreateProduct) {
-    const storeId = await this.authService.getTokenId(access_token);
-
-    const store = await this.storeRepository.verifyExistingStoreById(storeId);
-
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
+    const { store, newAccess_token, newRefresh_token } =
+      await this.authService.storeVerification(access_token);
 
     const name = incomingName.toUpperCase();
 
     await this.productRepository.verifyThereIsNoProductWithNameAndStore(
       name,
-      storeId,
+      store.id,
     );
 
     const product = new Product(
-      storeId,
+      store.id,
       store.recipientId,
       name,
       description,
@@ -96,35 +89,30 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   async createUserStoreProduct({
-    storeId,
     name: incomingName,
     description,
     price,
     quantity,
     access_token,
   }: ICreateProduct) {
-    const userId = await this.authService.getTokenId(access_token);
+    const { user, newAccess_token, newRefresh_token } =
+      await this.authService.userVerification(access_token);
 
-    const user = await this.userRepository.verifyExistingUserById(userId);
-
-    const store = await this.storeRepository.verifyExistingStoreById(storeId);
-
-    await this.storeRepository.verifyExistingStoreInUser(userId, storeId);
-
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
+    const store = await this.storeRepository.verifyExistingStoreByUserId(
+      user.id,
+    );
 
     const name = incomingName.toUpperCase();
 
     await this.productRepository.verifyThereIsNoProductWithNameAndStore(
       name,
-      storeId,
+      store.id,
     );
 
     const product = new UserStoreProduct(
-      storeId,
+      store.id,
       store.recipientId,
-      userId,
+      user.id,
       user,
       name,
       description,
@@ -150,32 +138,28 @@ export class ProductService implements OnApplicationBootstrap {
     newPrice,
     newQuantity,
   }: IUpdateProduct) {
+    const { store, newAccess_token, newRefresh_token } =
+      await this.authService.storeVerification(access_token);
+
     const product =
       await this.productRepository.verifyExistingProductById(productId);
-
-    const storeId = await this.authService.getTokenId(access_token);
-
-    const store = await this.storeRepository.verifyExistingStoreById(storeId);
 
     const name = newName ? newName.toUpperCase() : null;
 
     await this.productRepository.verifyExistingProductInStoreWithId(
       productId,
-      storeId,
+      store.id,
     );
-
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
 
     if (newName && name !== product.name) {
       await this.productRepository.verifyThereIsNoProductWithNameAndStore(
         name,
-        storeId,
+        store.id,
       );
     }
 
     const editedProduct = new Product(
-      storeId,
+      store.id,
       store.recipientId,
       newName ? name : product.name,
       newDescription ? newDescription : product.description,
@@ -207,45 +191,40 @@ export class ProductService implements OnApplicationBootstrap {
 
   async updateUserStoreProduct({
     access_token,
-    storeId,
     productId,
     newName,
     newDescription,
     newPrice,
     newQuantity,
   }: IUpdateProduct) {
+    const { user, newAccess_token, newRefresh_token } =
+      await this.authService.userVerification(access_token);
+
+    const store = await this.storeRepository.verifyExistingStoreByUserId(
+      user.id,
+    );
+
     const product =
       await this.productRepository.verifyExistingProductById(productId);
 
-    const userId = await this.authService.getTokenId(access_token);
-
-    const user = await this.userRepository.verifyExistingUserById(userId);
-
-    const store = await this.storeRepository.verifyExistingStoreById(storeId);
-
     const name = newName ? newName.toUpperCase() : null;
-
-    await this.storeRepository.verifyExistingStoreInUser(userId, storeId);
 
     await this.productRepository.verifyExistingProductInStoreWithId(
       productId,
-      storeId,
+      store.id,
     );
-
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
 
     if (newName && name !== product.name) {
       await this.productRepository.verifyThereIsNoProductWithNameAndStore(
         name,
-        storeId,
+        store.id,
       );
     }
 
     const editedProduct = new UserStoreProduct(
-      storeId,
+      store.id,
       store.recipientId,
-      userId,
+      user.id,
       user,
       newName ? name : product.name,
       newDescription ? newDescription : product.description,
@@ -276,19 +255,15 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   async deleteProduct({ productId, access_token }: IDeleteProduct) {
+    const { store, newAccess_token, newRefresh_token } =
+      await this.authService.storeVerification(access_token);
+
     await this.productRepository.verifyExistingProductById(productId);
-
-    const storeId = await this.authService.getTokenId(access_token);
-
-    await this.storeRepository.verifyExistingStoreById(storeId);
 
     await this.productRepository.verifyExistingProductInStoreWithId(
       productId,
-      storeId,
+      store.id,
     );
-
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
 
     await this.productRepository.deleteProduct(productId);
 
@@ -299,30 +274,19 @@ export class ProductService implements OnApplicationBootstrap {
     };
   }
 
-  async deleteUserStoreProduct({
-    productId,
-    access_token,
-    storeId,
-  }: IDeleteProduct) {
-    await this.productRepository.verifyExistingProductById(productId);
+  async deleteUserStoreProduct({ productId, access_token }: IDeleteProduct) {
+    const { user, newAccess_token, newRefresh_token } = await this.authService.userVerification(access_token);
 
-    const userId = await this.authService.getTokenId(access_token);
-
-    await this.userRepository.verifyExistingUserById(userId);
-
-    await this.storeRepository.verifyExistingStoreById(storeId);
-
-    await this.storeRepository.verifyExistingStoreInUser(userId, storeId);
+    const store = await this.storeRepository.verifyExistingStoreByUserId(
+      user.id,
+    );
 
     await this.productRepository.verifyExistingProductInStoreWithId(
       productId,
-      storeId,
+      store.id,
     );
 
     await this.productRepository.deleteProduct(productId);
-
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
 
     return {
       message: `Produto ${productId} excluido com sucesso`,

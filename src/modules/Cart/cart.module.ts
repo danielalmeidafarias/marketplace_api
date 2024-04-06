@@ -17,11 +17,10 @@ import { PagarmeModule } from '../Pagarme/pagarme.module';
   exports: [CartService, CartRepository],
   imports: [
     TypeOrmModule.forFeature([Cart]),
-    AuthModule,
-    forwardRef(() => UserModule),
-    forwardRef(() => ProductModule),
-    UtilsModule,
-    PagarmeModule
+    forwardRef(() => AuthModule),
+    ProductModule,
+    forwardRef(() => UtilsModule),
+    PagarmeModule,
   ],
 })
 export class CartModule {}

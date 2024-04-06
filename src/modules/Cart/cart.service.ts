@@ -21,7 +21,6 @@ export class CartService implements BeforeApplicationShutdown {
   constructor(
     private cartRepository: CartRepository,
     private authService: AuthService,
-    private userRepository: UserRepository,
     private productRepository: ProductRepository,
     private utilsService: UtilsService,
     private schedulerRegistry: SchedulerRegistry,
@@ -39,19 +38,13 @@ export class CartService implements BeforeApplicationShutdown {
   ) {
     await this.verifyProductIsAvailable(productId, quantity);
 
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const accountId = await this.authService.getTokenId(newAccess_token);
-
-    const account = await this.utilsService.verifyExistingAccount(accountId);
-
-    await this.authService.verifyTokenId(access_token, account.id);
+    const { account, newAccess_token, newRefresh_token } =
+      await this.authService.accountVerification(access_token);
 
     const product =
       await this.productRepository.verifyExistingProductById(productId);
 
-    const cartProducts = (await this.cartRepository.getCart(accountId))
+    const cartProducts = (await this.cartRepository.getCart(account.id))
       .products;
 
     const alreadyAddedIndex = cartProducts.findIndex(
@@ -65,16 +58,16 @@ export class CartService implements BeforeApplicationShutdown {
         : (cartProducts[alreadyAddedIndex].quantity =
             cartProducts[alreadyAddedIndex].quantity + 1);
 
-      await this.addCartCron(accountId);
+      await this.addCartCron(account.id);
 
-      await this.cartRepository.update(accountId, cartProducts);
+      await this.cartRepository.update(account.id, cartProducts);
 
       await this.productRepository.addProductToCart(productId, quantity);
 
       return {
         access_token: newAccess_token,
         refresh_token: newRefresh_token,
-        cart: await this.cartRepository.getCart(accountId),
+        cart: await this.cartRepository.getCart(account.id),
       };
     } else {
       const newCartProduct = quantity
@@ -95,16 +88,16 @@ export class CartService implements BeforeApplicationShutdown {
 
       const products = [...cartProducts, newCartProduct];
 
-      await this.cartRepository.update(accountId, products);
+      await this.cartRepository.update(account.id, products);
 
       await this.productRepository.addProductToCart(productId, quantity);
 
-      await this.addCartCron(accountId);
+      await this.addCartCron(account.id);
 
       return {
         access_token: newAccess_token,
         refresh_token: newRefresh_token,
-        cart: await this.cartRepository.getCart(accountId),
+        cart: await this.cartRepository.getCart(account.id),
       };
     }
   }
@@ -114,18 +107,11 @@ export class CartService implements BeforeApplicationShutdown {
     productId: UUID,
     quantity?: number,
   ) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const accountId = await this.authService.getTokenId(newAccess_token);
-
-    const account = await this.utilsService.verifyExistingAccount(accountId);
-
-    await this.authService.verifyTokenId(access_token, account.id);
-
+    const { account, newAccess_token, newRefresh_token } =
+      await this.authService.accountVerification(access_token);
     await this.productRepository.verifyExistingProductById(productId);
 
-    const cartProducts = (await this.cartRepository.getCart(accountId))
+    const cartProducts = (await this.cartRepository.getCart(account.id))
       .products;
 
     if (cartProducts.length < 1) {
@@ -151,7 +137,7 @@ export class CartService implements BeforeApplicationShutdown {
       ) {
         await this.removeProductFromDatabase(
           productId,
-          accountId,
+          account.id,
           cartProducts,
         );
       } else {
@@ -161,9 +147,9 @@ export class CartService implements BeforeApplicationShutdown {
           : (cartProducts[isAddedIndex].quantity =
               cartProducts[isAddedIndex].quantity - 1);
 
-        await this.addCartCron(accountId);
+        await this.addCartCron(account.id);
 
-        await this.cartRepository.update(accountId, cartProducts);
+        await this.cartRepository.update(account.id, cartProducts);
 
         await this.productRepository.decrementProductFromCart(
           productId,
@@ -174,24 +160,19 @@ export class CartService implements BeforeApplicationShutdown {
       return {
         access_token: newAccess_token,
         refresh_token: newRefresh_token,
-        cart: await this.cartRepository.getCart(accountId),
+        cart: await this.cartRepository.getCart(account.id),
       };
     }
   }
 
   async removeProduct(access_token: string, productId: UUID) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const accountId = await this.authService.getTokenId(newAccess_token);
-
-    const account = await this.utilsService.verifyExistingAccount(accountId);
-
-    await this.authService.verifyTokenId(access_token, account.id);
+    const { account, newAccess_token, newRefresh_token } = await this.authService.accountVerification(access_token);
 
     await this.productRepository.verifyExistingProductById(productId);
 
-    const cartProducts = (await this.cartRepository.getCart(accountId))
+    await this.productRepository.verifyExistingProductById(productId);
+
+    const cartProducts = (await this.cartRepository.getCart(account.id))
       .products;
 
     if (cartProducts.length < 1) {
@@ -201,33 +182,26 @@ export class CartService implements BeforeApplicationShutdown {
       );
     }
 
-    await this.removeProductFromDatabase(productId, accountId, cartProducts);
+    await this.removeProductFromDatabase(productId, account.id, cartProducts);
 
     return {
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
-      cart: await this.cartRepository.getCart(accountId),
+      cart: await this.cartRepository.getCart(account.id),
     };
   }
 
   async clearCart(access_token: string) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
+    const { account, newAccess_token, newRefresh_token } = await this.authService.accountVerification(access_token);
 
-    const accountId = await this.authService.getTokenId(newAccess_token);
+    await this.cartRepository.update(account.id, []);
 
-    await this.utilsService.verifyExistingAccount(accountId);
-
-    await this.authService.verifyTokenId(access_token, accountId);
-
-    await this.cartRepository.update(accountId, []);
-
-    this.schedulerRegistry.deleteCronJob(accountId);
+    this.schedulerRegistry.deleteCronJob(account.id);
 
     return {
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
-      cart: await this.cartRepository.getCart(accountId),
+      cart: await this.cartRepository.getCart(account.id),
     };
   }
 
@@ -237,16 +211,10 @@ export class CartService implements BeforeApplicationShutdown {
     card_id: string,
     cvv: string,
   ) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
+    const { account, newAccess_token, newRefresh_token } = await this.authService.accountVerification(access_token);
 
-    const accountId = await this.authService.getTokenId(newAccess_token);
 
-    const account = await this.utilsService.verifyExistingAccount(accountId);
-
-    await this.authService.verifyTokenId(access_token, account.id);
-
-    const { cart, subtotal } = await this.getCart(accountId);
+    const { cart, subtotal } = await this.getCart(account.id);
 
     const { split } = await this.getSplitArray(cart);
 
@@ -268,16 +236,10 @@ export class CartService implements BeforeApplicationShutdown {
   }
 
   async PixOrder(access_token: string) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
+    const { account, newAccess_token, newRefresh_token } = await this.authService.accountVerification(access_token);
 
-    const accountId = await this.authService.getTokenId(newAccess_token);
 
-    const account = await this.utilsService.verifyExistingAccount(accountId);
-
-    await this.authService.verifyTokenId(access_token, account.id);
-
-    const { cart, subtotal } = await this.getCart(accountId);
+    const { cart, subtotal } = await this.getCart(account.id);
 
     const { split } = await this.getSplitArray(cart);
 

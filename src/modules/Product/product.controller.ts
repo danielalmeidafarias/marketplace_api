@@ -12,7 +12,6 @@ import {
 import { ProductService } from './product.service';
 import {
   CreateProductStoreDTO,
-  CreateProductUserDTO,
 } from './dto/create-product.dto';
 import {
   DeleteProductBodyDTO,
@@ -22,7 +21,6 @@ import {
 import {
   UpdateProductBodyDTO,
   UpdateProductStoreQuery,
-  UpdateProductUserQuery,
 } from './dto/update-product.dto';
 import { SearchProductDTO } from './dto/search-product.dto';
 
@@ -64,11 +62,9 @@ export class ProductController {
       description,
       price,
       quantity,
-      storeId,
-    }: CreateProductUserDTO,
+    }: CreateProductStoreDTO,
   ) {
     return this.productService.createUserStoreProduct({
-      storeId,
       name,
       description,
       price,
@@ -115,11 +111,10 @@ export class ProductController {
       newPrice,
       newQuantity,
     }: UpdateProductBodyDTO,
-    @Query() { productId, storeId }: UpdateProductUserQuery,
+    @Query() { productId }: UpdateProductStoreQuery
   ) {
     return this.productService.updateUserStoreProduct({
       productId,
-      storeId,
       access_token,
       refresh_token,
       newName,
@@ -152,7 +147,6 @@ export class ProductController {
       productId,
       access_token,
       refresh_token,
-      storeId,
     });
   }
 

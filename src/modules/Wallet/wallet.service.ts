@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { BillingAddress } from './dto/create-credit-card.dto';
 import { UtilsService } from '../utils/utils.service';
 import { AuthService } from '../auth/auth.service';
 import { PagarmeService } from '../Pagarme/pagarme.service';
@@ -33,14 +32,8 @@ export class WalletService {
       );
     }
 
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const accountId = await this.authService.getTokenId(newAccess_token);
-
-    const account = await this.utilsService.verifyExistingAccount(accountId);
-
-    await this.authService.verifyTokenId(access_token, account.id);
+    const { account, newAccess_token, newRefresh_token } =
+      await this.authService.accountVerification(access_token);
 
     const billing_address = await this.utilsService.transformBillingAddress(
       cep,
@@ -69,14 +62,8 @@ export class WalletService {
   }
 
   async deleteCreditCard(access_token: string, card_id: string) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const accountId = await this.authService.getTokenId(newAccess_token);
-
-    const account = await this.utilsService.verifyExistingAccount(accountId);
-
-    await this.authService.verifyTokenId(access_token, account.id);
+    const { account, newAccess_token, newRefresh_token } =
+      await this.authService.accountVerification(access_token);
 
     const { wallet } = await this.pagarmeService.deleteCreditCard(
       account.costumerId,
@@ -92,14 +79,8 @@ export class WalletService {
   }
 
   async getCreditCards(access_token: string) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const accountId = await this.authService.getTokenId(newAccess_token);
-
-    const account = await this.utilsService.verifyExistingAccount(accountId);
-
-    await this.authService.verifyTokenId(access_token, account.id);
+    const { account, newAccess_token, newRefresh_token } =
+      await this.authService.accountVerification(access_token);
 
     const { wallet } = await this.pagarmeService.getCreditCards(
       account.costumerId,

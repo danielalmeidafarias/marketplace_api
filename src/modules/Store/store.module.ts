@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { StoreController } from './store.controller';
 import { StoreService } from './store.service';
 import { StoreRepository } from './repository/store.repository';
@@ -17,14 +17,14 @@ import { WalletModule } from '../Wallet/wallet.module';
   controllers: [StoreController],
   providers: [StoreService, StoreRepository, JwtService],
   imports: [
+    TypeOrmModule.forFeature([Store]),
     AuthModule,
     UserModule,
     UtilsModule,
     ProductModule,
     PagarmeModule,
-    TypeOrmModule.forFeature([Store]),
     CartModule,
-    WalletModule
+    WalletModule,
   ],
   exports: [StoreService, StoreRepository],
 })

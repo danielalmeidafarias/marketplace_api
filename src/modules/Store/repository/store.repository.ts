@@ -241,11 +241,11 @@ export class StoreRepository {
     return store;
   }
 
-  async findOneInUserById(userId: UUID, storeId: UUID) {
+  async findStoreByUserId(userId: UUID) {
     const store = await this.dataSource
       .getRepository(Store)
       .createQueryBuilder('store')
-      .where('id = :id', { id: storeId })
+      .where('store.userId = :userId', { userId: userId })
       .andWhere('store.userId = :userId', { userId })
       .getOne();
 
@@ -288,19 +288,35 @@ export class StoreRepository {
     return store;
   }
 
-  async verifyExistingStoreInUser(
+  async verifyExistingStoreByUserId(
     userId: UUID,
-    storeId: UUID,
     message?: string,
     status?: HttpStatus,
   ) {
-    const store = await this.findOneInUserById(userId, storeId);
+    const store = await this.findStoreByUserId(userId);
+
+    if (!store) {
+      throw new HttpException(
+        message ? message : `Não há nenhuma loja registrada com o usuario de id ${userId}`,
+        status ? status : HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return store;
+  }
+
+  async verifyExistingStoreInUser(
+    userId: UUID,
+    message?: string,
+    status?: HttpStatus,
+  ) {
+    const store = await this.findStoreByUserId(userId);
 
     if (!store) {
       throw new HttpException(
         message
           ? message
-          : `Não há nenhuma loja com o id ${storeId} no usuário ${userId}`,
+          : `Não há nenhuma loja com o id de usuário ${userId}`,
         status ? status : HttpStatus.BAD_REQUEST,
       );
     }

@@ -41,8 +41,3 @@ export class UpdateProductStoreQuery {
   @IsUUID()
   productId: UUID;
 }
-
-export class UpdateProductUserQuery extends UpdateProductStoreQuery {
-  @IsUUID()
-  storeId: UUID;
-}

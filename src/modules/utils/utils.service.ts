@@ -19,13 +19,11 @@ export class UtilsService {
 
   async verifyExistingAccount(accountId: UUID) {
     try {
-      const account =
-        await this.userRepository.verifyExistingUserById(accountId);
+      const account = await this.userRepository.verifyExistingUserById(accountId);
       return account;
     } catch {
       try {
-        const account =
-          await this.storeRepository.verifyExistingStoreById(accountId);
+        const account = await this.storeRepository.verifyExistingStoreById(accountId);
         return account;
       } catch (err) {
         console.error(err);

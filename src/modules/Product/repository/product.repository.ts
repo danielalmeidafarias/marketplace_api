@@ -20,7 +20,6 @@ export interface ICreateProduct {
 @Injectable()
 export class ProductRepository {
   constructor(
-    @InjectRepository(Product) private productRepository: Repository<Product>,
     private dataSource: DataSource,
   ) {}
 

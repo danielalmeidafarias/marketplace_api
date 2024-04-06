@@ -7,13 +7,11 @@ import { UUID } from 'crypto';
 @Injectable()
 export class UserRepository {
   constructor(
-    @InjectRepository(User) private userRepository: Repository<User>,
     private dataSource: DataSource,
   ) { }
 
   async createUser({
     costumerId,
-    // cartId,
     name,
     email,
     bairro,

@@ -7,7 +7,6 @@ import { PagarmeService } from '../Pagarme/pagarme.service';
 export class AddressService {
   constructor(
     private authService: AuthService,
-    private utilsService: UtilsService,
     private pagarmeService: PagarmeService,
   ) {}
 
@@ -18,14 +17,8 @@ export class AddressService {
     complemento: string,
     ponto_referencia: string,
   ) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const accountId = await this.authService.getTokenId(newAccess_token);
-
-    const account = await this.utilsService.verifyExistingAccount(accountId);
-
-    await this.authService.verifyTokenId(access_token, account.id);
+    const { account, newAccess_token, newRefresh_token } =
+      await this.authService.accountVerification(access_token);
 
     const { address } = await this.pagarmeService.createAddress(
       account.costumerId,
@@ -43,14 +36,8 @@ export class AddressService {
   }
 
   async getAddresses(access_token: string) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const accountId = await this.authService.getTokenId(newAccess_token);
-
-    const account = await this.utilsService.verifyExistingAccount(accountId);
-
-    await this.authService.verifyTokenId(access_token, account.id);
+    const { account, newAccess_token, newRefresh_token } =
+    await this.authService.accountVerification(access_token);
 
     const { addresses } = await this.pagarmeService.getAddresses(
       account.costumerId,
@@ -64,25 +51,19 @@ export class AddressService {
   }
 
   async deleteAddress(access_token: string, address_id: string) {
-    const { newAccess_token, newRefresh_token } =
-      await this.authService.getNewTokens(access_token);
-
-    const accountId = await this.authService.getTokenId(newAccess_token);
-
-    const account = await this.utilsService.verifyExistingAccount(accountId);
-
-    await this.authService.verifyTokenId(access_token, account.id);
-
-    const { addresses} = await this.pagarmeService.deleteAddress(
+    const { account, newAccess_token, newRefresh_token } =
+      await this.authService.accountVerification(access_token);
+      
+    const { addresses } = await this.pagarmeService.deleteAddress(
       account.costumerId,
       address_id,
     );
 
     return {
-      message: "Endereço excluido com sucesso",
+      message: 'Endereço excluido com sucesso',
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
-      addresses
-    }
+      addresses,
+    };
   }
 }

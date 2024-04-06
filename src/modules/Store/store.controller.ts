@@ -21,15 +21,15 @@ import { CreateStoreDTO, CreateUserStoreDTO } from './dto/create-store.dto';
 import { UpdateStoreDTO } from './dto/update-store.dto';
 import {
   DeleteStoreBodyDTO,
-  DeleteUserStoreQueryDTO,
 } from './dto/delete-store.dto';
 import { SearchStoreDTO } from './dto/search-store.dto';
 import {
   SearchStoreProductDTOQuery,
 } from './dto/search-store-product.dto';
+import { AuthService } from '../auth/auth.service';
 @Controller()
 export class StoreController {
-  constructor(private storeService: StoreService) {}
+  constructor(private storeService: StoreService, private authService: AuthService) {}
 
   @Post('/store/create')
   async createStore(
@@ -112,7 +112,7 @@ export class StoreController {
 
   @Post('/store/login')
   async storeLogin(@Body() { email, password }: LoginStoreDTO) {
-    return await this.storeService.login({ email, password });
+    return await this.authService.storeLogin( email, password );
   }
 
   @UseGuards(AuthGuard)
@@ -185,14 +185,12 @@ export class StoreController {
   @UseGuards(AuthGuard)
   @Delete('/user/store/delete')
   async deleteUserStore(
-    @Query() { storeId }: DeleteUserStoreQueryDTO,
     @Body() { access_token, refresh_token, password }: DeleteStoreBodyDTO,
   ) {
     return this.storeService.deleteUserStore({
       access_token,
       refresh_token,
       password,
-      storeId,
     });
   }
 

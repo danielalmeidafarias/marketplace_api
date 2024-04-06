@@ -12,8 +12,7 @@ import { StoreModule } from '../Store/store.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Product]),
-    AuthModule,
-    forwardRef(() => UserModule),
+    forwardRef(() => AuthModule),
     forwardRef(() => StoreModule),
   ],
   controllers: [ProductController],

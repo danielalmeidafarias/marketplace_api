@@ -33,8 +33,3 @@ export class CreateProductStoreDTO {
   @IsJWT()
   refresh_token: string;
 }
-
-export class CreateProductUserDTO extends CreateProductStoreDTO {
-  @IsUUID()
-  storeId: UUID;
-}
