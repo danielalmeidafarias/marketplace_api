@@ -698,4 +698,54 @@ export class PagarmeService {
       );
     }
   }
+
+  public async getOrders(customer_id: string) {
+    try {
+      const response = await axios.get(
+        `https://api.pagar.me/core/v5/orders?customer_id=${customer_id}`,
+        { headers: pagarmeAuthConfig },
+      );
+
+      const { data } = response.data;
+
+      return data;
+    } catch (err) {
+      console.error(err.response.data);
+      if (err.response.status === '400') {
+        throw new HttpException(
+          'Customer não encontrado',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else {
+        throw new HttpException(
+          'Ocorreu um erro ao encontrar os pedidos na api Pagar.me, por favor tente novamente mais tarde',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+  }
+
+  public async getOrder(order_id: string) {
+    try {
+      const response = await axios.get(
+        `https://api.pagar.me/core/v5/orders/${order_id}`,
+        { headers: pagarmeAuthConfig },
+      );
+
+      return response.data;
+    } catch (err) {
+      console.error(err.response.data);
+      if (err.response.status === '400') {
+        throw new HttpException(
+          'Pedido não encontrado',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else {
+        throw new HttpException(
+          'Ocorreu um erro ao encontrar o pedido na api Pagar.me, por favor tente novamente mais tarde',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+  }
 }
