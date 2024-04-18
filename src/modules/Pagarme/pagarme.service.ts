@@ -1,6 +1,6 @@
 import 'dotenv/config.js';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import pagarmeAuthConfig from 'src/config/pagarme-auth.config';
 import { Costumer } from './classes/Costumer';
 import { BankAccount, ManagingPartner, Recipient } from './classes/Recipient';
@@ -19,7 +19,7 @@ import {
 @Injectable()
 export class PagarmeService {
   constructor(private utilsService: UtilsService) {}
-  async createUserCostumer(
+  public async createUserCostumer(
     name: string,
     email: string,
     cpf: string,
@@ -71,14 +71,18 @@ export class PagarmeService {
       };
     } catch (err) {
       console.error(err.response.data);
-      throw new HttpException(
-        'Ocorreu um erro ao tentar cria o costumer',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
+      } else {
+        throw new HttpException(
+          'Ocorreu um erro ao tentar cria o costumer',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 
-  async createStoreCostumer(
+  public async createStoreCostumer(
     name: string,
     email: string,
     cpnj: string,
@@ -128,14 +132,18 @@ export class PagarmeService {
       };
     } catch (err) {
       console.error(err.response.data);
-      throw new HttpException(
-        'Ocorreu um erro ao tentar cria o costumer',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
+      } else {
+        throw new HttpException(
+          'Ocorreu um erro ao tentar cria o costumer',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 
-  async updateUserCostumer(
+  public async updateUserCostumer(
     name: string,
     email: string,
     cpf: string,
@@ -187,14 +195,18 @@ export class PagarmeService {
       };
     } catch (err) {
       console.error(err.response.data);
-      throw new HttpException(
-        'Ocorreu um erro ao tentar atualizar o costumer',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
+      } else {
+        throw new HttpException(
+          'Ocorreu um erro ao tentar atualizar o costumer',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 
-  async updateStoreCostumer(
+  public async updateStoreCostumer(
     name: string,
     email: string,
     cpnj: string,
@@ -246,14 +258,18 @@ export class PagarmeService {
       };
     } catch (err) {
       console.error(err.response.data);
-      throw new HttpException(
-        'Ocorreu um erro ao tentar atualizar o costumer',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
+      } else {
+        throw new HttpException(
+          'Ocorreu um erro ao tentar atualizar o costumer',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 
-  async createUserRecipient(
+  public async createUserRecipient(
     name: string,
     email: string,
     document: string,
@@ -321,14 +337,18 @@ export class PagarmeService {
       return { recipientId: response.data.id };
     } catch (err) {
       console.error(err.response.data);
-      throw new HttpException(
-        'Ocorreu um erro ao tentar criar o recipient na API Pagar.me, por favor tente novamente',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
+      } else {
+        throw new HttpException(
+          'Ocorreu um erro ao tentar criar o recipient na API Pagar.me, por favor tente novamente',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 
-  async createStoreRecipient(
+  public async createStoreRecipient(
     company_name: string,
     trading_name: string,
     email: string,
@@ -428,14 +448,18 @@ export class PagarmeService {
       return { recipientId: response.data.id };
     } catch (err) {
       console.error(err.response.data);
-      throw new HttpException(
-        'Ocorreu um erro ao tentar criar o recipient na API Pagar.me, por favor tente novamente',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
+      } else {
+        throw new HttpException(
+          'Ocorreu um erro ao tentar criar o recipient na API Pagar.me, por favor tente novamente',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 
-  async createCreditCard(
+  public async createCreditCard(
     customer_id: string,
     brand: string,
     number: string,
@@ -467,11 +491,8 @@ export class PagarmeService {
       return { card: response.data };
     } catch (err) {
       console.error(err.response.data);
-      if (err.response.status === '404') {
-        throw new HttpException(
-          'Não foi encontrado nenhum cliente com o id informado na Api Pagar.me',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
       } else {
         throw new HttpException(
           'Ocorreu um erro ao criar o cartao de credito na Api Pagarme, tente novamente mais tarde',
@@ -481,7 +502,7 @@ export class PagarmeService {
     }
   }
 
-  async getCreditCards(customer_id: string) {
+  public async getCreditCards(customer_id: string) {
     try {
       const response = await axios.get(
         `https://api.pagar.me/core/v5/customers/${customer_id}/cards`,
@@ -493,11 +514,8 @@ export class PagarmeService {
       };
     } catch (err) {
       console.error(err.response.data);
-      if (err.response.status === '404') {
-        throw new HttpException(
-          'O id fornecido não corresponde a nenhum usuário cadastrado',
-          HttpStatus.BAD_REQUEST,
-        );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
       } else {
         throw new HttpException(
           'Ocorreu um erro ao encontrar os cartões na API do Pagar.me, por favor tente novamente mais tarde',
@@ -507,7 +525,7 @@ export class PagarmeService {
     }
   }
 
-  async deleteCreditCard(customer_id: string, card_id: string) {
+  public async deleteCreditCard(customer_id: string, card_id: string) {
     try {
       const response = await axios.delete(
         `https://api.pagar.me/core/v5/customers/${customer_id}/cards/${card_id}`,
@@ -519,11 +537,8 @@ export class PagarmeService {
       };
     } catch (err) {
       console.error(err.response.data);
-      if (err.response.status === '404') {
-        throw new HttpException(
-          'O id fornecido não corresponde a nenhum cartão cadastrado',
-          HttpStatus.BAD_REQUEST,
-        );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
       } else {
         throw new HttpException(
           'Ocorreu um erro ao encontrar os cartões na API do Pagar.me, por favor tente novamente mais tarde',
@@ -533,7 +548,7 @@ export class PagarmeService {
     }
   }
 
-  async createAddress(
+  public async createAddress(
     customer_id: string,
     cep: string,
     numero: string,
@@ -557,11 +572,8 @@ export class PagarmeService {
       };
     } catch (err) {
       console.error(err);
-      if (err.response.status === '404') {
-        throw new HttpException(
-          'Não foi encontrado nenhum cliente com o id fornecido na API Pagar.me, por favor tente mais tarde',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
       } else {
         throw new HttpException(
           'Ocorreu um erro ao criar o endereço na API Pagar.me, por favor tente mais tarde',
@@ -571,7 +583,7 @@ export class PagarmeService {
     }
   }
 
-  async getAddresses(customer_id: string) {
+  public async getAddresses(customer_id: string) {
     try {
       const response = await axios.get(
         `https://api.pagar.me/core/v5/customers/${customer_id}/addresses`,
@@ -583,11 +595,8 @@ export class PagarmeService {
       };
     } catch (err) {
       console.error(err.response.data);
-      if (err.response.status === '404') {
-        throw new HttpException(
-          'Não foi encontrado nenhum cliente com o id fornecido na API Pagar.me, por favor tente novamente',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
       } else {
         throw new HttpException(
           'Ocorreu um erro ao acessar a API do Pagar.me, por favor tente novamente mais tarde',
@@ -597,7 +606,7 @@ export class PagarmeService {
     }
   }
 
-  async deleteAddress(customer_id: string, address_id: string) {
+  public async deleteAddress(customer_id: string, address_id: string) {
     try {
       const requestOptions = {
         method: 'DELETE',
@@ -612,11 +621,8 @@ export class PagarmeService {
       };
     } catch (err) {
       console.error(err.response.data);
-      if (err.response.status === '404') {
-        throw new HttpException(
-          'Nao foi encontrado nenhum endereco com o id fornecido na API Pagar.me, por favor tente novamente',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
       } else {
         throw new HttpException(
           'Ocorreu um erro ao tentar excluir o endereço na API Pagar.me, por favor tente novamente mais tarde',
@@ -626,7 +632,7 @@ export class PagarmeService {
     }
   }
 
-  async creditCardOrder(
+  public async creditCardOrder(
     customer_id: string,
     split: SplitObject[],
     cart: CartProduct[],
@@ -661,14 +667,18 @@ export class PagarmeService {
       return { orderId: response.data.id };
     } catch (err) {
       console.error(err.response.data);
-      throw new HttpException(
-        'Ocorreu um erro ao fazer o pedido na Api Pagarme, tente novamente mais tarde',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
+      } else {
+        throw new HttpException(
+          'Ocorreu um erro ao fazer o pedido na Api Pagarme, tente novamente mais tarde',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 
-  async pixOrder(
+  public async pixOrder(
     customer_id: string,
     split: SplitObject[],
     cart: CartProduct[],
@@ -692,10 +702,14 @@ export class PagarmeService {
       return { orderId: response.data.id };
     } catch (err) {
       console.error(err.response.data);
-      throw new HttpException(
-        'Ocorreu um erro ao fazer o pedido na Api Pagarme, tente novamente mais tarde',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
+      } else {
+        throw new HttpException(
+          'Ocorreu um erro ao fazer o pedido na Api Pagarme, tente novamente mais tarde',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 
@@ -711,11 +725,8 @@ export class PagarmeService {
       return data;
     } catch (err) {
       console.error(err.response.data);
-      if (err.response.status === '400') {
-        throw new HttpException(
-          'Customer não encontrado',
-          HttpStatus.BAD_REQUEST,
-        );
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
       } else {
         throw new HttpException(
           'Ocorreu um erro ao encontrar os pedidos na api Pagar.me, por favor tente novamente mais tarde',
@@ -735,11 +746,9 @@ export class PagarmeService {
       return response.data;
     } catch (err) {
       console.error(err.response.data);
-      if (err.response.status === '400') {
-        throw new HttpException(
-          'Pedido não encontrado',
-          HttpStatus.BAD_REQUEST,
-        );
+      if (isAxiosError(err)) {
+        console.error(err.response.status);
+        throw new HttpException(err.response.data, err.response.status);
       } else {
         throw new HttpException(
           'Ocorreu um erro ao encontrar o pedido na api Pagar.me, por favor tente novamente mais tarde',
