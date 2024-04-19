@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { StoreService } from './store.service';
 import { LoginStoreDTO } from './dto/login-store.dto';
-import { AuthGuard } from '../auth/auth.guard';
+import { AuthGuard } from '../Auth/auth.guard';
 import {
   GetStoreInfoDTO,
   GetUserStoreInfoQueryDTO,
@@ -22,7 +22,7 @@ import { UpdateStoreDTO } from './dto/update-store.dto';
 import { DeleteStoreBodyDTO } from './dto/delete-store.dto';
 import { SearchStoreDTO } from './dto/search-store.dto';
 import { SearchStoreProductDTOQuery } from './dto/search-store-product.dto';
-import { AuthService } from '../auth/auth.service';
+import { AuthService } from '../Auth/auth.service';
 @Controller()
 export class StoreController {
   constructor(
@@ -152,6 +152,10 @@ export class StoreController {
       newPassword,
       newHomePhone,
       newMobilePhone,
+      new_annual_revenue,
+      new_managing_partners,
+      new_ponto_referencia,
+      new_trading_name,
     }: UpdateStoreDTO,
   ) {
     return await this.storeService.updateStore({
@@ -166,6 +170,10 @@ export class StoreController {
       newPassword,
       newHomePhone,
       newMobilePhone,
+      new_annual_revenue,
+      new_managing_partners,
+      new_ponto_referencia,
+      new_trading_name,
     });
   }
 

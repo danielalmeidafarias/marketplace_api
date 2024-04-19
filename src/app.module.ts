@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { StoreModule } from './modules/Store/store.module';
 import { ProductModule } from './modules/Product/product.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from './modules/auth/auth.module';
+import { AuthModule } from './modules/Auth/auth.module';
 import { databaseConfig } from './config/database.config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CartModule } from './modules/Cart/cart.module';

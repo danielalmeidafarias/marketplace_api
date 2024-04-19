@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import { CartRepository } from './repository/cart.repository';
 import { UUID } from 'crypto';
-import { AuthService } from '../auth/auth.service';
+import { AuthService } from '../Auth/auth.service';
 import { ProductRepository } from '../Product/repository/product.repository';
 import { Cart, CartProduct } from './entity/cart.entity';
-import { UtilsService } from '../utils/utils.service';
+import { UtilsService } from '../Utils/utils.service';
 import { CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { PagarmeService } from '../Pagarme/pagarme.service';

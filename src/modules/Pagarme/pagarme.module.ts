@@ -1,7 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { PagarmeService } from './pagarme.service';
 import { Axios } from 'axios';
-import { UtilsModule } from '../utils/utils.module';
+import { UtilsModule } from '../Utils/utils.module';
 
 @Module({
   providers: [PagarmeService, Axios],

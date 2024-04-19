@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UtilsService } from '../utils/utils.service';
-import { AuthService } from '../auth/auth.service';
+import { UtilsService } from '../Utils/utils.service';
+import { AuthService } from '../Auth/auth.service';
 import { PagarmeService } from '../Pagarme/pagarme.service';
 
 @Injectable()

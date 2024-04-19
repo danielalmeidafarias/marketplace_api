@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { authConfig } from 'src/config/auth.config';
 import { AuthGuard } from './auth.guard';
-import { UtilsModule } from '../utils/utils.module';
+import { UtilsModule } from '../Utils/utils.module';
 import { UserModule } from '../User/user.module';
 import { StoreModule } from '../Store/store.module';
 

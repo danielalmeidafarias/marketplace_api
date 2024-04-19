@@ -1,7 +1,7 @@
 import { WalletService } from './wallet.service';
 import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { CreateCreditCardBodyDTO } from './dto/create-credit-card.dto';
-import { AuthGuard } from '../auth/auth.guard';
+import { AuthGuard } from '../Auth/auth.guard';
 import { GetCreditCardsDTO } from './dto/get-credit-cards.dto';
 import { DeleteCreditCardDTO } from './dto/delete-credit-card.dto';
 

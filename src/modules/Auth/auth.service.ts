@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt/dist/jwt.service';
 import { Store } from '../Store/entity/store.entity';
-import { UtilsService } from '../utils/utils.service';
+import { UtilsService } from '../Utils/utils.service';
 import { StoreRepository } from '../Store/repository/store.repository';
 import { UUID } from 'crypto';
 
@@ -35,13 +35,13 @@ export class AuthService {
   }
 
   private async decodeToken(token: string) {
-    try {
-      const { sub, email } = await this.jwtService.decode(token);
-      return { id: sub, email };
-    } catch (err) {
-      console.error(err);
-      throw new HttpException('Token invalido', HttpStatus.UNAUTHORIZED);
+    const decodedToken = await this.jwtService.decode(token);
+
+    if (!decodedToken) {
+      throw new UnauthorizedException();
     }
+
+    return { id: decodedToken.sub, email: decodedToken.email };
   }
 
   private async getNewTokens(access_token: string, refresh_token: string) {
@@ -79,26 +79,23 @@ export class AuthService {
   }
 
   private async getTokenId(access_token: string) {
-    try {
-      const { id } = await this.decodeToken(access_token);
-      return id;
-    } catch (err) {
-      console.error(err);
-      throw new UnauthorizedException();
-    }
+    // try {
+    const { id } = await this.decodeToken(access_token);
+    return id;
+    // } catch (err) {
+    //   console.error(err);
+    //   throw new UnauthorizedException();
+    // }
   }
 
   private async verifyTokenId(access_token: string, userId: string) {
-    try {
-      const { id } = await this.decodeToken(access_token);
-      if (id !== userId) {
-        throw new HttpException(
-          'Access_token and userId must match',
-          HttpStatus.UNAUTHORIZED,
-        );
-      }
-    } catch (err) {
-      throw new UnauthorizedException();
+    const { id } = await this.decodeToken(access_token);
+
+    if (id !== userId) {
+      throw new HttpException(
+        'Access_token and userId must match',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
   }
 

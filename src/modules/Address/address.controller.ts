@@ -1,6 +1,6 @@
 import { AddressService } from './address.service';
 import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '../auth/auth.guard';
+import { AuthGuard } from '../Auth/auth.guard';
 import { CreateAddressDTO } from './dto/create-address.dto';
 import { GetAddressesDTO } from './dto/get-adresses.dto';
 import { DeleteAddressDTO } from './dto/delete-address.dto';

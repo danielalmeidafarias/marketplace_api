@@ -1,14 +1,20 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { StoreRepository } from './repository/store.repository';
-import { AuthService } from '../auth/auth.service';
+import { AuthService } from '../Auth/auth.service';
 import { UserRepository } from '../User/repository/user.repository';
-import { UtilsService } from 'src/modules/utils/utils.service';
+import { UtilsService } from 'src/modules/Utils/utils.service';
 import { UUID } from 'crypto';
 import { Store, UserStore } from './entity/store.entity';
 import { ProductRepository } from '../Product/repository/product.repository';
 import { PagarmeService } from '../Pagarme/pagarme.service';
 import { IManagingPartner } from './dto/create-store.dto';
+import {
+  ManagingPartner,
+  RegisterInformationPJ,
+} from '../Pagarme/classes/Recipient';
 import { CartRepository } from '../Cart/repository/cart.repository';
+import { Costumer } from '../Pagarme/classes/Costumer';
+import { BankAccount, Recipient } from '../Pagarme/classes/Recipient';
 interface ICreateStore {
   cep: string;
   numero: string;
@@ -51,13 +57,17 @@ interface IUpdateStore {
   refresh_token: string;
   password?: string;
   newCEP?: string;
-  newNumero: string;
+  newNumero?: string;
   newComplemento?: string;
+  new_ponto_referencia?: string;
   newEmail?: string;
   newName?: string;
   newPassword?: string;
   newMobilePhone?: string;
   newHomePhone?: string;
+  new_trading_name?: string;
+  new_annual_revenue?: number;
+  new_managing_partners?: IManagingPartner[];
   storeId?: UUID;
 }
 
@@ -104,9 +114,9 @@ export class StoreService {
     account_type,
     annual_revenue,
     trading_name,
-    managing_partners,
+    managing_partners: incoming_managing_partners,
   }: ICreateStore) {
-    const legal_representative = managing_partners.find(
+    const legal_representative = incoming_managing_partners.find(
       (partner) => partner.self_declared_legal_representative === true,
     );
 
@@ -123,10 +133,10 @@ export class StoreService {
 
     const cnpj = await this.utilsService.verifyCNPJ(incomingCnpj);
 
-    const mobilePhoneNumber =
+    const mobile_phone =
       await this.utilsService.verifyPhoneNumber(incomingMobilePhone);
 
-    const homePhone = incomingHomePhone
+    const home_phone = incomingHomePhone
       ? await this.utilsService.verifyPhoneNumber(incomingHomePhone)
       : null;
 
@@ -143,44 +153,116 @@ export class StoreService {
 
     await this.userRepository.verifyThereIsNoUserWithEmail(email);
 
-    await this.storeRepository.verifyThereIsNoStoreWithPhone(mobilePhoneNumber);
+    await this.storeRepository.verifyThereIsNoStoreWithPhone(mobile_phone);
 
-    await this.userRepository.verifyThereIsNoUserWithPhone(mobilePhoneNumber);
+    await this.userRepository.verifyThereIsNoUserWithPhone(home_phone);
 
     await this.storeRepository.verifyThereIsNoStoreWithCnpj(cnpj);
 
-    const { costumerId } = await this.pagarmeService.createStoreCostumer(
-      name,
-      email,
-      cnpj,
-      legal_representative.birthdate,
-      mobilePhoneNumber,
-      homePhone,
+    const costumer_mobile_phone =
+      await this.utilsService.transformCostumerPhone(incomingMobilePhone);
+
+    const costumer_home_phone = incomingHomePhone
+      ? await this.utilsService.transformCostumerPhone(incomingHomePhone)
+      : null;
+
+    const address = await this.utilsService.transformCostumerAddress(
       cep,
       numero,
       complemento,
     );
 
-    const { recipientId } = await this.pagarmeService.createStoreRecipient(
+    const costumer = new Costumer({
+      document_type: 'CNPJ',
+      type: 'company',
       name,
-      trading_name,
       email,
-      cnpj,
-      annual_revenue,
-      mobilePhoneNumber,
-      homePhone,
-      cep,
-      numero,
-      complemento,
-      ponto_referencia,
-      bank_digit,
-      branch_check_digit,
+      document: cnpj,
+      birthdate: legal_representative.birthdate,
+      phones: {
+        mobile_phone: costumer_mobile_phone,
+        home_phone: costumer_home_phone,
+      },
+      address,
+    });
+
+    const { costumerId } = await this.pagarmeService.createCostumer(costumer);
+
+    const recipient_phone_numbers = home_phone
+      ? await this.utilsService.transformRecipientPhone(
+          mobile_phone,
+          home_phone,
+        )
+      : await this.utilsService.transformRecipientPhone(mobile_phone);
+
+    const recipient_main_address =
+      await this.utilsService.transformRecipientAddress(
+        cep,
+        numero,
+        complemento,
+        ponto_referencia,
+      );
+
+    const default_bank_account = new BankAccount({
+      bank: bank_digit,
       branch_number,
+      branch_check_digit,
       account_number,
       account_check_digit,
-      account_type,
-      managing_partners,
-    );
+      holder_document: cnpj,
+      holder_name: name,
+      holder_type: 'individual',
+      type: account_type,
+    });
+
+    const managing_partners: ManagingPartner[] = [];
+
+    for (let i = 0; i < incoming_managing_partners.length; i++) {
+      const phone_numbers = await this.utilsService.transformRecipientPhone(
+        mobile_phone,
+        home_phone,
+      );
+      const address = await this.utilsService.transformRecipientAddress(
+        cep,
+        numero,
+        complemento,
+        ponto_referencia,
+      );
+
+      const managing_partner = new ManagingPartner({
+        self_declared_legal_representative:
+          incoming_managing_partners[i].self_declared_legal_representative,
+        name: incoming_managing_partners[i].name,
+        email: incoming_managing_partners[i].email,
+        address,
+        phone_numbers,
+        birthdate: incoming_managing_partners[i].birthdate,
+        document: cnpj,
+        monthly_income: incoming_managing_partners[i].monthly_income,
+        professional_occupation:
+          incoming_managing_partners[i].professional_occupation,
+      });
+
+      managing_partners.push(managing_partner);
+    }
+
+    const recipient = new Recipient({
+      register_information: {
+        type: 'corporation',
+        company_name: name,
+        email,
+        document: cnpj,
+        phone_numbers: recipient_phone_numbers,
+        main_address: recipient_main_address,
+        annual_revenue,
+        trading_name,
+        managing_partners,
+      },
+      default_bank_account,
+    });
+
+    const { recipientId } =
+      await this.pagarmeService.createRecipient(recipient);
 
     const store = new Store(
       recipientId,
@@ -196,8 +278,8 @@ export class StoreService {
       bairro,
       cidade,
       uf,
-      mobilePhoneNumber,
-      homePhone ? homePhone : null,
+      mobile_phone,
+      home_phone ? home_phone : null,
       cnpj,
     );
 
@@ -229,26 +311,49 @@ export class StoreService {
 
     await this.storeRepository.verifyThereIsNoStoreWithPhone(user.mobile_phone);
 
-    const { recipientId } = await this.pagarmeService.createUserRecipient(
-      user.name,
-      user.email,
-      user.cpf,
-      user.birthdate,
-      monthly_income,
-      professional_occupation,
-      user.mobile_phone,
-      user.home_phone,
+    const recipient_phone_numbers =
+      await this.utilsService.transformRecipientPhone(
+        user.mobile_phone,
+        user.home_phone,
+      );
+
+    const recipient_address = await this.utilsService.transformRecipientAddress(
       user.cep,
       user.numero,
       user.complemento,
       user.ponto_referencia,
+    );
+    const birthdate = user.birthdate.toLocaleDateString('BR');
+
+    const default_bank_account = new BankAccount({
       bank,
-      branch_check_digit,
       branch_number,
+      branch_check_digit,
       account_number,
       account_check_digit,
+      holder_document: user.cpf,
+      holder_name: user.name,
+      holder_type: 'individual',
       type,
-    );
+    });
+
+    const recipient = new Recipient({
+      register_information: {
+        type: 'individual',
+        name: user.name,
+        email: user.email,
+        document: user.cpf,
+        professional_occupation,
+        monthly_income,
+        phone_numbers: recipient_phone_numbers,
+        address: recipient_address,
+        birthdate,
+      },
+      default_bank_account,
+    });
+
+    const { recipientId } =
+      await this.pagarmeService.createRecipient(recipient);
 
     const store = new UserStore(
       recipientId,
@@ -323,11 +428,15 @@ export class StoreService {
     newCEP,
     newNumero,
     newComplemento,
+    new_ponto_referencia,
     newEmail,
     newName,
     newPassword,
     newMobilePhone,
     newHomePhone,
+    new_annual_revenue,
+    new_managing_partners: incoming_new_managing_partners,
+    new_trading_name,
   }: IUpdateStore) {
     const { store, newAccess_token, newRefresh_token } =
       await this.authService.storeVerification(access_token, refresh_token);
@@ -356,7 +465,7 @@ export class StoreService {
       if (!password) {
         throw new HttpException('Digite a senha', HttpStatus.UNAUTHORIZED);
       }
-      await this.authService.storeLogin(store.password, password);
+      await this.authService.storeLogin(store.email, password);
     }
 
     if (newName && name !== store.name) {
@@ -407,18 +516,25 @@ export class StoreService {
       );
     }
 
-    await this.pagarmeService.updateStoreCostumer(
-      editedStore.name,
-      editedStore.email,
-      editedStore.cnpj,
-      editedStore.birthdate,
-      editedStore.mobile_phone,
-      editedStore.home_phone,
-      editedStore.cep,
-      editedStore.numero,
-      editedStore.complemento,
-      editedStore.costumerId,
-    );
+    await this.updatePJCostumer(store.costumerId, editedStore, {
+      newCEP,
+      newHomePhone,
+      newMobilePhone,
+    });
+
+    await this.updatePJRecipient(store.recipientId, editedStore, {
+      new_annual_revenue,
+      new_managing_partners: incoming_new_managing_partners,
+      new_ponto_referencia,
+      new_trading_name,
+      newCEP,
+      newComplemento,
+      newEmail,
+      newHomePhone,
+      newMobilePhone,
+      newName,
+      newNumero,
+    });
 
     await this.storeRepository.updateStore(editedStore);
 
@@ -427,6 +543,198 @@ export class StoreService {
       access_token: newAccess_token,
       refresh_token: newRefresh_token,
     };
+  }
+
+  private async updatePJRecipient(
+    recipient_id: string,
+    editedStore: Store,
+    {
+      newCEP,
+      newComplemento,
+      newHomePhone,
+      newMobilePhone,
+      newNumero,
+      new_annual_revenue,
+      new_managing_partners: incoming_new_managing_partners,
+      new_ponto_referencia,
+      new_trading_name,
+    }: Pick<
+      Partial<IUpdateStore>,
+      | 'newCEP'
+      | 'newNumero'
+      | 'newComplemento'
+      | 'new_ponto_referencia'
+      | 'newMobilePhone'
+      | 'newHomePhone'
+      | 'newName'
+      | 'newEmail'
+      | 'new_annual_revenue'
+      | 'new_managing_partners'
+      | 'new_trading_name'
+    >,
+  ) {
+    // Obtendo o Recipient da API da Pagarme
+    const { recipient: pagarme_api_recipient } =
+      await this.pagarmeService.getRecipient(recipient_id);
+
+    // Criando o array e números
+    const new_recipient_phone_numbers = editedStore.home_phone
+      ? await this.utilsService.transformRecipientPhone(
+          editedStore.mobile_phone,
+          editedStore.home_phone,
+        )
+      : await this.utilsService.transformRecipientPhone(
+          editedStore.mobile_phone,
+        );
+
+    // Criando objeto de Main_address
+    const new_recipient_main_address =
+      newCEP && newNumero && newComplemento && new_ponto_referencia
+        ? await this.utilsService.transformRecipientAddress(
+            newCEP
+              ? newCEP
+              : pagarme_api_recipient.register_information.main_address
+                  .zip_code,
+            newNumero
+              ? newNumero
+              : pagarme_api_recipient.register_information.main_address
+                  .zip_code,
+            newComplemento,
+            new_ponto_referencia,
+          )
+        : null;
+
+    // Criando Array de Managing Partners
+    const new_managing_partners: ManagingPartner[] = [];
+
+    if (incoming_new_managing_partners) {
+      for (let i = 0; i < incoming_new_managing_partners.length; i++) {
+        const phone_numbers = await this.utilsService.transformRecipientPhone(
+          incoming_new_managing_partners[i].mobile_phone,
+          incoming_new_managing_partners[i].home_phone,
+        );
+
+        const address = await this.utilsService.transformRecipientAddress(
+          incoming_new_managing_partners[i].cep,
+          incoming_new_managing_partners[i].numero,
+          incoming_new_managing_partners[i].complemento,
+          incoming_new_managing_partners[i].ponto_referencia,
+        );
+
+        const managing_partner = new ManagingPartner({
+          self_declared_legal_representative:
+            incoming_new_managing_partners[i]
+              .self_declared_legal_representative,
+          name: incoming_new_managing_partners[i].name,
+          email: incoming_new_managing_partners[i].email,
+          address,
+          phone_numbers,
+          birthdate: incoming_new_managing_partners[i].birthdate,
+          document: editedStore.cnpj,
+          monthly_income: incoming_new_managing_partners[i].monthly_income,
+          professional_occupation:
+            incoming_new_managing_partners[i].professional_occupation,
+        });
+        new_managing_partners.push(managing_partner);
+      }
+    }
+
+    // Criando objeto de RegisterInformation para PJ
+    const new_register_information = new RegisterInformationPJ({
+      annual_revenue: new_annual_revenue
+        ? new_annual_revenue
+        : Number(pagarme_api_recipient.register_information.annual_revenue),
+      company_name: editedStore.name,
+      document: pagarme_api_recipient.register_information.document,
+      email: editedStore.email,
+      main_address: newCEP
+        ? new_recipient_main_address
+        : pagarme_api_recipient.register_information.main_address,
+      managing_partners: incoming_new_managing_partners
+        ? new_managing_partners
+        : pagarme_api_recipient.register_information.managing_partners,
+      phone_numbers:
+        newHomePhone || newMobilePhone
+          ? new_recipient_phone_numbers
+          : pagarme_api_recipient.register_information.phone_numbers,
+      trading_name: new_trading_name
+        ? new_trading_name
+        : pagarme_api_recipient.register_information.trading_name,
+    });
+
+    const new_recipient = new Recipient({
+      default_bank_account: undefined,
+      register_information: new_register_information,
+      recipient_id: editedStore.recipientId,
+    });
+
+    const { response } =
+      await this.pagarmeService.updateRecipient(new_recipient);
+    console.log(response);
+    return response;
+  }
+
+  private async updatePJCostumer(
+    costumer_id: string,
+    editedStore: Store,
+    {
+      newCEP,
+      newHomePhone,
+      newMobilePhone,
+    }: Pick<
+      Partial<IUpdateStore>,
+      | 'newCEP'
+      | 'newNumero'
+      | 'newComplemento'
+      | 'new_ponto_referencia'
+      | 'newMobilePhone'
+      | 'newHomePhone'
+      | 'newName'
+      | 'newEmail'
+      | 'new_annual_revenue'
+      | 'new_managing_partners'
+      | 'new_trading_name'
+    >,
+  ) {
+    const { costumer: pagarme_api_costumer } =
+      await this.pagarmeService.getCostumer(costumer_id);
+
+    const costumer_mobile_phone = newMobilePhone
+      ? await this.utilsService.transformCostumerPhone(editedStore.mobile_phone)
+      : pagarme_api_costumer.phones.mobile_phone;
+
+    const costumer_home_phone = newHomePhone
+      ? await this.utilsService.transformCostumerPhone(editedStore.home_phone)
+      : pagarme_api_costumer.phones.home_phone;
+
+    const costumer_address = newCEP
+      ? await this.utilsService.transformCostumerAddress(
+          editedStore.cep,
+          editedStore.numero,
+          editedStore.complemento,
+        )
+      : pagarme_api_costumer.address;
+
+    const new_costumer = new Costumer({
+      name: editedStore.name,
+      email: editedStore.email,
+      costumer_Id: editedStore.costumerId,
+      document_type: 'CNPJ',
+      type: 'company',
+      document: editedStore.cnpj,
+      birthdate: editedStore.birthdate,
+      phones: {
+        mobile_phone: costumer_mobile_phone,
+        home_phone: costumer_home_phone,
+      },
+      address: costumer_address,
+    });
+
+    const { response } = await this.pagarmeService.updateCostumer(new_costumer);
+
+    console.log(response);
+
+    return response;
   }
 
   async deleteStore({ access_token, refresh_token, password }: IDeleteStore) {

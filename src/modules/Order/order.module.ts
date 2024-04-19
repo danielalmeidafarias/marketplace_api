@@ -3,7 +3,7 @@ import { OrderService } from './order.service';
 import { OrderController } from './order.controller';
 import { PagarmeModule } from '../Pagarme/pagarme.module';
 import { JwtService } from '@nestjs/jwt';
-import { AuthModule } from '../auth/auth.module';
+import { AuthModule } from '../Auth/auth.module';
 
 @Module({
   controllers: [OrderController],

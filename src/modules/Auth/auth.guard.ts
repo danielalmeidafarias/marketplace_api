@@ -38,12 +38,11 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      await this.jwtService.verify(access_token, authConfig);
+      await this.jwtService.verify(access_token, authConfig).then(() => {});
     } catch {
       try {
         await this.jwtService.verify(refresh_token, authConfig);
       } catch (err) {
-        console.error(err);
         throw new UnauthorizedException();
       }
     }

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { OrderService } from './order.service';
-import { AuthGuard } from '../auth/auth.guard';
+import { AuthGuard } from '../Auth/auth.guard';
 import { GetOrdersDTO } from './dto/get-order.dto';
 import { GetOrderBodyDTO, GetOrderQueryDTO } from './dto/get-orders.dto';
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AuthService } from '../auth/auth.service';
+import { AuthService } from '../Auth/auth.service';
 import { PagarmeService } from '../Pagarme/pagarme.service';
 
 @Injectable()

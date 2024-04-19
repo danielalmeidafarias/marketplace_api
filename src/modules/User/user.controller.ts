@@ -1,5 +1,5 @@
-import { AuthService } from './../auth/auth.service';
-import { AuthGuard } from './../auth/auth.guard';
+import { AuthService } from '../Auth/auth.service';
+import { AuthGuard } from '../Auth/auth.guard';
 import {
   Body,
   Controller,

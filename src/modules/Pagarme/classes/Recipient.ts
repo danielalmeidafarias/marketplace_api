@@ -1,19 +1,34 @@
 export interface IRecipientConstructorParameters {
   register_information: RegisterInformationPF | RegisterInformationPJ;
   default_bank_account: BankAccount;
+  recipient_id?: string;
 }
 
 export class Recipient {
   constructor({
+    register_information,
+    recipient_id,
+  }: Partial<IRecipientConstructorParameters>);
+  constructor({
     default_bank_account,
     register_information,
+    recipient_id,
   }: IRecipientConstructorParameters) {
     this.register_information = register_information;
-    this.default_bank_account = default_bank_account;
+
+    if (default_bank_account) {
+      this.default_bank_account = default_bank_account;
+    }
+    if (recipient_id) {
+      this.recipient_id = recipient_id;
+    }
   }
 
   register_information: RegisterInformationPF | RegisterInformationPJ;
+
   default_bank_account: BankAccount;
+
+  recipient_id?: string;
 }
 
 export interface IRegisterInformationPJConstructorParameters {

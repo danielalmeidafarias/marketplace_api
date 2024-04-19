@@ -2,13 +2,14 @@ import { UserRepository } from './repository/user.repository';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './entity/user.entity';
 import * as bcrypt from 'bcrypt';
-import { AuthService } from '../auth/auth.service';
-import { UtilsService } from 'src/modules/utils/utils.service';
+import { AuthService } from '../Auth/auth.service';
+import { UtilsService } from 'src/modules/Utils/utils.service';
 import { StoreRepository } from '../Store/repository/store.repository';
 import { ProductRepository } from '../Product/repository/product.repository';
 import { PagarmeService } from '../Pagarme/pagarme.service';
 import { UserStore } from '../Store/entity/store.entity';
 import { CartRepository } from '../Cart/repository/cart.repository';
+import { Costumer } from '../Pagarme/classes/Costumer';
 
 export interface ICreateUser {
   email: string;
@@ -100,17 +101,34 @@ export class UserService {
 
     await this.userRepository.verifyThereIsNoUserWithPhone(mobile_phone);
 
-    const { costumerId } = await this.pagarmeService.createUserCostumer(
-      name,
-      email,
-      cpf,
-      birthdate,
-      mobile_phone,
-      home_phone,
+    const costumer_mobile_phone =
+      await this.utilsService.transformCostumerPhone(incomingMobilePhone);
+
+    const costumer_home_phone = incomingHomePhone
+      ? await this.utilsService.transformCostumerPhone(incomingHomePhone)
+      : null;
+
+    const costumer_address = await this.utilsService.transformCostumerAddress(
       cep,
       numero,
       complemento,
     );
+
+    const costumer = new Costumer({
+      address: costumer_address,
+      birthdate,
+      document: cpf,
+      document_type: 'CPF',
+      email,
+      name,
+      phones: {
+        mobile_phone: costumer_mobile_phone,
+        home_phone: costumer_home_phone,
+      },
+      type: 'individual',
+    });
+
+    const { costumerId } = await this.pagarmeService.createCostumer(costumer);
 
     const user = new User(
       costumerId,
@@ -258,18 +276,35 @@ export class UserService {
       await this.storeRepository.updateStore(editedUserStore);
     }
 
-    await this.pagarmeService.updateUserCostumer(
-      editedUser.name,
-      editedUser.email,
-      editedUser.cpf,
-      editedUser.birthdate,
-      editedUser.mobile_phone,
+    const costumer_mobile_phone =
+      await this.utilsService.transformCostumerPhone(editedUser.mobile_phone);
+
+    const costumer_home_phone = await this.utilsService.transformCostumerPhone(
       editedUser.home_phone,
+    );
+
+    const costumer_address = await this.utilsService.transformCostumerAddress(
       editedUser.cep,
       editedUser.numero,
       editedUser.complemento,
-      editedUser.costumerId,
     );
+
+    const costumer = new Costumer({
+      name: editedUser.name,
+      email: editedUser.email,
+      costumer_Id: editedUser.costumerId,
+      document_type: 'CPF',
+      type: 'individual',
+      document: editedUser.cpf,
+      birthdate: editedUser.birthdate,
+      phones: {
+        mobile_phone: costumer_mobile_phone,
+        home_phone: costumer_home_phone,
+      },
+      address: costumer_address,
+    });
+
+    await this.pagarmeService.updateCostumer(costumer);
 
     await this.userRepository.updateUser(editedUser);
 

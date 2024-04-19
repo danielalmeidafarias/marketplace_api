@@ -1,7 +1,7 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AddProductBodyDTO } from './dto/add-product.dto';
 import { CartService } from './cart.service';
-import { AuthGuard } from '../auth/auth.guard';
+import { AuthGuard } from '../Auth/auth.guard';
 import { DecrementProductDTO } from './dto/decrement-product.dto';
 import { RemoveProductDTO } from './dto/remove-product.dto';
 import { ClearCartDTO } from './dto/clear-cart.dto';

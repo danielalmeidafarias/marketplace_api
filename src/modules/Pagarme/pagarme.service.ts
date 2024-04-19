@@ -2,10 +2,13 @@ import 'dotenv/config.js';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import axios, { isAxiosError } from 'axios';
 import pagarmeAuthConfig from 'src/config/pagarme-auth.config';
-import { Costumer } from './classes/Costumer';
-import { BankAccount, ManagingPartner, Recipient } from './classes/Recipient';
-import { UtilsService } from '../utils/utils.service';
-import { IManagingPartner } from '../Store/dto/create-store.dto';
+import { Costumer, CostumerAddress, CostumerPhone } from './classes/Costumer';
+import {
+  ManagingPartner,
+  Recipient,
+  RecipientPhone,
+} from './classes/Recipient';
+import { UtilsService } from '../Utils/utils.service';
 import { BillingAddress, CreditCard } from './classes/CreditCard';
 import { CartProduct } from '../Cart/entity/cart.entity';
 import {
@@ -16,47 +19,64 @@ import {
   PixPaymentObject,
   SplitObject,
 } from './classes/Order';
+
+export interface IGetCostumer {
+  id: string;
+  name: string;
+  email: string;
+  address: CostumerAddress;
+  phones: {
+    home_phone: CostumerPhone;
+    mobile_phone: CostumerPhone;
+  };
+}
+
+export interface IGetPJRecipient {
+  id: string;
+  name: string;
+  email: string;
+  document: string;
+  type: string;
+  default_bank_account: {
+    id: string;
+    holder_name: string;
+    holder_type: string;
+    holder_document: string;
+    bank: string;
+    branch_number: string;
+    branch_check_digit: string;
+    account_number: string;
+    account_check_digit: string;
+    type: string;
+    status: string;
+  };
+  register_information: {
+    email: string;
+    document: string;
+    type: string;
+    phone_numbers: RecipientPhone[];
+    company_name: string;
+    trading_name: string;
+    annual_revenue: string;
+    founding_date: string;
+    main_address: {
+      street: string;
+      complementary: string;
+      street_number: string;
+      neighborhood: string;
+      city: string;
+      state: string;
+      zip_code: string;
+      reference_point: string;
+    };
+    managing_partners: ManagingPartner[];
+  };
+}
+
 @Injectable()
 export class PagarmeService {
   constructor(private utilsService: UtilsService) {}
-  public async createUserCostumer(
-    name: string,
-    email: string,
-    cpf: string,
-    birthdate: Date,
-    incomingMobilePhone: string,
-    incomingHomePhone: string,
-    cep: string,
-    numero: string,
-    complemento: string,
-  ) {
-    const mobile_phone =
-      await this.utilsService.transformCostumerPhone(incomingMobilePhone);
-
-    const home_phone = incomingHomePhone
-      ? await this.utilsService.transformCostumerPhone(incomingHomePhone)
-      : null;
-
-    const address = await this.utilsService.transformCostumerAddress(
-      cep,
-      numero,
-      complemento,
-    );
-
-    const costumer = new Costumer({
-      address,
-      birthdate,
-      document: cpf,
-      document_type: 'CPF',
-      email,
-      name,
-      phones: {
-        mobile_phone,
-        home_phone,
-      },
-      type: 'individual',
-    });
-
+  public async createCostumer(costumer: Costumer) {
     try {
       const response = await axios.post(
         'https://api.pagar.me/core/v5/customers',
@@ -82,109 +102,10 @@ export class PagarmeService {
     }
   }
 
-  public async createStoreCostumer(
-    name: string,
-    email: string,
-    cpnj: string,
-    birthdate: Date,
-    incomingMobilePhone: string,
-    incomingHomePhone: string,
-    cep: string,
-    numero: string,
-    complemento: string,
-  ) {
-    const mobile_phone =
-      await this.utilsService.transformCostumerPhone(incomingMobilePhone);
-
-    const home_phone = incomingHomePhone
-      ? await this.utilsService.transformCostumerPhone(incomingHomePhone)
-      : null;
-
-    const address = await this.utilsService.transformCostumerAddress(
-      cep,
-      numero,
-      complemento,
-    );
-
-    const costumer = new Costumer({
-      document_type: 'CNPJ',
-      type: 'company',
-      name,
-      email,
-      document: cpnj,
-      birthdate,
-      phones: {
-        mobile_phone,
-        home_phone,
-      },
-      address,
-    });
-
+  public async updateCostumer(costumer: Costumer) {
     try {
-      const response = await axios.post(
-        'https://api.pagar.me/core/v5/customers',
-        costumer,
-        { headers: pagarmeAuthConfig },
-      );
-      return {
-        message: 'Costumer criado com sucesso',
-        costumerId: response.data.id,
-      };
-    } catch (err) {
-      console.error(err.response.data);
-      if (isAxiosError(err)) {
-        throw new HttpException(err.response.data, err.response.status);
-      } else {
-        throw new HttpException(
-          'Ocorreu um erro ao tentar cria o costumer',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    }
-  }
-
-  public async updateUserCostumer(
-    name: string,
-    email: string,
-    cpf: string,
-    birthdate: Date,
-    incomingMobilePhone: string,
-    incomingHomePhone: string,
-    cep: string,
-    numero: string,
-    complemento: string,
-    costumer_Id: string,
-  ) {
-    try {
-      const mobile_phone =
-        await this.utilsService.transformCostumerPhone(incomingMobilePhone);
-
-      const home_phone =
-        await this.utilsService.transformCostumerPhone(incomingHomePhone);
-
-      const address = await this.utilsService.transformCostumerAddress(
-        cep,
-        numero,
-        complemento,
-      );
-
-      const costumer = new Costumer({
-        name,
-        email,
-        costumer_Id,
-        document_type: 'CPF',
-        type: 'individual',
-        document: cpf,
-        birthdate,
-        phones: {
-          mobile_phone,
-          home_phone,
-        },
-        address,
-      });
-
       const response = await axios.put(
-        `https://api.pagar.me/core/v5/customers/${costumer_Id}`,
+        `https://api.pagar.me/core/v5/customers/${costumer.costumer_Id}`,
         costumer,
         { headers: pagarmeAuthConfig },
       );
@@ -206,60 +127,78 @@ export class PagarmeService {
     }
   }
 
-  public async updateStoreCostumer(
-    name: string,
-    email: string,
-    cpnj: string,
-    birthdate: Date,
-    incomingMobilePhone: string,
-    incomingHomePhone: string,
-    cep: string,
-    numero: string,
-    complemento: string,
-    costumer_Id: string,
-  ) {
+  public async getCostumer(customer_id: string) {
     try {
-      const mobile_phone =
-        await this.utilsService.transformCostumerPhone(incomingMobilePhone);
-
-      const home_phone =
-        await this.utilsService.transformCostumerPhone(incomingHomePhone);
-
-      const address = await this.utilsService.transformCostumerAddress(
-        cep,
-        numero,
-        complemento,
-      );
-
-      const costumer = new Costumer({
-        name,
-        email,
-        costumer_Id,
-        document_type: 'CNPJ',
-        type: 'company',
-        document: cpnj,
-        birthdate,
-        phones: {
-          mobile_phone,
-          home_phone,
-        },
-        address,
-      });
-
-      const response = await axios.put(
-        `https://api.pagar.me/core/v5/customers/${costumer_Id}`,
-        costumer,
+      const response = await axios.get(
+        `https://api.pagar.me/core/v5/customers/${customer_id}`,
         { headers: pagarmeAuthConfig },
       );
 
+      const { name, email, id, phones, address }: IGetCostumer = response.data;
+
       return {
-        message: 'Costumer atualizado com sucesso',
-        response: response.data,
+        costumer: {
+          name,
+          email,
+          id,
+          phones,
+          address,
+        },
       };
     } catch (err) {
       console.error(err.response.data);
       if (isAxiosError(err)) {
         throw new HttpException(err.response.data, err.response.status);
+      } else {
+        throw new HttpException(
+          'Ocorreu um erro ao tentar encontrar o costumer',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+  }
+
+  public async createRecipient(recipient: Recipient) {
+    try {
+      const response = await axios.post(
+        'https://api.pagar.me/core/v5/recipients',
+        recipient,
+        { headers: pagarmeAuthConfig },
+      );
+      return { recipientId: response.data.id };
+    } catch (err) {
+      console.error(err.response.data);
+      if (isAxiosError(err)) {
+        throw new HttpException(err.response.data, err.response.status);
+      } else {
+        throw new HttpException(
+          'Ocorreu um erro ao tentar criar o recipient na API Pagar.me, por favor tente novamente',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+  }
+
+  public async updateRecipient(recipient: Recipient) {
+    try {
+      const response = await axios.put(
+        `https://api.pagar.me/core/v5/recipients/${recipient.recipient_id}`,
+        recipient,
+        { headers: pagarmeAuthConfig },
+      );
+
+      return {
+        message: 'Recipient atualizado com sucesso',
+        response: response.data,
+      };
+    } catch (err) {
+      console.error(err.response.data);
+      if (isAxiosError(err)) {
+        console.log(err.response.data);
+        throw new HttpException(
+          { err: err.response.data },
+          err.response.status,
+        );
       } else {
         throw new HttpException(
           'Ocorreu um erro ao tentar atualizar o costumer',
@@ -269,190 +208,41 @@ export class PagarmeService {
     }
   }
 
-  public async createUserRecipient(
-    name: string,
-    email: string,
-    document: string,
-    incomingBirthdate: Date,
-    monthly_income: number,
-    professional_occupation: string,
-    mobile_phone: string,
-    home_phone: string,
-    cep: string,
-    numero: string,
-    complemento: string,
-    ponto_referencia: string,
-    bank: string,
-    branch_check_digit: string,
-    branch_number: string,
-    account_number: string,
-    account_check_digit: string,
-    type: 'checking' | 'savings',
-  ) {
-    const phone_numbers = await this.utilsService.transformRecipientPhone(
-      mobile_phone,
-      home_phone,
-    );
-    const address = await this.utilsService.transformRecipientAddress(
-      cep,
-      numero,
-      complemento,
-      ponto_referencia,
-    );
-    const birthdate = incomingBirthdate.toLocaleDateString('BR');
+  public async getRecipient(recipient_id: string) {
+    try {
+      const response = await axios.get(
+        ` https://api.pagar.me/core/v5/recipients/${recipient_id}`,
+        { headers: pagarmeAuthConfig },
+      );
 
-    const default_bank_account = new BankAccount({
-      bank,
-      branch_number,
-      branch_check_digit,
-      account_number,
-      account_check_digit,
-      holder_document: document,
-      holder_name: name,
-      holder_type: 'individual',
-      type,
-    });
-
-    const recipient = new Recipient({
-      register_information: {
-        type: 'individual',
+      const {
+        id,
+        register_information,
         name,
         email,
         document,
-        professional_occupation,
-        monthly_income,
-        phone_numbers,
-        address,
-        birthdate,
-      },
-      default_bank_account,
-    });
+        type,
+        default_bank_account,
+      }: IGetPJRecipient = response.data;
 
-    try {
-      const response = await axios.post(
-        'https://api.pagar.me/core/v5/recipients',
-        recipient,
-        { headers: pagarmeAuthConfig },
-      );
-      return { recipientId: response.data.id };
+      return {
+        recipient: {
+          id,
+          register_information,
+          name,
+          email,
+          document,
+          type,
+          default_bank_account,
+        },
+      };
     } catch (err) {
       console.error(err.response.data);
       if (isAxiosError(err)) {
         throw new HttpException(err.response.data, err.response.status);
       } else {
         throw new HttpException(
-          'Ocorreu um erro ao tentar criar o recipient na API Pagar.me, por favor tente novamente',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    }
-  }
-
-  public async createStoreRecipient(
-    company_name: string,
-    trading_name: string,
-    email: string,
-    document: string,
-    annual_revenue: number,
-    mobile_phone: string,
-    home_phone: string,
-    cep: string,
-    numero: string,
-    complemento: string,
-    ponto_referencia: string,
-    bank: string,
-    branch_check_digit: string,
-    branch_number: string,
-    account_number: string,
-    account_check_digit: string,
-    type: 'checking' | 'savings',
-    incoming_managing_partners: IManagingPartner[],
-  ) {
-    const phone_numbers = home_phone
-      ? await this.utilsService.transformRecipientPhone(
-          mobile_phone,
-          home_phone,
-        )
-      : await this.utilsService.transformRecipientPhone(mobile_phone);
-    const main_address = await this.utilsService.transformRecipientAddress(
-      cep,
-      numero,
-      complemento,
-      ponto_referencia,
-    );
-
-    const default_bank_account = new BankAccount({
-      bank,
-      branch_number,
-      branch_check_digit,
-      account_number,
-      account_check_digit,
-      holder_document: document,
-      holder_name: company_name,
-      holder_type: 'individual',
-      type,
-    });
-
-    const managing_partners: ManagingPartner[] = [];
-
-    for (let i = 0; i < incoming_managing_partners.length; i++) {
-      const phone_numbers = await this.utilsService.transformRecipientPhone(
-        mobile_phone,
-        home_phone,
-      );
-      const address = await this.utilsService.transformRecipientAddress(
-        cep,
-        numero,
-        complemento,
-        ponto_referencia,
-      );
-
-      const managing_partner = new ManagingPartner({
-        self_declared_legal_representative:
-          incoming_managing_partners[i].self_declared_legal_representative,
-        name: incoming_managing_partners[i].name,
-        email: incoming_managing_partners[i].email,
-        address,
-        phone_numbers,
-        birthdate: incoming_managing_partners[i].birthdate,
-        document,
-        monthly_income: incoming_managing_partners[i].monthly_income,
-        professional_occupation:
-          incoming_managing_partners[i].professional_occupation,
-      });
-
-      managing_partners.push(managing_partner);
-    }
-
-    const recipient = new Recipient({
-      register_information: {
-        type: 'corporation',
-        company_name,
-        email,
-        document,
-        phone_numbers,
-        main_address,
-        annual_revenue,
-        trading_name,
-        managing_partners,
-      },
-      default_bank_account,
-    });
-
-    try {
-      const response = await axios.post(
-        'https://api.pagar.me/core/v5/recipients',
-        recipient,
-        { headers: pagarmeAuthConfig },
-      );
-      return { recipientId: response.data.id };
-    } catch (err) {
-      console.error(err.response.data);
-      if (isAxiosError(err)) {
-        throw new HttpException(err.response.data, err.response.status);
-      } else {
-        throw new HttpException(
-          'Ocorreu um erro ao tentar criar o recipient na API Pagar.me, por favor tente novamente',
+          'Ocorreu um erro ao encontrar o recipient na API do Pagar.me, por favor tente novamente mais tarde',
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }

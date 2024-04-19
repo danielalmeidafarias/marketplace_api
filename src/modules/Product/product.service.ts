@@ -1,5 +1,5 @@
 import { StoreRepository } from './../Store/repository/store.repository';
-import { AuthService } from './../auth/auth.service';
+import { AuthService } from '../Auth/auth.service';
 import {
   HttpException,
   HttpStatus,
@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ProductRepository } from './repository/product.repository';
-import { AuthGuard } from '../auth/auth.guard';
+import { AuthGuard } from '../Auth/auth.guard';
 import { UUID } from 'crypto';
 import { Product, UserStoreProduct } from './entity/product.entity';
 

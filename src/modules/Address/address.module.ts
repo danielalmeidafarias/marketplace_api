@@ -2,7 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { AddressController } from './address.controller';
 import { PagarmeModule } from '../Pagarme/pagarme.module';
 import { AddressService } from './address.service';
-import { AuthModule } from '../auth/auth.module';
+import { AuthModule } from '../Auth/auth.module';
 import { JwtService } from '@nestjs/jwt';
 
 @Module({

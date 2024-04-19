@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsJWT,
   IsString,
@@ -7,6 +8,13 @@ import {
   IsPhoneNumber,
   IsNumberString,
   IsUUID,
+  ArrayNotEmpty,
+  IsArray,
+  IsBoolean,
+  IsDateString,
+  IsNumber,
+  Length,
+  ValidateNested,
 } from 'class-validator';
 import { UUID } from 'crypto';
 
@@ -55,8 +63,70 @@ export class EditUserStoreQuery {
   storeId: UUID;
 }
 
+export class ManagingPartner {
+  @IsString()
+  name: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsNumberString()
+  @Length(11, 11)
+  cpf: string;
+
+  @IsDateString()
+  birthdate: Date;
+
+  @IsNumber()
+  monthly_income: number;
+
+  @IsString()
+  professional_occupation: string;
+
+  @IsBoolean()
+  self_declared_legal_representative: boolean;
+
+  @IsNumberString()
+  cep: string;
+
+  @IsNumberString()
+  numero: string;
+
+  @IsString()
+  complemento: string;
+
+  @IsString()
+  ponto_referencia: string;
+
+  @IsPhoneNumber('BR')
+  mobile_phone: string;
+
+  @IsPhoneNumber('BR')
+  @IsOptional()
+  home_phone: string;
+}
+
 export class UpdateStoreDTO extends EditUserStoreBodyDTO {
   @IsOptional()
   @IsStrongPassword()
   newPassword?: string;
+
+  @IsNumber()
+  @IsOptional()
+  new_annual_revenue: number;
+
+  @IsString()
+  @IsOptional()
+  new_trading_name: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => ManagingPartner)
+  new_managing_partners: ManagingPartner[];
+
+  @IsOptional()
+  @IsString()
+  new_ponto_referencia: string;
 }
