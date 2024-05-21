@@ -3,8 +3,10 @@ import { OrderService } from './order.service';
 import { AuthGuard } from '../Auth/auth.guard';
 import { GetOrdersDTO } from './dto/get-order.dto';
 import { GetOrderBodyDTO, GetOrderQueryDTO } from './dto/get-orders.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 

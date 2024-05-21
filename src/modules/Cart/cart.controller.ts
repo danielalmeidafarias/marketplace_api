@@ -6,8 +6,10 @@ import { DecrementProductDTO } from './dto/decrement-product.dto';
 import { RemoveProductDTO } from './dto/remove-product.dto';
 import { ClearCartDTO } from './dto/clear-cart.dto';
 import { CreditCardOrderDTO, PixOrderDTO } from './dto/make-order.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('cart')
+@ApiTags('Cart')
 export class CartController {
   constructor(private cartService: CartService) {}
 

@@ -20,8 +20,10 @@ import {
   UpdateProductStoreQuery,
 } from './dto/update-product.dto';
 import { SearchProductDTO } from './dto/search-product.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('Product')
 export class ProductController {
   constructor(private productService: ProductService) {}
 

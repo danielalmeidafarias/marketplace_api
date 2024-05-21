@@ -4,8 +4,10 @@ import { CreateCreditCardBodyDTO } from './dto/create-credit-card.dto';
 import { AuthGuard } from '../Auth/auth.guard';
 import { GetCreditCardsDTO } from './dto/get-credit-cards.dto';
 import { DeleteCreditCardDTO } from './dto/delete-credit-card.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('/wallet')
+@ApiTags('Wallet')
 export class WalletController {
   constructor(private walletService: WalletService) {}
 

@@ -23,7 +23,9 @@ import { DeleteStoreBodyDTO } from './dto/delete-store.dto';
 import { SearchStoreDTO } from './dto/search-store.dto';
 import { SearchStoreProductDTOQuery } from './dto/search-store-product.dto';
 import { AuthService } from '../Auth/auth.service';
+import { ApiTags } from '@nestjs/swagger';
 @Controller()
+@ApiTags('Store')
 export class StoreController {
   constructor(
     private storeService: StoreService,

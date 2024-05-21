@@ -4,8 +4,10 @@ import { AuthGuard } from '../Auth/auth.guard';
 import { CreateAddressDTO } from './dto/create-address.dto';
 import { GetAddressesDTO } from './dto/get-adresses.dto';
 import { DeleteAddressDTO } from './dto/delete-address.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('address')
+@ApiTags('Address')
 export class AddressController {
   constructor(private addressService: AddressService) {}
 
